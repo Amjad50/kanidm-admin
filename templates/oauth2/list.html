@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros/page.html" as page %}
 
 {% block title %}OAuth2 Apps · Kanidm Admin{% endblock %}
 
@@ -9,46 +10,19 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-8 py-6">
 
-  <div class="flex items-start justify-between gap-6 mb-7">
-    <div>
-      <h1 class="text-2xl font-semibold tracking-tight">OAuth2 Apps</h1>
-      <div id="oauth2-subtitle" class="text-muted-foreground text-sm mt-1">
-        {% if q.is_empty() %}
-          {{ total_count }} {% if total_count == 1 %}application{% else %}applications{% endif %}
-        {% else %}
-          {{ filtered_count }} of {{ total_count }} {% if total_count == 1 %}application{% else %}applications{% endif %}
-        {% endif %}
-      </div>
-    </div>
-    <div class="flex items-center gap-2 shrink-0">
-      <a href="/oauth2/new"
-         class="bg-primary text-primary-foreground rounded h-9 px-4 inline-flex items-center gap-2 text-sm font-medium hover:bg-primary/90 no-underline transition-colors">
-        <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
-        <span>Create OAuth2 application</span>
-      </a>
-    </div>
-  </div>
-
-  <form class="flex items-center gap-3 mb-6">
-    <div class="relative">
-      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("search") }}</span>
-      <input
-        type="search"
-        name="q"
-        value="{{ q }}"
-        placeholder="Search by name or URL…"
-        class="bg-card border border-border rounded h-9 pl-9 pr-3 w-80 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input"
-        hx-get="/oauth2"
-        hx-trigger="input changed delay:200ms, search, keyup[key=='Enter']"
-        hx-target="#oauth2-cards"
-        hx-swap="innerHTML"
-        hx-push-url="true"
-        hx-include="closest form"
-        hx-vals='{"page": "1"}'
-      />
-    </div>
-    <input type="hidden" name="per" value="{{ per }}" />
-  </form>
+  {% call page::list_page_header(
+    title="OAuth2 Apps",
+    count_html=count_text,
+    create_label="Create OAuth2 application",
+    create_icon="plus",
+    create_href="/oauth2/new",
+    search_value=q,
+    search_placeholder="Search by name or URL…",
+    search_target="#oauth2-cards",
+    search_url="/oauth2",
+    subtitle_id="oauth2-subtitle",
+    per=per,
+  ) %}{# no extra filters #}{% endcall %}
 
   <section id="oauth2-cards">
     {% include "oauth2/_cards.html" %}

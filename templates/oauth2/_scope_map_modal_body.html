@@ -26,6 +26,9 @@
          autocomplete="off"
          spellcheck="false"
          required
+         data-warn-duplicate
+         data-warn-existing="{{ existing_groups_json }}"
+         data-warn-target="#sm-overwrite-warn-{{ section }}"
          class="w-full bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
   {# Overwrite-warning banner (shown via JS when group matches existing) #}
   <div id="sm-overwrite-warn-{{ section }}"
@@ -37,21 +40,6 @@
     <option value="{{ spn }}"></option>
     {% endfor %}
   </datalist>
-  <script>
-  (function () {
-    var existing = {{ existing_groups_json|safe }};
-    var input = document.getElementById('sm-group-{{ section }}');
-    var warn  = document.getElementById('sm-overwrite-warn-{{ section }}');
-    if (!input || !warn) return;
-    function check() {
-      var val = input.value.trim().toLowerCase();
-      var found = existing.some(function(g) { return g.toLowerCase() === val; });
-      warn.classList.toggle('hidden', !found);
-    }
-    input.addEventListener('input', check);
-    check();
-  })();
-  </script>
   {% endif %}
 </div>
 

@@ -1,20 +1,12 @@
+{% import "macros/ui.html" as ui %}
 {% for person in people %}
 <tr
   class="border-b border-border last:border-0 hover:bg-accent cursor-pointer transition-colors"
   data-row-href="/people/{{ person.spn_or_uuid }}/overview"
 >
   <td class="px-3 py-3">
-    <div class="flex items-center gap-3">
-      <span class="w-9 h-9 rounded-pill bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center text-xs font-semibold shrink-0 font-sans">
-        {{ person.initials }}
-      </span>
-      <div class="min-w-0">
-        <a href="/people/{{ person.spn_or_uuid }}/overview"
-           class="font-medium text-foreground text-sm no-underline hover:underline"
-           aria-label="View {{ person.displayname }}">{{ person.displayname }}</a>
-        <div class="font-mono text-xs text-muted-foreground mt-0.5">{{ person.spn }}</div>
-      </div>
-    </div>
+    {%- let href = format!("/people/{}/overview", person.spn_or_uuid) -%}
+    {{ ui::identity_cell(initials=person.initials, displayname=person.displayname, spn=person.spn, href=href) }}
   </td>
   <td class="px-3 py-3">
     {% if !person.mail.is_empty() %}
@@ -32,13 +24,11 @@
   <td class="px-3 py-3 text-right">{{ person.actions_html|safe }}</td>
 </tr>
 {% else %}
-<tr>
-  <td colspan="4" class="px-3 py-12 text-center text-muted-foreground">
-    {% if !q.is_empty() %}
-    No people match '{{ q }}'.
-    {% else %}
-    No people match this filter.
-    {% endif %}
-  </td>
-</tr>
+  {% if !q.is_empty() %}
+  <tr>
+    <td colspan="4" class="px-3 py-12 text-center text-muted-foreground text-sm">No people match '{{ q }}'.</td>
+  </tr>
+  {% else %}
+    {{ ui::empty_row(colspan=4, message="No people match this filter.") }}
+  {% endif %}
 {% endfor %}

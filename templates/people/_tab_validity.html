@@ -1,7 +1,8 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = &v.error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   <div class="border rounded px-4 py-3 text-sm {{ v.status_classes }} flex items-start gap-3">
@@ -64,10 +65,7 @@
         </div>
 
         <div class="flex justify-end pt-3 border-t border-border">
-          <button type="submit"
-                  class="bg-primary text-primary-foreground rounded h-8 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-            Save
-          </button>
+          {{ ui::button(variant="primary", label="Save", type_attr="submit", size="sm") }}
         </div>
       </form>
     </section>
@@ -113,10 +111,7 @@
         </div>
 
         <div class="flex justify-end pt-3 border-t border-border">
-          <button type="submit"
-                  class="bg-primary text-primary-foreground rounded h-8 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-            Save
-          </button>
+          {{ ui::button(variant="primary", label="Save", type_attr="submit", size="sm") }}
         </div>
       </form>
     </section>

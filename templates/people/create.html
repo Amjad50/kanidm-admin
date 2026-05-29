@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% import "macros/ui.html" as ui %}
+{% import "macros/forms.html" as forms %}
 
 {% block title %}Create person · People · Kanidm Admin{% endblock %}
 
@@ -19,9 +21,7 @@
   </div>
 
   {% if let Some(msg) = form_error %}
-  <div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
-    {{ msg }}
-  </div>
+  <div class="mb-5" style="max-width:680px">{{ ui::form_error_banner(message=msg) }}</div>
   {% endif %}
 
   <form method="post" action="/people" style="max-width:680px">
@@ -33,56 +33,16 @@
 
       {{ legalname_field|safe }}
 
-      <div>
-        <label class="block text-sm font-medium text-foreground mb-1.5">Emails</label>
-        <div id="email-rows" data-email-rows="email-rows" class="flex flex-col gap-2">
-          {% for email in emails %}
-          <div class="flex items-center gap-2">
-            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-muted-foreground hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
-              <span class="w-3.5 h-3.5 inline-flex shrink-0 {% if email.is_primary %}[&_svg]:fill-current{% endif %}">{{ crate::views::icons::icon("star") }}</span>
-            </button>
-            <input type="email" name="email" value="{{ email.value }}" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="user@example.com" />
-            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
-              {% include "icons/_x.html" %}
-            </button>
-          </div>
-          {% endfor %}
-        </div>
-        <button type="button" data-add-email data-target="email-rows" class="bg-transparent border-0 text-muted-foreground hover:text-foreground text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
-          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
-          <span>Add email</span>
-        </button>
-        <div class="text-muted-foreground text-xs mt-2">The starred email is primary. Other systems may use it first.</div>
-      </div>
+      {{ forms::email_rows_field(field_id="email-rows", input_name="email", rows=emails, label="Emails", add_label="Add email", placeholder="user@example.com", helper="The starred email is primary. Other systems may use it first.") }}
 
       <div class="flex items-center justify-end gap-2 border-t border-border pt-4 mt-2">
-        <a href="/people"
-           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
-          Cancel
-        </a>
-        <button
-          type="submit"
-          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
-          <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("user-plus") }}</span>
-          Create person
-        </button>
+        {{ ui::button(variant="ghost", label="Cancel", href="/people", is_link=true) }}
+        {{ ui::button(variant="primary", label="Create person", icon="user-plus", type_attr="submit") }}
       </div>
 
     </div>
   </form>
 
 </div>
-
-<template id="email-rows-tpl">
-  <div class="flex items-center gap-2">
-    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
-      <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("star") }}</span>
-    </button>
-    <input type="email" name="email" value="" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="user@example.com" />
-    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
-<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
-    </button>
-  </div>
-</template>
 
 {% endblock %}

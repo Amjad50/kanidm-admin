@@ -1,7 +1,8 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = &sess.error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   <section class="bg-card border border-border rounded-md shadow-sm">

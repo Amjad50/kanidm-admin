@@ -1,14 +1,13 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = g.form_error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   {# ── Identity fields ── #}
   <section class="bg-card border border-border rounded-md shadow-sm">
-    <div class="px-5 py-4 border-b border-border">
-      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Identity</div>
-    </div>
+    {{ ui::card_header(eyebrow="Identity") }}
     <div class="px-5 py-4 flex flex-col gap-5">
 
       {# System name (editable, with rename warning) #}
@@ -29,10 +28,7 @@
                  autocomplete="off"
                  spellcheck="false"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
-          <button type="submit"
-                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
-            Save
-          </button>
+          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">Used in URLs and tokens. Changing this will invalidate existing OAuth2 sessions.</div>
       </div>
@@ -51,10 +47,7 @@
                  value="{{ g.displayname }}"
                  autocomplete="off"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
-          <button type="submit"
-                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
-            Save
-          </button>
+          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">Shown on OAuth2 consent screens and the app listing.</div>
       </div>
@@ -73,10 +66,7 @@
                  value="{{ g.landing_url }}"
                  autocomplete="off"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
-          <button type="submit"
-                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
-            Save
-          </button>
+          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">The application's primary URL — users are redirected here after authentication.</div>
       </div>
@@ -86,13 +76,8 @@
 
   {# ── Redirect URLs ── #}
   <section class="bg-card border border-border rounded-md shadow-sm">
-    <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-      <div>
-        <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Supplementary redirect URLs</div>
-        <div class="text-xs text-muted-foreground mt-0.5">Additional origins accepted for OAuth2 redirects.</div>
-      </div>
-      <span class="text-xs text-muted-foreground">{{ g.redirect_urls.len() }} configured</span>
-    </div>
+    {% let redirect_count = format!(r#"<span class="text-xs text-muted-foreground">{} configured</span>"#, g.redirect_urls.len()) %}
+    {{ ui::card_header(eyebrow="Supplementary redirect URLs", subtitle="Additional origins accepted for OAuth2 redirects.", action_html=redirect_count, has_action=true) }}
 
     {% if let Some(rerr) = g.redirect_error %}
     <div class="px-5 pt-3">
@@ -133,19 +118,14 @@
                placeholder="https://app.example.com"
                autocomplete="off"
                class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
-        <button type="submit"
-                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer shrink-0">
-          Add URL
-        </button>
+        {{ ui::button(variant="primary", label="Add URL", type_attr="submit", extra="shrink-0") }}
       </form>
     </div>
   </section>
 
   {# ── Boolean toggles ── #}
   <section class="bg-card border border-border rounded-md shadow-sm">
-    <div class="px-5 py-4 border-b border-border">
-      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Behaviour flags</div>
-    </div>
+    {{ ui::card_header(eyebrow="Behaviour flags") }}
     <div class="divide-y divide-subtle">
 
       {# PKCE toggle (inverted attribute) #}

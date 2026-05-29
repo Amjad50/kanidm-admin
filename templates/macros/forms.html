@@ -1,0 +1,50 @@
+{# Form-shaped macros. Import with: {% import "macros/forms.html" as forms %} #}
+
+{#
+  Renders the live email-rows list AND the <template> element used by the
+  email-rows behavior to clone new rows.
+
+  field_id     : DOM id for the container (and the template id = "${field_id}-tpl")
+  input_name   : form field name (e.g. "email" or "mail")
+  rows         : Vec<crate::handlers::common::EmailRow>
+  label        : the <label> text above the rows
+  add_label    : text for the "+ Add ..." button
+  placeholder  : placeholder text for the empty-row input
+  helper       : helper text shown below the rows
+  input_extra  : extra utility classes appended to each <input> (e.g. "font-mono")
+#}
+{% macro email_rows_field(field_id, input_name, rows, label, add_label, placeholder, helper, input_extra="") %}
+<div>
+  <label class="block text-sm font-medium text-foreground mb-1.5">{{ label }}</label>
+  <div id="{{ field_id }}" data-email-rows="{{ field_id }}" class="flex flex-col gap-2">
+    {% for email in rows %}
+    <div class="flex items-center gap-2">
+      <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-muted-foreground hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
+        <span class="w-3.5 h-3.5 inline-flex shrink-0 {% if email.is_primary %}[&_svg]:fill-current{% endif %}">{{ crate::views::icons::icon("star") }}</span>
+      </button>
+      <input type="email" name="{{ input_name }}" value="{{ email.value }}" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors {{ input_extra }}" placeholder="{{ placeholder }}" />
+      <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+        {% include "icons/_x.html" %}
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  <button type="button" data-add-email data-target="{{ field_id }}" class="bg-transparent border-0 text-muted-foreground hover:text-foreground text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+    <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
+    <span>{{ add_label }}</span>
+  </button>
+  <div class="text-muted-foreground text-xs mt-2">{{ helper }}</div>
+</div>
+
+<template id="{{ field_id }}-tpl">
+  <div class="flex items-center gap-2">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+      <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("star") }}</span>
+    </button>
+    <input type="email" name="{{ input_name }}" value="" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors {{ input_extra }}" placeholder="{{ placeholder }}" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+      <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
+    </button>
+  </div>
+</template>
+{% endmacro %}

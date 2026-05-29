@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
@@ -27,9 +28,7 @@
   </div>
 
   {% if let Some(msg) = form_error %}
-  <div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
-    {{ msg }}
-  </div>
+  <div class="mb-5" style="max-width:680px">{{ ui::form_error_banner(message=msg) }}</div>
   {% endif %}
 
   <form method="post" action="/oauth2" style="max-width:680px">
@@ -44,16 +43,8 @@
       {{ landing_field|safe }}
 
       <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
-        <a href="/oauth2/new"
-           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
-          ← Back
-        </a>
-        <button
-          type="submit"
-          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
-          <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
-          Create app
-        </button>
+        {{ ui::button(variant="ghost", label="← Back", href="/oauth2/new", is_link=true) }}
+        {{ ui::button(variant="primary", label="Create app", icon="shield", type_attr="submit") }}
       </div>
 
     </div>

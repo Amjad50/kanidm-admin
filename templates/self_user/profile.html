@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}Your profile · Kanidm Admin{% endblock %}
 
@@ -16,11 +17,7 @@
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <form method="post" action="/logout">
-        <button type="submit"
-                class="bg-primary text-primary-foreground border border-primary rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 inline-flex items-center gap-2 transition-colors cursor-pointer">
-          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("log-out") }}</span>
-          <span>Log out</span>
-        </button>
+        {{ ui::button(variant="primary", label="Log out", icon="log-out", type_attr="submit") }}
       </form>
     </div>
   </div>

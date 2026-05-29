@@ -90,6 +90,7 @@ pub struct PeopleListView {
     pub status: StatusFilter,
     pub per: usize,
     pub pagination: crate::views::pagination::Pagination,
+    pub count_text: String,
 }
 
 #[derive(Template)]
@@ -248,6 +249,14 @@ pub async fn list(
         return Ok(Html(format!("{rows_html}{pagination_html}")).into_response());
     }
 
+    let count_text = if q.is_empty() && status_filter == StatusFilter::All {
+        let noun = if total_count == 1 { "person" } else { "people" };
+        format!("{} {}", total_count, noun)
+    } else {
+        let noun = if total_count == 1 { "person" } else { "people" };
+        format!("{} of {} {}", filtered_count, total_count, noun)
+    };
+
     let view = PeopleListView {
         base: BaseFields::new(&user, "people"),
         people,
@@ -264,6 +273,7 @@ pub async fn list(
             base_url: "/people",
             target: "#people-tbody",
         },
+        count_text,
     };
 
     Ok(view.into_response())

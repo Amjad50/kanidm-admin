@@ -1,5 +1,6 @@
+{% import "macros/ui.html" as ui %}
 {% if let Some(err) = error %}
-<div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive mb-4">{{ err }}</div>
+<div class="mb-4">{{ ui::form_error_banner(message=err) }}</div>
 {% endif %}
 
 <section class="bg-card border border-border rounded-md shadow-sm">

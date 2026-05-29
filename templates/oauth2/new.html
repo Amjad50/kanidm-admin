@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
@@ -69,16 +70,8 @@
       </div>
 
       <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
-        <a href="/oauth2"
-           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
-          Cancel
-        </a>
-        <button
-          type="submit"
-          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
-          Next
-          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
-        </button>
+        {{ ui::button(variant="ghost", label="Cancel", href="/oauth2", is_link=true) }}
+        {{ ui::button(variant="primary", label="Next", type_attr="submit") }}
       </div>
 
     </div>

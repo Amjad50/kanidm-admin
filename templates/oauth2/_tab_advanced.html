@@ -1,16 +1,14 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {# ── Error banner ── #}
   {% if let Some(err) = data.error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   {# ── Refresh token expiry ── #}
   <section class="bg-card border border-border rounded-md shadow-sm">
-    <div class="px-5 py-4 border-b border-border">
-      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Refresh token expiry</div>
-      <div class="text-xs text-muted-foreground mt-0.5">How long a refresh token remains valid. Leave blank to use the server default.</div>
-    </div>
+    {{ ui::card_header(eyebrow="Refresh token expiry", subtitle="How long a refresh token remains valid. Leave blank to use the server default.") }}
     <div class="px-5 py-4">
       <form hx-post="/oauth2/{{ data.oauth2_id }}/advanced"
             hx-target="#tab-content"
@@ -24,10 +22,7 @@
                {% if let Some(s) = data.refresh_expiry_seconds %}value="{{ s }}"{% endif %}
                class="bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors w-48" />
         <span class="text-sm text-muted-foreground shrink-0">seconds</span>
-        <button type="submit"
-                class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
-          Save
-        </button>
+        {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
       </form>
       <div class="text-xs text-muted-foreground mt-2">In seconds. Leave blank to use the server default. Typical: 7–30 days (604800–2592000).</div>
     </div>
@@ -35,10 +30,7 @@
 
   {# ── Device authorization flow ── #}
   <section class="bg-card border border-border rounded-md shadow-sm">
-    <div class="px-5 py-4 border-b border-border">
-      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Device authorization flow</div>
-      <div class="text-xs text-muted-foreground mt-0.5">Less common settings for OAuth2 client behaviour.</div>
-    </div>
+    {{ ui::card_header(eyebrow="Device authorization flow", subtitle="Less common settings for OAuth2 client behaviour.") }}
     <div class="divide-y divide-subtle">
 
       {# Device flow toggle #}

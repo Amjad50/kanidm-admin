@@ -1,7 +1,8 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = p.error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   <div class="flex items-center justify-between">
@@ -89,18 +90,9 @@
         {% endmatch %}
 
         <div class="flex items-center gap-2">
-          <button type="submit"
-                  class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors shrink-0">
-            Set
-          </button>
+          {{ ui::button(variant="primary", label="Set", type_attr="submit", extra="shrink-0") }}
           {% if field.is_set %}
-          <button type="button"
-                  class="bg-card border border-border text-muted-foreground rounded h-9 px-4 text-sm hover:bg-accent hover:text-foreground transition-colors shrink-0"
-                  hx-post="/groups/{{ group.spn_or_uuid }}/policy/{{ field.key }}/reset"
-                  hx-target="#tab-content"
-                  hx-swap="innerHTML">
-            Reset to default
-          </button>
+          {{ ui::button(variant="secondary", label="Reset to default", extra="shrink-0", hx_attrs=" hx-post=\"/groups/" ~ group.spn_or_uuid ~ "/policy/" ~ field.key ~ "/reset\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\"") }}
           {% endif %}
         </div>
 

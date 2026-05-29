@@ -1,3 +1,4 @@
+{% import "macros/ui.html" as ui %}
 <div class="flex flex-col gap-4">
 
   {% if data.is_dynamic %}
@@ -28,10 +29,7 @@
           <option value="{{ spn }}"/>
           {% endfor %}
         </datalist>
-        <button type="submit"
-                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors shrink-0">
-          Add
-        </button>
+        {{ ui::button(variant="primary", label="Add", type_attr="submit", extra="shrink-0") }}
       </div>
     </form>
   </section>

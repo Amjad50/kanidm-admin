@@ -1,0 +1,178 @@
+{# Shared UI macros. Import with: {% import "macros/ui.html" as ui %} #}
+
+{#
+  Render a button or link.
+
+  variant  : "primary" | "secondary" | "ghost" | "destructive" | "icon_only"
+  label    : visible text (omitted for icon_only)
+  icon     : lucide icon name; "" = no icon
+  href     : the URL for link rendering; ignored when is_link=false
+  is_link  : true → renders <a href="{{ href }}">; false → renders <button>
+  hx_attrs : pre-rendered hx-* attributes (e.g. ' hx-get="/x" hx-target="#y" hx-swap="innerHTML"');
+             leading space included by caller. Emitted via |safe.
+  type_attr: button type, "button" | "submit"; default "button"
+  size     : "md" (h-9 px-4) | "sm" (h-8 px-3); default "md"
+  extra    : extra utility classes appended verbatim (use sparingly)
+  aria     : aria-label override (required for icon_only); "" = none
+  has_aria : true → emit aria-label="{{ aria }}"
+  form_id  : form="..." for submit buttons in modal footers; "" = none
+  has_form : true → emit form="{{ form_id }}"
+  disabled : render disabled attribute; default false
+#}
+{% macro button(variant="primary", label="", icon="", href="", is_link=false, hx_attrs="", type_attr="button", size="md", extra="", aria="", has_aria=false, form_id="", has_form=false, disabled=false) %}
+{%- set base = "inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer" -%}
+{%- set sizing = "h-9 px-4" -%}
+{%- if size == "sm" %}{% set sizing = "h-8 px-3" %}{% endif -%}
+{%- set palette = "" -%}
+{%- if variant == "primary" %}{% set palette = "bg-primary text-primary-foreground hover:bg-primary/90 border-0" %}{% endif -%}
+{%- if variant == "secondary" %}{% set palette = "bg-card border border-border text-foreground hover:bg-accent hover:border-input" %}{% endif -%}
+{%- if variant == "ghost" %}{% set palette = "bg-transparent border-0 text-muted-foreground hover:text-foreground hover:bg-accent" %}{% endif -%}
+{%- if variant == "destructive" %}{% set palette = "bg-transparent border border-border text-muted-foreground hover:border-destructive hover:text-destructive" %}{% endif -%}
+{%- if variant == "icon_only" %}{% set palette = "bg-transparent border-0 text-muted-foreground hover:text-foreground inline-flex items-center justify-center w-7 h-7 rounded" %}{% set sizing = "" %}{% endif -%}
+{%- if is_link -%}
+<a href="{{ href }}" class="{{ base }} {{ sizing }} {{ palette }} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
+  {%- if icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(icon) }}</span>{% endif -%}
+  {%- if variant != "icon_only" %}<span>{{ label }}</span>{% endif -%}
+</a>
+{%- else -%}
+<button type="{{ type_attr }}"{% if has_form %} form="{{ form_id }}"{% endif %}{% if disabled %} disabled{% endif %} class="{{ base }} {{ sizing }} {{ palette }} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
+  {%- if icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(icon) }}</span>{% endif -%}
+  {%- if variant != "icon_only" %}<span>{{ label }}</span>{% endif -%}
+</button>
+{%- endif -%}
+{% endmacro %}
+
+{#
+  Card section header. Renders the eyebrow / title / subtitle / right-action
+  row used at the top of card sections.
+
+  eyebrow      : small uppercase tracking-wider muted text (e.g. "Identity"); "" = none
+  title        : larger foreground text below the eyebrow; "" = none
+  subtitle     : small muted text below the title; "" = none
+  action_html  : pre-rendered HTML for a right-side action (e.g. a button); "" = none.
+                 Emitted via |safe — caller is responsible for what they pass.
+  has_action   : true → render the action wrapper + emit action_html
+#}
+{% macro card_header(eyebrow="", title="", subtitle="", action_html="", has_action=false) %}
+<div class="px-5 py-4 border-b border-border{% if has_action %} flex items-center justify-between gap-3{% endif %}">
+  <div>
+    {%- if eyebrow != "" %}<div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{{ eyebrow }}</div>{% endif -%}
+    {% if title != "" %}<div class="text-sm font-semibold text-foreground{% if eyebrow != "" %} mt-0.5{% endif %}">{{ title }}</div>{% endif %}
+    {% if subtitle != "" %}<div class="text-xs text-muted-foreground mt-0.5">{{ subtitle }}</div>{% endif %}
+  </div>
+  {% if has_action %}<div>{{ action_html|safe }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{#
+  Red error banner used at the top of forms and modal bodies.
+#}
+{% macro form_error_banner(message) %}
+<div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3">{{ message }}</div>
+{% endmacro %}
+
+{#
+  Status pill (badge + dot). The kind drives both color tokens.
+
+  kind: "active"  → success-soft / success / dot
+        "success" → same as active
+        "expired" → destructive-soft / destructive / dot
+        "destructive" → same as expired
+        "not_yet_active" → warning-soft / warning / dot
+        "warning" → same as not_yet_active
+        "info" → info-soft / info / dot
+        "no_credentials", "neutral", or any unknown value → popover / muted-foreground (the default)
+#}
+{% macro status_badge(label, kind="neutral") %}
+{%- set bg = "bg-popover" -%}{%- set txt = "text-muted-foreground" -%}{%- set dot = "bg-muted-foreground" -%}
+{%- if kind == "active" || kind == "success" %}{% set bg = "bg-success-soft" %}{% set txt = "text-success" %}{% set dot = "bg-success" %}{% endif -%}
+{%- if kind == "expired" || kind == "destructive" %}{% set bg = "bg-destructive-soft" %}{% set txt = "text-destructive" %}{% set dot = "bg-destructive" %}{% endif -%}
+{%- if kind == "not_yet_active" || kind == "warning" %}{% set bg = "bg-warning-soft" %}{% set txt = "text-warning" %}{% set dot = "bg-warning" %}{% endif -%}
+{%- if kind == "info" %}{% set bg = "bg-info-soft" %}{% set txt = "text-info" %}{% set dot = "bg-info" %}{% endif -%}
+<span class="inline-flex items-center gap-1.5 {{ bg }} {{ txt }} rounded-pill text-xs font-medium px-2 py-0.5">
+  <span class="w-1.5 h-1.5 rounded-pill {{ dot }}"></span>
+  {{ label }}
+</span>
+{% endmacro %}
+
+{#
+  Avatar + (name as link) + spn pair, suitable for the first cell of a row
+  table.
+
+  initials      : 2-char initials for the avatar pill
+  displayname   : the bold name link text
+  spn           : the muted-mono SPN below the name
+  href          : URL the displayname link points to
+  avatar_size   : "lg" (9×9 rounded-pill, top-level row) | "md" (8×8 rounded, nested-tab row)
+                  Default "lg".
+#}
+{% macro identity_cell(initials, displayname, spn, href, avatar_size="lg") %}
+{%- set avatar = "w-9 h-9 text-xs rounded-pill" -%}
+{%- if avatar_size == "md" %}{% set avatar = "w-8 h-8 text-xs rounded" %}{% endif -%}
+<div class="flex items-center gap-3">
+  <span class="{{ avatar }} bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center font-semibold shrink-0 font-sans">{{ initials }}</span>
+  <div class="min-w-0">
+    <a href="{{ href }}"
+       class="font-medium text-foreground text-sm no-underline hover:underline"
+       aria-label="View {{ displayname }}">{{ displayname }}</a>
+    <div class="font-mono text-xs text-muted-foreground mt-0.5">{{ spn }}</div>
+  </div>
+</div>
+{% endmacro %}
+
+{#
+  Empty-state row inside a table.
+
+  colspan : how many columns to span
+  message : the friendly empty-state text
+#}
+{% macro empty_row(colspan, message) %}
+<tr>
+  <td colspan="{{ colspan }}" class="px-3 py-12 text-center text-muted-foreground text-sm">{{ message }}</td>
+</tr>
+{% endmacro %}
+
+{#
+  Footer for non-destructive modals. Always renders a "Close"-style button.
+  If a primary action is supplied (via primary_label != ""), also renders a
+  primary CTA to its right.
+
+  NOTE: button classes are inlined (NOT calling ui::button) because Askama 0.16
+  does not support macro-within-macro imports reliably — same pattern as
+  list_page_header.
+
+  close_label      : "Close" | "Cancel" | "Dismiss" | "Done" — default "Close"
+  primary_label    : "" = no primary action; non-empty = render the CTA
+  primary_icon     : lucide icon name; "" = none
+  primary_href     : non-empty + is_primary_link=true → render the CTA as <a>
+  is_primary_link  : true → <a href>; false → <button>
+  primary_hx       : pre-rendered hx-* attributes (e.g. ' hx-get="/x" hx-target="#y"');
+                     caller includes leading space. Emitted via |safe.
+  primary_form     : form="..." for submit buttons; "" = none
+  has_primary_form : true → emit form="{{ primary_form }}"
+  primary_type     : "button" | "submit" — default "button"
+  primary_onclick  : raw onclick="..." attribute value (escape hatch for DOM-walking
+                     footers); "" = none
+  has_primary_onclick: true → emit onclick="{{ primary_onclick }}"
+#}
+{% macro modal_footer(close_label="Close", primary_label="", primary_icon="", primary_href="", is_primary_link=false, primary_hx="", primary_form="", has_primary_form=false, primary_type="button", primary_onclick="", has_primary_onclick=false) %}
+{# Close button — secondary, size sm, closes the overlay slot. #}
+<button type="button"
+        class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer h-8 px-3 bg-card border border-border text-foreground hover:bg-accent hover:border-input"
+        hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML">
+  {{ close_label }}
+</button>
+{% if primary_label != "" %}
+{%- if is_primary_link -%}
+<a href="{{ primary_href }}" class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 border-0"{{ primary_hx|safe }}>
+  {%- if primary_icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(primary_icon) }}</span>{% endif -%}
+  <span>{{ primary_label }}</span>
+</a>
+{%- else -%}
+<button type="{{ primary_type }}"{% if has_primary_form %} form="{{ primary_form }}"{% endif %}{% if has_primary_onclick %} onclick="{{ primary_onclick }}"{% endif %} class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 border-0"{{ primary_hx|safe }}>
+  {%- if primary_icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(primary_icon) }}</span>{% endif -%}
+  <span>{{ primary_label }}</span>
+</button>
+{%- endif -%}
+{% endif %}
+{% endmacro %}

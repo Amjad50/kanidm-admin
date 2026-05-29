@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}{{ header.displayname }} · OAuth2 · Kanidm Admin{% endblock %}
 
@@ -63,24 +64,10 @@
     <div class="flex items-center gap-2 shrink-0">
       {% match header.kind %}
       {% when crate::handlers::oauth2::common::OAuth2Kind::Basic %}
-      <button type="button"
-              class="bg-card border border-border text-muted-foreground h-8 px-3 rounded text-sm hover:bg-accent hover:border-input inline-flex items-center gap-2 transition-colors cursor-pointer"
-              hx-get="/oauth2/{{ header.name }}/secret"
-              hx-target="#overlay-slot"
-              hx-swap="innerHTML">
-        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("key") }}</span>
-        <span>View secret</span>
-      </button>
+      {{ ui::button(variant="secondary", label="View secret", icon="key", size="sm", hx_attrs=" hx-get=\"/oauth2/" ~ header.name ~ "/secret\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
       {% when crate::handlers::oauth2::common::OAuth2Kind::Public %}
       {% endmatch %}
-      <button type="button"
-              class="bg-transparent border border-border text-muted-foreground h-8 px-3 rounded text-sm hover:border-destructive hover:text-destructive inline-flex items-center gap-2 transition-colors cursor-pointer"
-              hx-get="/oauth2/{{ header.name }}/delete"
-              hx-target="#overlay-slot"
-              hx-swap="innerHTML">
-        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
-        <span>Delete</span>
-      </button>
+      {{ ui::button(variant="destructive", label="Delete", icon="trash-2", size="sm", hx_attrs=" hx-get=\"/oauth2/" ~ header.name ~ "/delete\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
     </div>
 
   </section>

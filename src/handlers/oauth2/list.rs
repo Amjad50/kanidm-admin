@@ -72,6 +72,7 @@ pub struct OAuth2ListView {
     pub q: String,
     pub per: usize,
     pub pagination: crate::views::pagination::Pagination,
+    pub count_text: String,
 }
 
 #[derive(Template)]
@@ -224,6 +225,14 @@ pub async fn list(
         return Ok(Html(format!("{cards_html}{pagination_html}")).into_response());
     }
 
+    let count_text = if q.is_empty() {
+        let noun = if total_count == 1 { "application" } else { "applications" };
+        format!("{} {}", total_count, noun)
+    } else {
+        let noun = if total_count == 1 { "application" } else { "applications" };
+        format!("{} of {} {}", filtered_count, total_count, noun)
+    };
+
     Ok(OAuth2ListView {
         base: BaseFields::new(&user, "oauth2"),
         apps,
@@ -232,6 +241,7 @@ pub async fn list(
         q,
         per,
         pagination,
+        count_text,
     }
     .into_response())
 }

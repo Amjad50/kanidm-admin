@@ -1,0 +1,80 @@
+{# Page-level macros. Import with: {% import "macros/page.html" as page %} #}
+
+{#
+  Detail-page tabs nav.
+
+  nav_id     : DOM id (e.g. "people-tabs")
+  url_prefix : URL base for each tab; the macro appends "/{tab.slug}"
+               (e.g. "/people/alice@example.com" → "/people/alice@example.com/overview")
+  tabs       : iterable of items with .slug and .label attributes
+  active_slug: currently active tab's slug
+  oob        : true when this is being swapped via HTMX OOB; emits hx-swap-oob="outerHTML"
+#}
+{% macro tabs_nav(nav_id, url_prefix, tabs, active_slug, oob=false) %}
+<nav id="{{ nav_id }}" class="flex border-b border-border mb-5 overflow-x-auto" role="tablist"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  {% for tab in tabs %}
+  <a href="{{ url_prefix }}/{{ tab.slug }}"
+     hx-get="{{ url_prefix }}/{{ tab.slug }}"
+     hx-target="#tab-content"
+     hx-swap="innerHTML"
+     hx-push-url="true"
+     class="h-10 px-4 inline-flex items-center text-sm font-medium transition-colors no-underline border-b-2 shrink-0 {% if tab.slug == *active_slug %}border-primary text-primary{% else %}border-transparent text-muted-foreground hover:text-foreground{% endif %}">
+    {{ tab.label }}
+  </a>
+  {% endfor %}
+</nav>
+{% endmacro %}
+
+{#
+  Top of a list page: title + count subtitle + "Create X" primary button + search form.
+  Call with {% call %} to provide extra filter widgets (e.g. a status select).
+
+  title              : H1 text
+  count_html         : pre-rendered count line (e.g. "3 of 5 people") — caller renders the
+                       singular/plural and filtered-vs-total math in the view struct
+  create_label       : text of the primary CTA (e.g. "Create person")
+  create_icon        : lucide icon name for the CTA
+  create_href        : URL for the primary CTA
+  search_value       : current query value, may be empty
+  search_placeholder : placeholder text
+  search_target      : hx-target selector (e.g. "#people-tbody")
+  search_url         : hx-get URL (e.g. "/people")
+  subtitle_id        : DOM id for the count subtitle (used for HX-Trigger OOB updates)
+  per                : current `per` query value (forwarded as hidden input)
+#}
+{% macro list_page_header(title, count_html, create_label, create_icon, create_href, search_value, search_placeholder, search_target, search_url, subtitle_id="", per=10) %}
+<div class="flex items-start justify-between gap-6 mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">{{ title }}</h1>
+    <div class="text-muted-foreground text-sm mt-1" id="{{ subtitle_id }}">{{ count_html|safe }}</div>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    {# Mirrors ui::button(variant="primary", is_link=true): can't {% import %} ui across files inside a macro body in Askama 0.16, so the class list is inlined. Keep these in sync. #}
+    <a href="{{ create_href }}" class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 border-0">
+      <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(create_icon) }}</span>
+      <span>{{ create_label }}</span>
+    </a>
+  </div>
+</div>
+<form class="flex items-center gap-3 mb-4">
+  <div class="relative">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("search") }}</span>
+    <input
+      type="search"
+      name="q"
+      value="{{ search_value }}"
+      placeholder="{{ search_placeholder }}"
+      class="bg-card border border-border rounded h-9 pl-9 pr-3 w-80 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input"
+      hx-get="{{ search_url }}"
+      hx-trigger="input changed delay:200ms, search, keyup[key=='Enter']"
+      hx-target="{{ search_target }}"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      hx-include="closest form"
+      hx-vals='{"page": "1"}'
+    />
+  </div>
+  {{ caller() }}
+  <input type="hidden" name="per" value="{{ per }}" />
+</form>
+{% endmacro %}

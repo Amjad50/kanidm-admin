@@ -20,6 +20,8 @@ import "./behaviors/set-now";
 import "./behaviors/email-rows";
 import "./behaviors/row-href";
 import "./behaviors/bind-disabled";
+import "./behaviors/reveal-secret";
+import "./behaviors/warn-duplicate";
 
 mountBehaviors();
 mountDropdowns();

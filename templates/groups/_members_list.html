@@ -1,13 +1,10 @@
+{% import "macros/ui.html" as ui %}
 {% if data.members.is_empty() %}
-<tr>
-  <td colspan="4" class="px-3 py-12 text-center text-muted-foreground">
-    {% if data.is_dynamic %}
-    No members matched the dynamic filter.
-    {% else %}
-    No members yet. Add one above.
-    {% endif %}
-  </td>
-</tr>
+  {%- if data.is_dynamic %}
+    {{ ui::empty_row(colspan=4, message="No members matched the dynamic filter.") }}
+  {%- else %}
+    {{ ui::empty_row(colspan=4, message="No members yet. Add one above.") }}
+  {%- endif %}
 {% else %}
 {% for member in data.members %}
 <tr
@@ -15,17 +12,8 @@
   data-row-href="/people/{{ member.spn }}/overview"
 >
   <td class="px-3 py-3">
-    <div class="flex items-center gap-3">
-      <span class="w-9 h-9 rounded-pill bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center text-xs font-semibold shrink-0 font-sans">
-        {{ member.initials }}
-      </span>
-      <div class="min-w-0">
-        <a href="/people/{{ member.spn }}/overview"
-           class="font-medium text-foreground text-sm no-underline hover:underline"
-           aria-label="View {{ member.displayname }}">{{ member.displayname }}</a>
-        <div class="font-mono text-xs text-muted-foreground mt-0.5">{{ member.spn }}</div>
-      </div>
-    </div>
+    {%- let href = format!("/people/{}/overview", member.spn) -%}
+    {{ ui::identity_cell(initials=member.initials, displayname=member.displayname, spn=member.spn, href=href) }}
   </td>
   <td class="px-3 py-3">
     {% if !member.mail.is_empty() %}

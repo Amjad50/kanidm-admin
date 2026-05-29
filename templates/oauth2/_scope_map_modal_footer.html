@@ -1,12 +1,3 @@
-<button type="button"
-        class="bg-card border border-border text-muted-foreground h-9 px-4 rounded text-sm hover:bg-accent hover:border-input transition-colors cursor-pointer"
-        hx-get="/empty"
-        hx-target="#overlay-slot"
-        hx-swap="innerHTML">
-  Cancel
-</button>
-<button type="submit"
-        form="scope-map-form-{{ section }}"
-        class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
-  Save scope map
-</button>
+{% import "macros/ui.html" as ui %}
+{{ ui::button(variant="secondary", label="Cancel", hx_attrs=" hx-get=\"/empty\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
+{{ ui::button(variant="primary", label="Save scope map", type_attr="submit", form_id="scope-map-form-" ~ section, has_form=true) }}

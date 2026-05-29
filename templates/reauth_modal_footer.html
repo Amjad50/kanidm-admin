@@ -1,8 +1,5 @@
-<button type="button"
-        class="inline-flex items-center justify-center h-9 px-4 rounded text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer border-0 bg-transparent"
-        hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML">
-  Dismiss
-</button>
+{% import "macros/ui.html" as ui %}
+{{ ui::button(variant="ghost", label="Dismiss", hx_attrs=" hx-get=\"/empty\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
 <a href="{{ login_url }}" target="_blank" rel="noopener"
    class="inline-flex items-center justify-center h-9 px-4 rounded text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors no-underline">
   Log in to kanidm

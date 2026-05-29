@@ -71,6 +71,7 @@ pub struct GroupsListView {
     pub q: String,
     pub per: usize,
     pub pagination: crate::views::pagination::Pagination,
+    pub count_text: String,
 }
 
 #[derive(Template)]
@@ -219,6 +220,14 @@ pub async fn list(
         return Ok(Html(format!("{rows_html}{pagination_html}")).into_response());
     }
 
+    let count_text = if q.is_empty() {
+        let noun = if total_count == 1 { "group" } else { "groups" };
+        format!("{} {}", total_count, noun)
+    } else {
+        let noun = if total_count == 1 { "group" } else { "groups" };
+        format!("{} of {} {}", filtered_count, total_count, noun)
+    };
+
     Ok(GroupsListView {
         base: BaseFields::new(&user, "groups"),
         groups,
@@ -234,6 +243,7 @@ pub async fn list(
             base_url: "/groups",
             target: "#groups-tbody",
         },
+        count_text,
     }
     .into_response())
 }

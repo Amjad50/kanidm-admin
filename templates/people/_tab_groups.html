@@ -1,7 +1,8 @@
+{% import "macros/ui.html" as ui %}
 <div id="person-groups-tab" class="flex flex-col gap-4">
 
   {% if let Some(err) = g.error %}
-  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
+  {{ ui::form_error_banner(message=err) }}
   {% endif %}
 
   <section class="bg-card border border-border rounded-md shadow-sm p-5">
@@ -24,10 +25,7 @@
           <option value="{{ spn }}"/>
           {% endfor %}
         </datalist>
-        <button type="submit"
-                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors shrink-0">
-          Add
-        </button>
+        {{ ui::button(variant="primary", label="Add", type_attr="submit", extra="shrink-0") }}
       </div>
     </form>
   </section>
@@ -58,7 +56,6 @@
       <thead>
         <tr class="border-b border-border">
           <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Group</th>
-          <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">SPN</th>
           <th class="px-5 py-2.5 w-12"></th>
         </tr>
       </thead>
@@ -67,16 +64,8 @@
         <tr class="border-b border-border last:border-0 hover:bg-accent cursor-pointer transition-colors"
             data-row-href="/groups/{{ row.spn_or_id }}/overview">
           <td class="px-5 py-3">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center text-xs font-semibold shrink-0 font-sans">
-                {{ row.initials }}
-              </span>
-              <a href="/groups/{{ row.spn_or_id }}/overview"
-                 class="font-medium text-foreground text-sm no-underline hover:underline">{{ row.name }}</a>
-            </div>
-          </td>
-          <td class="px-5 py-3">
-            <span class="font-mono text-xs text-muted-foreground">{{ row.spn_or_id }}</span>
+            {%- let href = format!("/groups/{}/overview", row.spn_or_id) -%}
+            {{ ui::identity_cell(initials=row.initials, displayname=row.name, spn=row.spn_or_id, href=href, avatar_size="md") }}
           </td>
           <td class="px-5 py-3 text-right">{{ row.actions_html|safe }}</td>
         </tr>
