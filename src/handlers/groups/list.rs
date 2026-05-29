@@ -29,6 +29,31 @@ pub struct GroupRow {
     pub has_policy: bool,
     pub is_builtin: bool,
     pub is_dynamic: bool,
+    pub actions_html: String,
+}
+
+fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> String {
+    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+
+    let mut items = vec![DropdownItem::link(
+        "Members",
+        format!("/groups/{spn_or_uuid}/members"),
+    )
+    .with_icon("members")];
+
+    if !is_builtin {
+        items.push(
+            DropdownItem::link("Edit", format!("/groups/{spn_or_uuid}/edit")).with_icon("edit"),
+        );
+        items.push(DropdownItem::Divider);
+        items.push(
+            DropdownItem::htmx_get("Delete", format!("/groups/{spn_or_uuid}/delete"))
+                .with_icon("delete")
+                .danger(),
+        );
+    }
+
+    render_actions_cell(items, format!("Actions for {name}"))
 }
 
 // ── View structs ──────────────────────────────────────────────────────────────
@@ -81,14 +106,18 @@ fn entry_to_row(entry: &kanidm_proto::v1::Entry) -> GroupRow {
         attr_all(entry, "member").len()
     };
 
+    let id = spn_or_uuid(entry);
+    let name = attr_first(entry, "name").unwrap_or_default();
+    let actions_html = build_group_actions(&id, &name, is_builtin);
     GroupRow {
-        name: attr_first(entry, "name").unwrap_or_default(),
-        spn_or_uuid: spn_or_uuid(entry),
+        name,
+        spn_or_uuid: id,
         description: attr_first(entry, "description"),
         member_count,
         has_policy,
         is_builtin,
         is_dynamic,
+        actions_html,
     }
 }
 

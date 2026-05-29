@@ -211,7 +211,7 @@ pub(super) fn parse_kanidm_datetime(s: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(s, &Rfc3339).ok()
 }
 
-pub(super) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDateTime) -> PersonStatus {
+pub(crate) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDateTime) -> PersonStatus {
     let valid_from = attr_first(entry, "account_valid_from")
         .as_deref()
         .and_then(parse_kanidm_datetime);

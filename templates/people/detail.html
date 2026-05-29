@@ -87,6 +87,8 @@
     {% include "people/_tab_radius.html" %}
     {% when crate::handlers::people::detail::TabContent::Sessions with (sess) %}
     {% include "people/_tab_sessions.html" %}
+    {% when crate::handlers::people::detail::TabContent::Groups with (g) %}
+    {% include "people/_tab_groups.html" %}
     {% when crate::handlers::people::detail::TabContent::Validity(v) %}
     {% include "people/_tab_validity.html" %}
     {% endmatch %}

@@ -1,13 +1,19 @@
+use std::collections::HashMap;
+
 use askama::Template;
 use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
 use axum::Form;
 use axum_htmx::HxRequest;
+use time::OffsetDateTime;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::people::common::{compute_status_at, PersonStatus};
 use crate::kanidm::entry::{attr_all, attr_first};
+use crate::views::dropdown::{render_actions_cell, DropdownItem};
+use crate::views::initials;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
 use crate::AppState;
 
@@ -18,10 +24,11 @@ use super::detail::{render_detail, TabContent};
 
 pub struct MemberRow {
     pub initials: String,
-    pub name: String,
     pub displayname: String,
     pub spn: String,
-    pub encoded_id: String,
+    pub mail: String,
+    pub status: Option<PersonStatus>,
+    pub actions_html: String,
 }
 
 /// All data needed to render the Members tab.
@@ -76,9 +83,59 @@ pub fn encode_member_id(id: &str) -> String {
         .collect()
 }
 
+fn build_member_row(
+    group_id: &str,
+    spn: &str,
+    person_entry: Option<&kanidm_proto::v1::Entry>,
+    now: OffsetDateTime,
+) -> MemberRow {
+    let displayname = person_entry
+        .and_then(|e| attr_first(e, "displayname"))
+        .unwrap_or_else(|| spn.split('@').next().unwrap_or(spn).to_string());
+    let mail = person_entry
+        .and_then(|e| attr_first(e, "mail"))
+        .unwrap_or_default();
+    let status = person_entry.map(|e| compute_status_at(e, now));
+    let initials_str = if !displayname.is_empty() {
+        initials(&displayname)
+    } else {
+        spn_initials(spn)
+    };
+    let encoded_id = encode_member_id(spn);
+
+    let actions_html = render_actions_cell(
+        vec![DropdownItem::htmx_post(
+            "Remove from group",
+            format!("/groups/{group_id}/members/{encoded_id}/remove"),
+        )
+        .with_icon("x")
+        .with_target("#members-table-body")
+        .with_swap("innerHTML")
+        .with_confirm(format!(
+            "Remove {} from this group?",
+            if !displayname.is_empty() { &displayname } else { spn }
+        ))
+        .danger()],
+        format!(
+            "Remove {} from group",
+            if !displayname.is_empty() { &displayname } else { spn }
+        ),
+    );
+
+    MemberRow {
+        initials: initials_str,
+        displayname,
+        spn: spn.to_string(),
+        mail,
+        status,
+        actions_html,
+    }
+}
+
 async fn build_members_data(
     state: &AppState,
     user: &AdminUser,
+    group_id: &str,
     entry: &kanidm_proto::v1::Entry,
 ) -> MembersData {
     let classes = attr_all(entry, "class");
@@ -90,32 +147,26 @@ async fn build_members_data(
         attr_all(entry, "member")
     };
 
-    let members: Vec<MemberRow> = member_spns
-        .into_iter()
-        .map(|spn| {
-            let name_part = spn.split('@').next().unwrap_or(&spn).to_string();
-            MemberRow {
-                initials: spn_initials(&spn),
-                name: name_part.clone(),
-                displayname: name_part,
-                spn: spn.clone(),
-                encoded_id: encode_member_id(&spn),
-            }
-        })
+    // Single people list fetch to index by SPN, used for both row enrichment
+    // and the add-member datalist typeahead.
+    let people: Vec<kanidm_proto::v1::Entry> = match state.kanidm.for_token(&user.token).await {
+        Ok(client) => client.idm_person_account_list().await.unwrap_or_default(),
+        Err(_) => Vec::new(),
+    };
+    let person_by_spn: HashMap<String, &kanidm_proto::v1::Entry> = people
+        .iter()
+        .filter_map(|e| attr_first(e, "spn").map(|spn| (spn, e)))
+        .collect();
+    let people_spns: Vec<String> = people
+        .iter()
+        .filter_map(|e| attr_first(e, "spn"))
         .collect();
 
-    // Fetch people list for datalist typeahead — failures are non-fatal
-    let people_spns = if let Ok(client) = state.kanidm.for_token(&user.token).await {
-        client
-            .idm_person_account_list()
-            .await
-            .unwrap_or_default()
-            .iter()
-            .filter_map(|e| attr_first(e, "spn"))
-            .collect()
-    } else {
-        Vec::new()
-    };
+    let now = OffsetDateTime::now_utc();
+    let members: Vec<MemberRow> = member_spns
+        .iter()
+        .map(|spn| build_member_row(group_id, spn, person_by_spn.get(spn).copied(), now))
+        .collect();
 
     MembersData { members, is_dynamic, people_spns }
 }
@@ -131,7 +182,7 @@ pub async fn tab(
 ) -> AppResult<Response> {
     let entry = fetch_group(&state, &user, &id).await?;
     let group = compute_header(&entry);
-    let data = build_members_data(&state, &user, &entry).await;
+    let data = build_members_data(&state, &user, &id, &entry).await;
     let tab_content = TabContent::Members(data);
     render_detail(is_htmx, user, group, "members", tab_content)
 }
@@ -154,7 +205,7 @@ pub async fn add(
     let group = compute_header(&entry);
 
     if group.is_dynamic {
-        let data = build_members_data(&state, &user, &entry).await;
+        let data = build_members_data(&state, &user, &id, &entry).await;
         let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
             .map_err(AppError::Template)?;
         let error_oob = render_members_error_oob(Some(
@@ -179,7 +230,7 @@ pub async fn add(
     // Re-fetch entry and return updated members list fragment
     let entry = fetch_group(&state, &user, &id).await?;
     let group = compute_header(&entry);
-    let data = build_members_data(&state, &user, &entry).await;
+    let data = build_members_data(&state, &user, &id, &entry).await;
 
     let rows_html = askama::Template::render(&MembersListFragment {
         data: &data,
@@ -201,7 +252,7 @@ pub async fn remove(
     let group = compute_header(&entry);
 
     if group.is_dynamic {
-        let data = build_members_data(&state, &user, &entry).await;
+        let data = build_members_data(&state, &user, &id, &entry).await;
         let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
             .map_err(AppError::Template)?;
         let error_oob = render_members_error_oob(Some(
@@ -226,7 +277,7 @@ pub async fn remove(
     // Re-fetch and return updated members list
     let entry = fetch_group(&state, &user, &id).await?;
     let group = compute_header(&entry);
-    let data = build_members_data(&state, &user, &entry).await;
+    let data = build_members_data(&state, &user, &id, &entry).await;
 
     let rows_html = askama::Template::render(&MembersListFragment {
         data: &data,
@@ -281,7 +332,7 @@ pub async fn purge(
             // Re-fetch and return updated members list
             let entry = fetch_group(&state, &user, &id).await?;
             let group = compute_header(&entry);
-            let data = build_members_data(&state, &user, &entry).await;
+            let data = build_members_data(&state, &user, &id, &entry).await;
             let html = askama::Template::render(&MembersListFragment {
                 data: &data,
                 group: &group,

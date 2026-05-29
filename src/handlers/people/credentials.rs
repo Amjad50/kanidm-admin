@@ -25,19 +25,13 @@ pub struct PasskeyInfo {
 }
 
 pub struct CredentialsData {
+    pub person_id: String,
     pub primary: Option<PrimaryCredentialInfo>,
     pub passkeys: PasskeyInfo,
     pub attested_passkeys: PasskeyInfo,
     pub ssh_key_count: usize,
     pub radius_configured: bool,
     pub cred_status_error: Option<String>,
-    /// Pre-rendered reset card HTML (via `ResetCard::render()`).
-    pub reset_card_html: String,
-}
-
-pub struct ResetLinkResult {
-    pub secret_html: String,
-    pub error: Option<String>,
 }
 
 // ── Form data ─────────────────────────────────────────────────────────────────
@@ -80,32 +74,6 @@ fn build_qr_svg(url: &str) -> Option<String> {
         .light_color(svg::Color("#f4f4f7"))
         .build();
     Some(svg_string)
-}
-
-// ── Regenerate button ─────────────────────────────────────────────────────────
-
-#[derive(Template)]
-#[template(path = "people/_credentials_regenerate_button.html")]
-pub struct RegenerateButton {
-    pub person_id: String,
-}
-
-// ── Reset card builder ────────────────────────────────────────────────────────
-
-#[derive(Template)]
-#[template(path = "people/_credentials_reset.html")]
-pub struct ResetCard {
-    pub person_id: String,
-    pub reset_result: Option<ResetLinkResult>,
-}
-
-fn build_reset_card(person_id: &str, reset_result: Option<ResetLinkResult>) -> AppResult<String> {
-    ResetCard {
-        person_id: person_id.to_string(),
-        reset_result,
-    }
-    .render()
-    .map_err(AppError::Template)
 }
 
 // ── Tab GET handler ───────────────────────────────────────────────────────────
@@ -155,16 +123,14 @@ pub async fn tab(
         names: cred_summary.attested_passkey_names,
     };
 
-    let reset_card_html = build_reset_card(&id, None)?;
-
     let tab_content = TabContent::Credentials(CredentialsData {
+        person_id: id.clone(),
         primary,
         passkeys,
         attested_passkeys,
         ssh_key_count: cred_summary.ssh_key_count,
         radius_configured: cred_summary.radius_configured,
         cred_status_error,
-        reset_card_html,
     });
 
     render_detail(is_htmx, user, person, "credentials", tab_content)
@@ -235,50 +201,81 @@ pub async fn submit_reset(
             let relative = format_relative_future(token.expiry_time);
             let absolute = format_absolute(token.expiry_time);
 
-            let regenerate_html = RegenerateButton { person_id: id.clone() }
-                .render()
-                .map_err(AppError::Template)?;
-
-            let secret_html = OneTimeSecret {
+            let body_html = OneTimeSecret {
                 label: "Reset URL".to_string(),
                 value: reset_url,
                 helper: Some(
-                    "Shown once. Re-generating creates a new link and invalidates this one."
+                    "Share this link with the account holder. They'll use it to set new credentials. \
+                     Re-generating creates a new link and invalidates this one."
                         .to_string(),
                 ),
                 copy_aria: "Copy reset URL".to_string(),
                 expires_relative: Some(relative),
                 expires_absolute: Some(absolute),
                 qr_svg,
-                action_html: Some(regenerate_html),
+                action_html: None,
             }
             .render()
             .map_err(AppError::Template)?;
 
-            let card_html = build_reset_card(
-                &id,
-                Some(ResetLinkResult {
-                    secret_html,
-                    error: None,
-                }),
-            )?;
+            let footer_html = ResetResultFooter { person_id: id.clone() }
+                .render()
+                .map_err(AppError::Template)?;
 
-            Ok(Html(card_html).into_response())
+            let modal_html = Modal {
+                title: "Reset link ready".to_string(),
+                icon_svg: Some(CHECK_SVG),
+                icon_color_class: "text-success",
+                body_html,
+                footer_html,
+                size_class: "max-w-xl",
+            }
+            .render()
+            .map_err(AppError::Template)?;
+
+            Ok(Html(modal_html).into_response())
         }
         Err(e) => {
             tracing::warn!(person = %id, error = ?e, "credential reset intent failed");
             let msg = friendly_client_error("generate reset link", &e);
 
-            let card_html = build_reset_card(
-                &id,
-                Some(ResetLinkResult {
-                    secret_html: String::new(),
-                    error: Some(msg),
-                }),
-            )?;
+            let body_html = ResetErrorBody { message: msg }
+                .render()
+                .map_err(AppError::Template)?;
 
-            Ok(Html(card_html).into_response())
+            let footer_html = ResetResultFooter { person_id: id.clone() }
+                .render()
+                .map_err(AppError::Template)?;
+
+            let modal_html = Modal {
+                title: "Reset link failed".to_string(),
+                icon_svg: Some(X_CIRCLE_SVG),
+                icon_color_class: "text-danger",
+                body_html,
+                footer_html,
+                size_class: "max-w-sm",
+            }
+            .render()
+            .map_err(AppError::Template)?;
+
+            Ok(Html(modal_html).into_response())
         }
     }
+}
+
+const CHECK_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>"#;
+
+const X_CIRCLE_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>"#;
+
+#[derive(Template)]
+#[template(path = "people/_credentials_reset_result_footer.html")]
+pub struct ResetResultFooter {
+    pub person_id: String,
+}
+
+#[derive(Template)]
+#[template(path = "people/_credentials_reset_error_body.html")]
+pub struct ResetErrorBody {
+    pub message: String,
 }
 

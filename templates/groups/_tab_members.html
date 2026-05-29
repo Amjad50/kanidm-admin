@@ -64,6 +64,14 @@
     </div>
 
     <table class="w-full text-sm">
+      <thead class="text-tertiary text-xs uppercase tracking-wide">
+        <tr class="border-b border-subtle">
+          <th class="text-left font-medium px-3 py-3">Person</th>
+          <th class="text-left font-medium px-3 py-3">Email</th>
+          <th class="text-left font-medium px-3 py-3">Status</th>
+          <th class="px-3 py-3" style="width:48px"></th>
+        </tr>
+      </thead>
       <tbody id="members-table-body">
         {% include "groups/_members_list.html" %}
       </tbody>

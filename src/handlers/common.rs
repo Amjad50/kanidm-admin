@@ -203,9 +203,6 @@ fn context_specific_conflict_message(context: &str) -> String {
         "rename group" | "update entry managed by" => {
             "That name is already taken by another group.".to_string()
         }
-        "create oauth2 client" => {
-            "That OAuth2 client name is already taken. Pick another.".to_string()
-        }
         "add SSH key" => "An SSH key with that label already exists on this account.".to_string(),
         "add members" => {
             "One of the members you tried to add already belongs to this group, or doesn't exist."
