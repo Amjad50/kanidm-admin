@@ -6,8 +6,8 @@ Pure-template; no Rust struct. Import at the top of any template that uses them.
 
 | File | Import alias | Macros |
 |---|---|---|
-| `templates/macros/ui.html` | `ui` | `button`, `card_header`, `form_error_banner`, `status_badge`, `identity_cell`, `empty_row`, `modal_footer` |
-| `templates/macros/forms.html` | `forms` | `email_rows_field` |
+| `templates/macros/ui.html` | `ui` | `alert_banner`, `button`, `card_header`, `copy_button`, `empty_row`, `form_error_banner`, `icon_button_delete`, `identity_cell`, `modal_footer`, `status_badge` |
+| `templates/macros/forms.html` | `forms` | `email_rows_field`, `password_input` |
 | `templates/macros/page.html` | `page` | `tabs_nav`, `list_page_header` |
 
 Each macro's signature and arg meanings are in a comment block immediately above

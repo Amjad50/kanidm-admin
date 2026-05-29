@@ -154,7 +154,7 @@ pub async fn submit(
         .await
     {
         Ok(()) => Ok(
-            Redirect::to(&format!("/people/{trimmed_name}/overview")).into_response(),
+            Redirect::to(&format!("/admin/people/{trimmed_name}/overview")).into_response(),
         ),
         Err(e) => {
             let msg = friendly_client_error("update person", &e);

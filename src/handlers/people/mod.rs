@@ -32,7 +32,8 @@ pub fn router() -> Router<AppState> {
         .route("/people/{id}/radius/regenerate", axum::routing::post(radius::regenerate))
         .route("/people/{id}/radius/delete", axum::routing::post(radius::delete_secret))
         .route("/people/{id}/sessions", get(sessions::tab))
-        // destroy_all is a static segment so axum prioritizes it over the dynamic {session_id}/destroy.
+        // destroy_all is a static segment so axum prioritizes it over the
+        // dynamic {session_id}/destroy.
         .route("/people/{id}/sessions/{session_id}/destroy", axum::routing::post(sessions::destroy_one))
         .route("/people/{id}/sessions/destroy_all", axum::routing::post(sessions::destroy_all))
         .route("/people/{id}/groups", get(groups_tab::tab))

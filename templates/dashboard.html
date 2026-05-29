@@ -15,7 +15,7 @@
       <div class="text-muted-foreground text-sm mt-1">Welcome back, {{ base.user_displayname }}.</div>
     </div>
     <div class="flex items-center gap-2 shrink-0">
-      {{ ui::button(variant="secondary", label="Refresh", icon="refresh-cw", href="/", is_link=true, size="sm") }}
+      {{ ui::button(variant="outline", label="Refresh", icon="refresh-cw", href="/admin", is_link=true, size="sm") }}
     </div>
   </div>
 
@@ -23,7 +23,7 @@
   <div class="grid grid-cols-3 gap-4 mb-6">
 
     <!-- People -->
-    <a href="/people" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
+    <a href="/admin/people" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-primary-soft text-primary inline-flex items-center justify-center shrink-0">
         <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("users") }}</span>
       </span>
@@ -43,7 +43,7 @@
     </a>
 
     <!-- Groups -->
-    <a href="/groups" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
+    <a href="/admin/groups" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-primary-soft text-primary inline-flex items-center justify-center shrink-0">
         <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("users-round") }}</span>
       </span>
@@ -63,7 +63,7 @@
     </a>
 
     <!-- OAuth2 Apps -->
-    <a href="/oauth2" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
+    <a href="/admin/oauth2" class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-3 hover:border-input transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-primary-soft text-primary inline-flex items-center justify-center shrink-0">
         <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
       </span>
@@ -188,7 +188,7 @@
     <div class="grid grid-cols-2 gap-3">
 
       <!-- Create person -->
-      <a href="/people/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
+      <a href="/admin/people/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-popover border border-border text-primary inline-flex items-center justify-center shrink-0">
           <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("user-plus") }}</span>
         </span>
@@ -199,7 +199,7 @@
       </a>
 
       <!-- Create group -->
-      <a href="/groups/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
+      <a href="/admin/groups/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-popover border border-border text-primary inline-flex items-center justify-center shrink-0">
           <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("users-round") }}</span>
         </span>
@@ -210,7 +210,7 @@
       </a>
 
       <!-- Create OAuth2 application -->
-      <a href="/oauth2/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
+      <a href="/admin/oauth2/new" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-popover border border-border text-primary inline-flex items-center justify-center shrink-0">
           <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
         </span>
@@ -221,7 +221,7 @@
       </a>
 
       <!-- Reset a password — picks a person, then issues an intent-token URL -->
-      <a href="/people" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
+      <a href="/admin/people" class="bg-card border border-border rounded-md p-4 flex items-center gap-3 hover:border-primary hover:bg-accent transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-popover border border-border text-primary inline-flex items-center justify-center shrink-0">
           <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("key") }}</span>
         </span>

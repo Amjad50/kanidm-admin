@@ -175,7 +175,7 @@ pub async fn submit(
         }
     }
 
-    Ok(Redirect::to(&format!("/people/{trimmed_name}/overview")).into_response())
+    Ok(Redirect::to(&format!("/admin/people/{trimmed_name}/overview")).into_response())
 }
 
 // ── View builder ─────────────────────────────────────────────────────────────

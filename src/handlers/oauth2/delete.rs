@@ -62,7 +62,7 @@ async fn build_modal(
     .map_err(AppError::Template)?;
 
     let footer_html = DeleteFooter {
-        action_url: format!("/oauth2/{id}/delete"),
+        action_url: format!("/admin/oauth2/{id}/delete"),
         confirm_label: "Delete OAuth2 client".to_string(),
         input_id,
         hx_vals_json: None,
@@ -107,7 +107,7 @@ pub async fn submit(
     match client.idm_oauth2_rs_delete(&id).await {
         Ok(()) => {
             let mut headers = HeaderMap::new();
-            headers.insert("HX-Redirect", "/oauth2".parse().expect("valid header"));
+            headers.insert("HX-Redirect", "/admin/oauth2".parse().expect("valid header"));
             Ok((headers, Html(String::new())).into_response())
         }
         Err(e) => {

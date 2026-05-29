@@ -13,7 +13,11 @@ function shouldSkip(e: MouseEvent): boolean {
 }
 
 function clickedInteractive(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
+  // Use Element (not HTMLElement) because SVG nodes inside buttons/anchors
+  // are Elements but not HTMLElements. A strict HTMLElement check makes
+  // closest() skip the climb when the user clicks on an icon's <svg>/<path>,
+  // causing row-nav to fire on top of the kebab/icon-button click.
+  if (!(target instanceof Element)) return false;
   return !!target.closest('button, a, input, label, [data-no-row-nav]');
 }
 

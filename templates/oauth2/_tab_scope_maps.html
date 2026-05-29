@@ -43,7 +43,7 @@
               {# Edit button #}
               <button type="button"
                       class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
-                      hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/standard/{{ row.encoded_group }}/edit"
+                      hx-get="/admin/oauth2/{{ data.oauth2_id }}/scope-map/standard/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
                       aria-label="Edit scope map for {{ row.group_spn }}">
@@ -51,7 +51,7 @@
                 Edit
               </button>
               {# Delete button #}
-              <form hx-post="/oauth2/{{ data.oauth2_id }}/scope-map/standard/{{ row.encoded_group }}/delete"
+              <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/scope-map/standard/{{ row.encoded_group }}/delete"
                     hx-target="#tab-content"
                     hx-swap="innerHTML"
                     hx-confirm="Remove scope map for &quot;{{ row.group_spn }}&quot;?">
@@ -73,7 +73,7 @@
     <div class="px-5 py-3 border-t border-border">
       <button type="button"
               class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
-              hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/standard/new"
+              hx-get="/admin/oauth2/{{ data.oauth2_id }}/scope-map/standard/new"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
         <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
@@ -127,7 +127,7 @@
               {# Edit button #}
               <button type="button"
                       class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
-                      hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/{{ row.encoded_group }}/edit"
+                      hx-get="/admin/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
                       aria-label="Edit supplementary scope map for {{ row.group_spn }}">
@@ -135,7 +135,7 @@
                 Edit
               </button>
               {# Delete button #}
-              <form hx-post="/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/{{ row.encoded_group }}/delete"
+              <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/{{ row.encoded_group }}/delete"
                     hx-target="#tab-content"
                     hx-swap="innerHTML"
                     hx-confirm="Remove supplementary scope map for &quot;{{ row.group_spn }}&quot;?">
@@ -157,7 +157,7 @@
     <div class="px-5 py-3 border-t border-border">
       <button type="button"
               class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
-              hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/new"
+              hx-get="/admin/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/new"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
         <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>

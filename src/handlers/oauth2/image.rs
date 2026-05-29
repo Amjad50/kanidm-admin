@@ -32,7 +32,7 @@ pub struct ImageData {
 fn build_image_data(_state: &AppState, id: &str, entry: &kanidm_proto::v1::Entry, error: Option<String>) -> ImageData {
     let has_image = attr_present(entry, "image");
     let name = crate::kanidm::entry::attr_first(entry, "name").unwrap_or_default();
-    let image_url = has_image.then(|| format!("/oauth2/{}/image-proxy", name));
+    let image_url = has_image.then(|| format!("/admin/oauth2/{}/image-proxy", name));
     ImageData {
         oauth2_id: id.to_string(),
         has_image,
@@ -197,7 +197,7 @@ pub async fn upload(
     match client.idm_oauth2_rs_update_image(&id, image_value).await {
         Ok(()) => {
             // Redirect back so the page re-renders with the new image.
-            Ok(Redirect::to(&format!("/oauth2/{id}/image")).into_response())
+            Ok(Redirect::to(&format!("/admin/oauth2/{id}/image")).into_response())
         }
         Err(e) => {
             tracing::warn!(oauth2_id = %id, error = ?e, "upload image failed");
@@ -383,7 +383,7 @@ pub async fn upload_from_url(
         .map_err(|e| crate::error::AppError::Kanidm(e.to_string()))?;
 
     match client.idm_oauth2_rs_update_image(&id, image_value).await {
-        Ok(()) => Ok(Redirect::to(&format!("/oauth2/{id}/image")).into_response()),
+        Ok(()) => Ok(Redirect::to(&format!("/admin/oauth2/{id}/image")).into_response()),
         Err(e) => {
             tracing::warn!(oauth2_id = %id, url = %parsed_url, error = ?e, "upload image from url failed");
             let msg = friendly_client_error("upload image", &e);

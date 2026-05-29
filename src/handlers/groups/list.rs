@@ -40,17 +40,17 @@ fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> Strin
 
     let mut items = vec![DropdownItem::link(
         "Members",
-        format!("/groups/{spn_or_uuid}/members"),
+        format!("/admin/groups/{spn_or_uuid}/members"),
     )
     .with_icon("users")];
 
     if !is_builtin {
         items.push(
-            DropdownItem::link("Edit", format!("/groups/{spn_or_uuid}/edit")).with_icon("pencil"),
+            DropdownItem::link("Edit", format!("/admin/groups/{spn_or_uuid}/edit")).with_icon("pencil"),
         );
         items.push(DropdownItem::Divider);
         items.push(
-            DropdownItem::htmx_get("Delete", format!("/groups/{spn_or_uuid}/delete"))
+            DropdownItem::htmx_get("Delete", format!("/admin/groups/{spn_or_uuid}/delete"))
                 .with_icon("trash-2")
                 .danger(),
         );
@@ -166,7 +166,7 @@ pub async fn list(
                     kind: "group",
                     label,
                     subtitle,
-                    href: format!("/groups/{id}"),
+                    href: format!("/admin/groups/{id}"),
                 })
             })
             .collect();
@@ -203,7 +203,7 @@ pub async fn list(
             total_pages,
             filtered_count,
             per_page: per,
-            base_url: "/groups",
+            base_url: "/admin/groups",
             target: "#groups-tbody",
         };
         let rows_html = askama::Template::render(&GroupRowsFragment {
@@ -236,7 +236,7 @@ pub async fn list(
             total_pages,
             filtered_count,
             per_page: per,
-            base_url: "/groups",
+            base_url: "/admin/groups",
             target: "#groups-tbody",
         },
         count_text,

@@ -64,7 +64,7 @@
             {% if key.status_label != "Revoked" %}
             <button type="button"
                     class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer text-xs font-medium border-0 bg-transparent px-2 py-1 rounded hover:bg-destructive-soft"
-                    hx-get="/oauth2/{{ data.oauth2_id }}/crypto/revoke-modal?key_id={{ key.id }}"
+                    hx-get="/admin/oauth2/{{ data.oauth2_id }}/crypto/revoke-modal?key_id={{ key.id }}"
                     hx-target="#overlay-slot"
                     hx-swap="innerHTML">
               Revoke
@@ -85,7 +85,7 @@
     <h3 class="text-sm font-semibold text-foreground mb-1">Rotate keys</h3>
     <p class="text-xs text-muted-foreground mb-4 leading-relaxed">Schedule a key rotation. The new key becomes active at the specified time; the current key remains valid for existing tokens.</p>
 
-    <form hx-post="/oauth2/{{ data.oauth2_id }}/crypto/rotate"
+    <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/crypto/rotate"
           hx-target="#tab-content"
           hx-swap="innerHTML"
           class="flex flex-col gap-3">

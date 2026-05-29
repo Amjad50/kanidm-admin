@@ -1,0 +1,19 @@
+# kanidm-admin-ui config for the docker-compose deployment.
+#
+# - kanidm_url points at the kanidm container by its docker-compose
+#   service name. Admin-ui reaches it via the internal network, NOT via
+#   Caddy.
+# - kanidm_accept_invalid_certs = true because kanidm's internal cert
+#   is self-signed (the docker-network connection is trusted; the cert
+#   here only satisfies kanidm's own "TLS required" stance).
+
+bind_addr = "0.0.0.0:3000"
+
+kanidm_url = "https://kanidm:8443"
+kanidm_accept_invalid_certs = true
+
+admin_group = "idm_admins"
+
+session_cookie_name = "kanidm_admin_session"
+
+static_dir = "/app/static"

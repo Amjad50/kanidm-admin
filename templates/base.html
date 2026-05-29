@@ -31,7 +31,7 @@
     <aside class="bg-card border-r border-border flex flex-col py-3.5 px-3 gap-0.5 sticky top-0 h-screen overflow-y-auto" style="grid-area:sidebar">
 
       <!-- Brand -->
-      <a href="/" class="flex items-center gap-2.5 px-2.5 py-1.5 pb-3.5 no-underline text-foreground hover:opacity-80 transition-opacity">
+      <a href="/admin" class="flex items-center gap-2.5 px-2.5 py-1.5 pb-3.5 no-underline text-foreground hover:opacity-80 transition-opacity">
         <img src="/static/logo-square.svg" alt="Kanidm" width="28" height="28" class="shrink-0">
         <span class="text-lg font-bold tracking-tight">Kanidm</span>
         <span class="font-mono text-[10px] px-1.5 py-0.5 rounded-sm bg-popover text-muted-foreground ml-auto">v1.6.0</span>
@@ -41,7 +41,7 @@
       <nav class="flex flex-col gap-0.5">
 
         <!-- Dashboard -->
-        <a href="/"
+        <a href="/admin"
            class="flex items-center gap-3 h-10 px-3 rounded text-sm font-medium transition-colors no-underline
                   {% if base.current_section == "dashboard" %}bg-primary-soft text-primary{% else %}text-muted-foreground hover:bg-accent hover:text-foreground{% endif %}">
           <span class="w-5 h-5 inline-flex shrink-0">{{ crate::views::icons::icon("layout-dashboard") }}</span>
@@ -49,7 +49,7 @@
         </a>
 
         <!-- People -->
-        <a href="/people"
+        <a href="/admin/people"
            class="flex items-center gap-3 h-10 px-3 rounded text-sm font-medium transition-colors no-underline
                   {% if base.current_section == "people" %}bg-primary-soft text-primary{% else %}text-muted-foreground hover:bg-accent hover:text-foreground{% endif %}">
           <span class="w-5 h-5 inline-flex shrink-0">{{ crate::views::icons::icon("users") }}</span>
@@ -57,7 +57,7 @@
         </a>
 
         <!-- Groups -->
-        <a href="/groups"
+        <a href="/admin/groups"
            class="flex items-center gap-3 h-10 px-3 rounded text-sm font-medium transition-colors no-underline
                   {% if base.current_section == "groups" %}bg-primary-soft text-primary{% else %}text-muted-foreground hover:bg-accent hover:text-foreground{% endif %}">
           <span class="w-5 h-5 inline-flex shrink-0">{{ crate::views::icons::icon("users-round") }}</span>
@@ -65,7 +65,7 @@
         </a>
 
         <!-- OAuth2 Apps -->
-        <a href="/oauth2"
+        <a href="/admin/oauth2"
            class="flex items-center gap-3 h-10 px-3 rounded text-sm font-medium transition-colors no-underline
                   {% if base.current_section == "oauth2" %}bg-primary-soft text-primary{% else %}text-muted-foreground hover:bg-accent hover:text-foreground{% endif %}">
           <span class="w-5 h-5 inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>

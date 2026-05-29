@@ -143,7 +143,7 @@ pub async fn submit(
         }
     }
 
-    Ok(Redirect::to(&format!("/groups/{trimmed_name}/overview")).into_response())
+    Ok(Redirect::to(&format!("/admin/groups/{trimmed_name}/overview")).into_response())
 }
 
 // ── View builder ──────────────────────────────────────────────────────────────

@@ -64,14 +64,14 @@ fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
     use crate::views::dropdown::{render_actions_cell, DropdownItem};
     render_actions_cell(
         vec![
-            DropdownItem::link("Edit", format!("/people/{spn_or_uuid}/edit")).with_icon("pencil"),
+            DropdownItem::link("Edit", format!("/admin/people/{spn_or_uuid}/edit")).with_icon("pencil"),
             DropdownItem::htmx_get(
                 "Generate reset link",
-                format!("/people/{spn_or_uuid}/credentials/reset"),
+                format!("/admin/people/{spn_or_uuid}/credentials/reset"),
             )
             .with_icon("refresh-cw"),
             DropdownItem::Divider,
-            DropdownItem::htmx_get("Delete", format!("/people/{spn_or_uuid}/delete"))
+            DropdownItem::htmx_get("Delete", format!("/admin/people/{spn_or_uuid}/delete"))
                 .with_icon("trash-2")
                 .danger(),
         ],
@@ -163,7 +163,7 @@ pub async fn list(
                     kind: "person",
                     label,
                     subtitle,
-                    href: format!("/people/{id}"),
+                    href: format!("/admin/people/{id}"),
                 })
             })
             .collect();
@@ -232,7 +232,7 @@ pub async fn list(
             total_pages,
             filtered_count,
             per_page: per,
-            base_url: "/people",
+            base_url: "/admin/people",
             target: "#people-tbody",
         };
         let rows_html = askama::Template::render(&PeopleRowsFragment {
@@ -266,7 +266,7 @@ pub async fn list(
             total_pages,
             filtered_count,
             per_page: per,
-            base_url: "/people",
+            base_url: "/admin/people",
             target: "#people-tbody",
         },
         count_text,

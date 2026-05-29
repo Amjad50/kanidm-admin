@@ -2,6 +2,7 @@ pub mod dropdown;
 pub mod icons;
 pub mod pagination;
 pub mod partials;
+pub mod sessions_card;
 pub mod time;
 pub mod toast;
 

@@ -4,7 +4,7 @@
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
+<a href="/admin/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium">Create app</span>
 {% endblock %}
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <form action="/oauth2/new/details" method="get" style="max-width:620px">
+  <form action="/admin/oauth2/new/details" method="get" style="max-width:620px">
     <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-4">
 
       <div class="flex flex-col gap-3">
@@ -70,7 +70,7 @@
       </div>
 
       <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
-        {{ ui::button(variant="ghost", label="Cancel", href="/oauth2", is_link=true) }}
+        {{ ui::button(variant="ghost", label="Cancel", href="/admin/oauth2", is_link=true) }}
         {{ ui::button(variant="primary", label="Next", type_attr="submit") }}
       </div>
 

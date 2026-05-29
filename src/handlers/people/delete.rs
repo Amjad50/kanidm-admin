@@ -57,7 +57,7 @@ async fn build_modal(
     .map_err(AppError::Template)?;
 
     let footer_html = DeleteFooter {
-        action_url: format!("/people/{id}/delete"),
+        action_url: format!("/admin/people/{id}/delete"),
         confirm_label: "Delete person".to_string(),
         input_id,
         hx_vals_json: None,
@@ -106,7 +106,7 @@ pub async fn submit(
             let mut headers = HeaderMap::new();
             headers.insert(
                 "HX-Redirect",
-                "/people".parse().expect("static header value is valid"),
+                "/admin/people".parse().expect("static header value is valid"),
             );
             Ok((headers, Html(String::new())).into_response())
         }

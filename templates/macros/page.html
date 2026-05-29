@@ -5,7 +5,7 @@
 
   nav_id     : DOM id (e.g. "people-tabs")
   url_prefix : URL base for each tab; the macro appends "/{tab.slug}"
-               (e.g. "/people/alice@example.com" → "/people/alice@example.com/overview")
+               (e.g. "/admin/people/alice@example.com" → "/admin/people/alice@example.com/overview")
   tabs       : iterable of items with .slug and .label attributes
   active_slug: currently active tab's slug
   oob        : true when this is being swapped via HTMX OOB; emits hx-swap-oob="outerHTML"
@@ -38,7 +38,7 @@
   search_value       : current query value, may be empty
   search_placeholder : placeholder text
   search_target      : hx-target selector (e.g. "#people-tbody")
-  search_url         : hx-get URL (e.g. "/people")
+  search_url         : hx-get URL (e.g. "/admin/people")
   subtitle_id        : DOM id for the count subtitle (used for HX-Trigger OOB updates)
   per                : current `per` query value (forwarded as hidden input)
 #}

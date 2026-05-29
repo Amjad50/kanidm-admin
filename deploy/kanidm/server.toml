@@ -1,0 +1,33 @@
+# Kanidm server config — docker-compose deployment.
+#
+# Domain is "idm.localhost" (RFC 6761 — resolved to 127.0.0.1 by every
+# modern OS without /etc/hosts).
+#
+# kanidm REQUIRES TLS on its own port even when fronted by Caddy. We
+# generate a self-signed cert at compose-up via the `kanidm-init`
+# service in docker-compose.yml. The cert covers `kanidm` (the docker
+# service name, which is what Caddy connects to from inside the
+# docker network) AND `idm.localhost` (in case anything talks to it
+# by hostname).
+
+version = "2"
+
+bindaddress = "[::]:8443"
+
+db_path = "/data/kanidm.db"
+
+tls_chain = "/certs/cert.pem"
+tls_key = "/certs/key.pem"
+
+domain = "idm.localhost"
+origin = "https://idm.localhost"
+
+# Trust the X-Forwarded-For header from inside the docker network so
+# audit logs show real client IPs instead of Caddy's container IP.
+[http_client_address_info]
+x-forward-for = ["172.16.0.0/12", "10.0.0.0/8", "192.168.0.0/16"]
+
+[online_backup]
+path = "/data/backups"
+schedule = "00 22 * * *"
+versions = 7

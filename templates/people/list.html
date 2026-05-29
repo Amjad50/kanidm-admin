@@ -15,18 +15,18 @@
     count_html=count_text,
     create_label="Create person",
     create_icon="plus",
-    create_href="/people/new",
+    create_href="/admin/people/new",
     search_value=q,
     search_placeholder="Search by name, SPN, or email…",
     search_target="#people-tbody",
-    search_url="/people",
+    search_url="/admin/people",
     subtitle_id="people-subtitle",
     per=per,
   ) %}
     <select
       name="status"
       class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-input"
-      hx-get="/people"
+      hx-get="/admin/people"
       hx-trigger="change"
       hx-target="#people-tbody"
       hx-swap="innerHTML"

@@ -71,8 +71,8 @@
   <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Members</div>
-      <a href="/groups/{{ group.spn_or_uuid }}/members"
-         hx-get="/groups/{{ group.spn_or_uuid }}/members"
+      <a href="/admin/groups/{{ group.spn_or_uuid }}/members"
+         hx-get="/admin/groups/{{ group.spn_or_uuid }}/members"
          hx-target="#tab-content"
          hx-swap="innerHTML"
          hx-push-url="true"
@@ -104,8 +104,8 @@
   <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
       <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Account policy</div>
-      <a href="/groups/{{ group.spn_or_uuid }}/policy"
-         hx-get="/groups/{{ group.spn_or_uuid }}/policy"
+      <a href="/admin/groups/{{ group.spn_or_uuid }}/policy"
+         hx-get="/admin/groups/{{ group.spn_or_uuid }}/policy"
          hx-target="#tab-content"
          hx-swap="innerHTML"
          hx-push-url="true"

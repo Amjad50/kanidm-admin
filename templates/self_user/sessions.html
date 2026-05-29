@@ -18,8 +18,9 @@
     </div>
   </div>
 
-  <div id="sessions-table">
-    {% include "self_user/_sessions_table.html" %}
-  </div>
+  {# `#sessions-table` is the HTMX swap target for both top-row bulk actions
+     and per-row Revoke buttons. The shared card is pre-rendered into
+     `card_html` by the handler. #}
+  <div id="sessions-table">{{ card_html|safe }}</div>
 </div>
 {% endblock %}

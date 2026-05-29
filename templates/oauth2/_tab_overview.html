@@ -7,7 +7,7 @@
         <h2 class="text-base font-semibold text-foreground">Configuration summary</h2>
         <div class="text-xs text-muted-foreground mt-0.5">Read-only snapshot of the General tab.</div>
       </div>
-      <a href="/oauth2/{{ data.oauth2_id }}/general"
+      <a href="/admin/oauth2/{{ data.oauth2_id }}/general"
          class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
         Configure on General tab
         <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
@@ -173,7 +173,7 @@
         <h2 class="text-base font-semibold text-foreground">Scope maps</h2>
         <div class="text-xs text-muted-foreground mt-0.5">Which groups receive which OAuth2 scopes.</div>
       </div>
-      <a href="/oauth2/{{ data.oauth2_id }}/scope-maps"
+      <a href="/admin/oauth2/{{ data.oauth2_id }}/scope-maps"
          class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
         Manage
         <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
@@ -184,7 +184,7 @@
     {% if total_maps == 0 %}
     <div class="py-6 text-center text-muted-foreground text-sm">
       No scope maps configured.
-      <a href="/oauth2/{{ data.oauth2_id }}/scope-maps" class="text-link ml-1 no-underline hover:underline">Add maps on Scope maps tab →</a>
+      <a href="/admin/oauth2/{{ data.oauth2_id }}/scope-maps" class="text-link ml-1 no-underline hover:underline">Add maps on Scope maps tab →</a>
     </div>
     {% else %}
 
@@ -248,7 +248,7 @@
         <h2 class="text-base font-semibold text-foreground">Claim maps</h2>
         <div class="text-xs text-muted-foreground mt-0.5">Custom claims emitted in the ID token.</div>
       </div>
-      <a href="/oauth2/{{ data.oauth2_id }}/claim-maps"
+      <a href="/admin/oauth2/{{ data.oauth2_id }}/claim-maps"
          class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
         Manage
         <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
@@ -285,7 +285,7 @@
         <h2 class="text-base font-semibold text-foreground">Signing keys</h2>
         <div class="text-xs text-muted-foreground mt-0.5">JWT signing keys used to issue tokens for this application.</div>
       </div>
-      <a href="/oauth2/{{ data.oauth2_id }}/crypto"
+      <a href="/admin/oauth2/{{ data.oauth2_id }}/crypto"
          class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
         Manage
         <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>

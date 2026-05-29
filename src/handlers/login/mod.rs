@@ -189,13 +189,13 @@ fn decode_uat_expiry(jws: &str) -> Option<OffsetDateTime> {
 /// on POST. Reject anything that isn't a same-origin path: must start with
 /// '/', not '//', under 512 bytes, no control characters.
 fn sanitize_return_to(raw: Option<&str>) -> String {
-    let s = raw.unwrap_or("/");
+    let s = raw.unwrap_or("/admin");
     if s.len() > 512
         || !s.starts_with('/')
         || s.starts_with("//")
         || s.chars().any(|c| c.is_control())
     {
-        return "/".to_string();
+        return "/admin".to_string();
     }
     s.to_string()
 }
@@ -415,7 +415,7 @@ async fn post_username(
 fn render_username_error(state: &AppState, jar: CookieJar, msg: &str) -> Response {
     let view = UsernameView {
         domain_name: extract_domain(state),
-        return_to: "/".to_string(),
+        return_to: "/admin".to_string(),
         expired: false,
         error: Some(msg.to_string()),
     };
@@ -847,7 +847,7 @@ fn handle_terminal_or_continue(
             let return_to = pending
                 .as_ref()
                 .map(|p| p.return_to.clone())
-                .unwrap_or_else(|| "/".to_string());
+                .unwrap_or_else(|| "/admin".to_string());
             let jar = jar
                 .remove(Cookie::from(LOGIN_COOKIE))
                 .add(clear_login_cookie(&state))

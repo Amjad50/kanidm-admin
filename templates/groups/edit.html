@@ -5,9 +5,9 @@
 {% block title %}Edit {{ group_name }} · Groups · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
+<a href="/admin/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<a href="/groups/{{ group_id }}/overview" class="hover:text-muted-foreground transition-colors no-underline font-mono truncate">{{ group_name }}</a>
+<a href="/admin/groups/{{ group_id }}/overview" class="hover:text-muted-foreground transition-colors no-underline font-mono truncate">{{ group_name }}</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium">Edit</span>
 {% endblock %}
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <form class="bg-card border border-border rounded-md shadow-sm p-6 max-w-3xl" method="post" action="/groups/{{ group_id }}">
+  <form class="bg-card border border-border rounded-md shadow-sm p-6 max-w-3xl" method="post" action="/admin/groups/{{ group_id }}">
 
     {% if let Some(err) = form_error %}
     <div class="mb-4">{{ ui::form_error_banner(message=err) }}</div>
@@ -38,7 +38,7 @@
       {{ entry_managed_by_field.render().unwrap()|safe }}
 
       <div class="flex justify-end gap-2 border-t border-border pt-4 mt-2">
-        {{ ui::button(variant="secondary", label="Cancel", href="/groups/" ~ group_id ~ "/overview", is_link=true) }}
+        {{ ui::button(variant="secondary", label="Cancel", href="/admin/groups/" ~ group_id ~ "/overview", is_link=true) }}
         {{ ui::button(variant="primary", label="Save changes", type_attr="submit") }}
       </div>
 

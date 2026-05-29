@@ -118,7 +118,7 @@ pub(super) fn compute_header(_state: &AppState, entry: &kanidm_proto::v1::Entry)
     let spn = attr_first(entry, "spn").unwrap_or_default();
 
     let image_url = if attr_present(entry, "image") {
-        Some(format!("/oauth2/{}/image-proxy", name))
+        Some(format!("/admin/oauth2/{}/image-proxy", name))
     } else {
         None
     };
@@ -199,5 +199,5 @@ pub(super) fn render_detail(
 
 /// GET /oauth2/{id} → 308 to /oauth2/{id}/overview
 pub async fn redirect_to_overview(Path(id): Path<String>) -> Redirect {
-    Redirect::permanent(&format!("/oauth2/{id}/overview"))
+    Redirect::permanent(&format!("/admin/oauth2/{id}/overview"))
 }

@@ -34,17 +34,17 @@ fn build_app_actions(name: &str, displayname: &str, kind: OAuth2Kind) -> String 
     let mut items: Vec<DropdownItem> = Vec::new();
     if matches!(kind, OAuth2Kind::Basic) {
         items.push(
-            DropdownItem::htmx_get("View secret", format!("/oauth2/{name}/secret"))
+            DropdownItem::htmx_get("View secret", format!("/admin/oauth2/{name}/secret"))
                 .with_icon("key"),
         );
     }
     items.push(
-        DropdownItem::link("Scope maps", format!("/oauth2/{name}/scope-maps"))
+        DropdownItem::link("Scope maps", format!("/admin/oauth2/{name}/scope-maps"))
             .with_icon("users"),
     );
     items.push(DropdownItem::Divider);
     items.push(
-        DropdownItem::htmx_get("Delete", format!("/oauth2/{name}/delete"))
+        DropdownItem::htmx_get("Delete", format!("/admin/oauth2/{name}/delete"))
             .with_icon("trash-2")
             .danger(),
     );
@@ -107,12 +107,12 @@ fn entry_to_row(entry: &kanidm_proto::v1::Entry, _kanidm_url: &str) -> OAuth2App
         .unwrap_or_default();
 
     let image_url = if attr_present(entry, "image") {
-        Some(format!("/oauth2/{}/image-proxy", name))
+        Some(format!("/admin/oauth2/{}/image-proxy", name))
     } else {
         None
     };
 
-    let detail_href = format!("/oauth2/{}", name);
+    let detail_href = format!("/admin/oauth2/{}", name);
     let kind = detect_kind(entry);
     let actions_html = build_app_actions(&name, &displayname, kind);
 
@@ -168,7 +168,7 @@ pub async fn list(
                     kind: "oauth2",
                     label,
                     subtitle,
-                    href: format!("/oauth2/{name}"),
+                    href: format!("/admin/oauth2/{name}"),
                 })
             })
             .collect();
@@ -206,7 +206,7 @@ pub async fn list(
         total_pages,
         filtered_count,
         per_page: per,
-        base_url: "/oauth2",
+        base_url: "/admin/oauth2",
         target: "#oauth2-cards",
     };
 

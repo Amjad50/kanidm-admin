@@ -113,7 +113,7 @@
         <span class="text-muted-foreground text-sm">No group memberships.</span>
         {% else %}
         {% for group in groups %}
-        <a href="/groups/{{ group.spn_or_id }}/overview"
+        <a href="/admin/groups/{{ group.spn_or_id }}/overview"
            class="inline-flex items-center gap-1.5 bg-primary-soft text-primary border border-primary-soft rounded-pill px-3 h-7 text-xs font-medium hover:bg-accent transition-colors no-underline font-mono">
           {{ group.name }}
         </a>

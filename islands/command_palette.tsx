@@ -31,20 +31,20 @@ const SECTION_TITLE: Record<Kind, string> = {
 
 const ENTITY_KINDS: Exclude<Kind, "action">[] = ["person", "group", "oauth2"];
 const ENTITY_PATH: Record<Exclude<Kind, "action">, string> = {
-  person: "/people",
-  group: "/groups",
-  oauth2: "/oauth2",
+  person: "/admin/people",
+  group: "/admin/groups",
+  oauth2: "/admin/oauth2",
 };
 
 // Hand-ordered: verbs people most often want first.
 const ACTIONS: PaletteItem[] = [
-  { kind: "action", label: "Create person", subtitle: "Add a new account", href: "/people/new" },
-  { kind: "action", label: "Create group", subtitle: "Define a new group", href: "/groups/new" },
+  { kind: "action", label: "Create person", subtitle: "Add a new account", href: "/admin/people/new" },
+  { kind: "action", label: "Create group", subtitle: "Define a new group", href: "/admin/groups/new" },
   {
     kind: "action",
     label: "Create OAuth2 application",
     subtitle: "Configure SSO for a service",
-    href: "/oauth2/new",
+    href: "/admin/oauth2/new",
   },
   { kind: "action", label: "My profile", subtitle: "/me", href: "/me" },
   { kind: "action", label: "My sessions", subtitle: "/me/sessions", href: "/me/sessions" },

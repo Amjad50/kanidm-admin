@@ -48,3 +48,70 @@
   </div>
 </template>
 {% endmacro %}
+
+{#
+  Password input with show/hide eye toggle. Pairs with the
+  islands/behaviors/password-reveal.ts behavior — clicking the eye
+  flips the input's type between "password" and "text" and swaps the
+  two SVGs. Always use this macro for password inputs; never hand-roll
+  one (keeps the UX consistent and the markup contract aligned with
+  the behavior).
+
+  name            : form field name (default "password")
+  id_attr         : DOM id; empty string → no id
+  has_id          : true → emit id="..."
+  autocomplete    : "current-password" | "new-password" | ""; "" → no attribute
+  autofocus       : true → emit autofocus
+  required        : true → emit required (default true)
+  min_length      : 0 → no minlength; >0 → emit minlength="N"
+  placeholder     : "" → no placeholder
+  size            : "sm" (h-9), "md" (h-10), "lg" (h-11); default "md"
+  extra           : extra utility classes appended verbatim
+  error_id        : id of the inline error <p>; included in aria-describedby when non-empty
+  hint_id         : id of the hint <p>; included in aria-describedby when non-empty
+  requirements_id : id of the requirements panel; included in aria-describedby + used as
+                    hx-target when preview_url is set
+  aria_invalid    : true → emit aria-invalid="true" and swap border-input for border-destructive
+  preview_url     : non-empty → attach HTMX live-preview attrs pointing at requirements_id
+  focus_after_swap: true → emit data-focus-after-swap (pairs with focus-after-swap behavior)
+#}
+{% macro password_input(name="password", id_attr="", has_id=false, autocomplete="current-password", autofocus=false, required=true, min_length=0, placeholder="", size="md", extra="", error_id="", hint_id="", requirements_id="", aria_invalid=false, preview_url="", focus_after_swap=false) %}
+{# IMPORTANT: Tailwind's source scanner only sees class strings that appear
+   literally in the template body. If we route Tailwind classes through
+   {%- set x = "h-9 pl-3" -%} {{ x }} the scanner skips them and the styles
+   are PURGED from app.css — the input renders with no padding, no height,
+   no anything. So we expand each size branch with the classes spelled out
+   verbatim in {% if %} blocks. Ugly but correct. #}
+{# Cannot accumulate via {% set %} inside {% if %} (Askama 0.16 scopes
+   the assignment locally — see ui::button caveat). Instead, the
+   aria-describedby attribute is emitted inline below: a single
+   `{% if has_any_describedby %}` guard chooses whether to render the
+   attribute, and each id is appended only if its own arg is non-empty.
+   The values are space-separated; leading/trailing spaces are
+   acceptable (browsers tokenize on whitespace). #}
+<div data-password-reveal class="relative">
+  {% if size == "sm" %}
+  <input type="password" name="{{ name }}"{% if has_id %} id="{{ id_attr }}"{% endif %}{% if autocomplete != "" %} autocomplete="{{ autocomplete }}"{% endif %}{% if autofocus %} autofocus{% endif %}{% if required %} required{% endif %}{% if min_length > 0 %} minlength="{{ min_length }}"{% endif %}{% if placeholder != "" %} placeholder="{{ placeholder }}"{% endif %}{% if aria_invalid %} aria-invalid="true"{% endif %}{% if error_id != "" || hint_id != "" || requirements_id != "" %} aria-describedby="{% if error_id != "" %}{{ error_id }}{% endif %}{% if hint_id != "" %}{% if error_id != "" %} {% endif %}{{ hint_id }}{% endif %}{% if requirements_id != "" %}{% if error_id != "" || hint_id != "" %} {% endif %}{{ requirements_id }}{% endif %}"{% endif %}{% if preview_url != "" && requirements_id != "" %} hx-post="{{ preview_url }}" hx-trigger="keyup changed delay:400ms" hx-target="#{{ requirements_id }}" hx-swap="innerHTML" hx-sync="this:abort"{% endif %}{% if focus_after_swap %} data-focus-after-swap{% endif %}
+         class="h-9 pl-3 pr-10 w-full bg-background {% if aria_invalid %}border border-destructive{% else %}border border-input{% endif %} rounded-md text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-ring focus:shadow-primary-ring {{ extra }}">
+  {% else if size == "lg" %}
+  <input type="password" name="{{ name }}"{% if has_id %} id="{{ id_attr }}"{% endif %}{% if autocomplete != "" %} autocomplete="{{ autocomplete }}"{% endif %}{% if autofocus %} autofocus{% endif %}{% if required %} required{% endif %}{% if min_length > 0 %} minlength="{{ min_length }}"{% endif %}{% if placeholder != "" %} placeholder="{{ placeholder }}"{% endif %}{% if aria_invalid %} aria-invalid="true"{% endif %}{% if error_id != "" || hint_id != "" || requirements_id != "" %} aria-describedby="{% if error_id != "" %}{{ error_id }}{% endif %}{% if hint_id != "" %}{% if error_id != "" %} {% endif %}{{ hint_id }}{% endif %}{% if requirements_id != "" %}{% if error_id != "" || hint_id != "" %} {% endif %}{{ requirements_id }}{% endif %}"{% endif %}{% if preview_url != "" && requirements_id != "" %} hx-post="{{ preview_url }}" hx-trigger="keyup changed delay:400ms" hx-target="#{{ requirements_id }}" hx-swap="innerHTML" hx-sync="this:abort"{% endif %}{% if focus_after_swap %} data-focus-after-swap{% endif %}
+         class="h-11 pl-4 pr-11 w-full bg-background {% if aria_invalid %}border border-destructive{% else %}border border-input{% endif %} rounded-md text-md text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-ring focus:shadow-primary-ring {{ extra }}">
+  {% else %}
+  <input type="password" name="{{ name }}"{% if has_id %} id="{{ id_attr }}"{% endif %}{% if autocomplete != "" %} autocomplete="{{ autocomplete }}"{% endif %}{% if autofocus %} autofocus{% endif %}{% if required %} required{% endif %}{% if min_length > 0 %} minlength="{{ min_length }}"{% endif %}{% if placeholder != "" %} placeholder="{{ placeholder }}"{% endif %}{% if aria_invalid %} aria-invalid="true"{% endif %}{% if error_id != "" || hint_id != "" || requirements_id != "" %} aria-describedby="{% if error_id != "" %}{{ error_id }}{% endif %}{% if hint_id != "" %}{% if error_id != "" %} {% endif %}{{ hint_id }}{% endif %}{% if requirements_id != "" %}{% if error_id != "" || hint_id != "" %} {% endif %}{{ requirements_id }}{% endif %}"{% endif %}{% if preview_url != "" && requirements_id != "" %} hx-post="{{ preview_url }}" hx-trigger="keyup changed delay:400ms" hx-target="#{{ requirements_id }}" hx-swap="innerHTML" hx-sync="this:abort"{% endif %}{% if focus_after_swap %} data-focus-after-swap{% endif %}
+         class="h-10 pl-3 pr-10 w-full bg-background {% if aria_invalid %}border border-destructive{% else %}border border-input{% endif %} rounded-md text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-ring focus:shadow-primary-ring {{ extra }}">
+  {% endif %}
+  {% if size == "lg" %}
+  <button type="button" data-password-reveal-toggle aria-label="Show password" tabindex="-1"
+          class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 inline-flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer">
+    <svg data-eye-open width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <svg data-eye-closed hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+  </button>
+  {% else %}
+  <button type="button" data-password-reveal-toggle aria-label="Show password" tabindex="-1"
+          class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 inline-flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer">
+    <svg data-eye-open width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <svg data-eye-closed hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+  </button>
+  {% endif %}
+</div>
+{% endmacro %}

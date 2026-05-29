@@ -5,7 +5,7 @@
 {% block title %}Create group · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
+<a href="/admin/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium">Create group</span>
 {% endblock %}
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <form class="bg-card border border-border rounded-md shadow-sm p-6 max-w-2xl" method="post" action="/groups">
+  <form class="bg-card border border-border rounded-md shadow-sm p-6 max-w-2xl" method="post" action="/admin/groups">
 
     {% if let Some(err) = form_error %}
     <div class="mb-4">{{ ui::form_error_banner(message=err) }}</div>
@@ -35,7 +35,7 @@
       {{ forms::email_rows_field(field_id="group-mail-rows", input_name="mail", rows=emails, label="Mail addresses", add_label="Add mail address", placeholder="group@example.com", helper="The starred address is primary. Leave empty to set no mail.") }}
 
       <div class="flex justify-end gap-2 border-t border-border pt-4 mt-2">
-        {{ ui::button(variant="secondary", label="Cancel", href="/groups", is_link=true) }}
+        {{ ui::button(variant="secondary", label="Cancel", href="/admin/groups", is_link=true) }}
         {{ ui::button(variant="primary", label="Create group", type_attr="submit") }}
       </div>
 

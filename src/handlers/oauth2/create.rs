@@ -87,7 +87,7 @@ pub async fn details_form(
     Query(q): Query<DetailsQuery>,
 ) -> AppResult<Response> {
     let Some(kind) = q.kind else {
-        return Ok(Redirect::to("/oauth2/new").into_response());
+        return Ok(Redirect::to("/admin/oauth2/new").into_response());
     };
     Ok(build_details_view(
         &user,
@@ -169,7 +169,7 @@ pub async fn submit(
     }
 
     tracing::info!(name = %trimmed_name, kind = ?kind, "oauth2 client created");
-    Ok(Redirect::to(&format!("/oauth2/{trimmed_name}/general")).into_response())
+    Ok(Redirect::to(&format!("/admin/oauth2/{trimmed_name}/general")).into_response())
 }
 
 // ── View builder ──────────────────────────────────────────────────────────────

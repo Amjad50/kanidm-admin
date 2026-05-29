@@ -105,7 +105,7 @@ fn build_member_row(
     let actions_html = render_actions_cell(
         vec![DropdownItem::htmx_post(
             "Remove from group",
-            format!("/groups/{group_id}/members/{encoded_id}/remove"),
+            format!("/admin/groups/{group_id}/members/{encoded_id}/remove"),
         )
         .with_icon("x")
         .with_target("#members-table-body")
@@ -372,7 +372,7 @@ fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> Strin
     .unwrap_or_default();
 
     let footer_html = DeleteFooter {
-        action_url: format!("/groups/{id}/members/purge"),
+        action_url: format!("/admin/groups/{id}/members/purge"),
         confirm_label: "Purge all members".to_string(),
         input_id,
         hx_vals_json: None,

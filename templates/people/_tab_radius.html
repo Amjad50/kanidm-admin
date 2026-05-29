@@ -24,10 +24,10 @@
 
     <div class="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border">
       {% if r.secret.is_some() %}
-      {{ ui::button(variant="secondary", label="Regenerate secret", icon="refresh-cw", size="sm", hx_attrs=" hx-post=\"/people/" ~ r.person_id ~ "/radius/regenerate\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\" hx-confirm=\"Regenerate the RADIUS secret? The current one will stop working immediately.\"") }}
-      {{ ui::button(variant="destructive", label="Delete secret", icon="trash-2", size="sm", hx_attrs=" hx-post=\"/people/" ~ r.person_id ~ "/radius/delete\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\" hx-confirm=\"Delete the RADIUS secret? You can regenerate one later.\"") }}
+      {{ ui::button(variant="outline", label="Regenerate secret", icon="refresh-cw", size="sm", hx_attrs=" hx-post=\"/admin/people/" ~ r.person_id ~ "/radius/regenerate\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\" hx-confirm=\"Regenerate the RADIUS secret? The current one will stop working immediately.\"") }}
+      {{ ui::button(variant="destructive", label="Delete secret", icon="trash-2", size="sm", hx_attrs=" hx-post=\"/admin/people/" ~ r.person_id ~ "/radius/delete\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\" hx-confirm=\"Delete the RADIUS secret? You can regenerate one later.\"") }}
       {% else %}
-      {{ ui::button(variant="primary", label="Generate secret", icon="plus", size="sm", hx_attrs=" hx-post=\"/people/" ~ r.person_id ~ "/radius/regenerate\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\"") }}
+      {{ ui::button(variant="primary", label="Generate secret", icon="plus", size="sm", hx_attrs=" hx-post=\"/admin/people/" ~ r.person_id ~ "/radius/regenerate\" hx-target=\"#tab-content\" hx-swap=\"innerHTML\"") }}
       {% endif %}
     </div>
   </section>

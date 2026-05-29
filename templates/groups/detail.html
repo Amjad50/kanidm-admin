@@ -4,7 +4,7 @@
 {% block title %}{{ group.name }} · Groups · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
+<a href="/admin/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium font-mono truncate">{{ group.spn }}</span>
 {% endblock %}
@@ -38,8 +38,8 @@
 
     <div class="flex items-center gap-2 shrink-0">
       {% if !group.is_builtin %}
-      {{ ui::button(variant="secondary", label="Edit", icon="pencil", href="/groups/" ~ group.spn_or_uuid ~ "/edit", is_link=true, size="sm") }}
-      {{ ui::button(variant="destructive", label="Delete", icon="trash-2", size="sm", hx_attrs=" hx-get=\"/groups/" ~ group.spn_or_uuid ~ "/delete\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
+      {{ ui::button(variant="outline", label="Edit", icon="pencil", href="/admin/groups/" ~ group.spn_or_uuid ~ "/edit", is_link=true, size="sm") }}
+      {{ ui::button(variant="destructive", label="Delete", icon="trash-2", size="sm", hx_attrs=" hx-get=\"/admin/groups/" ~ group.spn_or_uuid ~ "/delete\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
       {% endif %}
     </div>
 

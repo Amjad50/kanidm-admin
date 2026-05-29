@@ -168,7 +168,7 @@ async fn build_revoke_modal(
     .map_err(AppError::Template)?;
 
     let footer_html = DeleteFooter {
-        action_url: format!("/oauth2/{id}/crypto/revoke"),
+        action_url: format!("/admin/oauth2/{id}/crypto/revoke"),
         confirm_label: "Revoke key".to_string(),
         input_id: input_id.clone(),
         hx_vals_json: None,
@@ -272,7 +272,7 @@ pub async fn revoke(
             let mut headers = HeaderMap::new();
             headers.insert(
                 "HX-Redirect",
-                format!("/oauth2/{id}/crypto")
+                format!("/admin/oauth2/{id}/crypto")
                     .parse()
                     .expect("static header value is valid"),
             );

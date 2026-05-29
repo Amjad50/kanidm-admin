@@ -4,7 +4,7 @@
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
+<a href="/admin/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium">Create app</span>
 {% endblock %}
@@ -31,7 +31,7 @@
   <div class="mb-5" style="max-width:680px">{{ ui::form_error_banner(message=msg) }}</div>
   {% endif %}
 
-  <form method="post" action="/oauth2" style="max-width:680px">
+  <form method="post" action="/admin/oauth2" style="max-width:680px">
     <input type="hidden" name="type" value="{% if kind == OAuth2CreateKind::Basic %}basic{% else %}public{% endif %}" />
 
     <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-5">
@@ -43,7 +43,7 @@
       {{ landing_field|safe }}
 
       <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
-        {{ ui::button(variant="ghost", label="← Back", href="/oauth2/new", is_link=true) }}
+        {{ ui::button(variant="ghost", label="← Back", href="/admin/oauth2/new", is_link=true) }}
         {{ ui::button(variant="primary", label="Create app", icon="shield", type_attr="submit") }}
       </div>
 

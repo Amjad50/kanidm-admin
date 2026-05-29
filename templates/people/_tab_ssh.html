@@ -56,7 +56,7 @@
             </div>
           </td>
           <td class="px-5 py-3 text-right">
-            {% let url = format!("/people/{}/ssh/{}/delete", s.person_id, key.tag) %}
+            {% let url = format!("/admin/people/{}/ssh/{}/delete", s.person_id, key.tag) %}
             {% let confirm = format!("Delete SSH key &quot;{}&quot;? This cannot be undone.", key.tag) %}
             {% let aria = format!("Delete key {}", key.tag) %}
             {{ ui::icon_button_delete(
@@ -76,7 +76,7 @@
 
   <section class="bg-card border border-border rounded-md shadow-sm px-5 py-5">
     <h3 class="text-sm font-semibold text-foreground mb-4">Add a key</h3>
-    <form hx-post="/people/{{ s.person_id }}/ssh"
+    <form hx-post="/admin/people/{{ s.person_id }}/ssh"
           hx-target="#tab-content"
           hx-swap="innerHTML"
           class="flex flex-col gap-4">

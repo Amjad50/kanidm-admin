@@ -7,7 +7,7 @@
 
   <section class="bg-card border border-border rounded-md shadow-sm p-5">
     <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold mb-3">Add to a group</div>
-    <form hx-post="/people/{{ g.person_id }}/groups/add"
+    <form hx-post="/admin/people/{{ g.person_id }}/groups/add"
           hx-target="#person-groups-tab"
           hx-swap="outerHTML"
           hx-on::after-request="this.reset()">
@@ -62,9 +62,9 @@
       <tbody>
         {% for row in g.direct %}
         <tr class="border-b border-border last:border-0 hover:bg-accent cursor-pointer transition-colors"
-            data-row-href="/groups/{{ row.spn_or_id }}/overview">
+            data-row-href="/admin/groups/{{ row.spn_or_id }}/overview">
           <td class="px-5 py-3">
-            {%- let href = format!("/groups/{}/overview", row.spn_or_id) -%}
+            {%- let href = format!("/admin/groups/{}/overview", row.spn_or_id) -%}
             {{ ui::identity_cell(initials=row.initials, displayname=row.name, spn=row.spn_or_id, href=href, avatar_size="md") }}
           </td>
           <td class="px-5 py-3 text-right">{{ row.actions_html|safe }}</td>

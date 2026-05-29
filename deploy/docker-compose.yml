@@ -1,0 +1,95 @@
+# Full kanidm-admin-ui stack: caddy + kanidm + our admin UI.
+#
+# Browse to https://idm.localhost/ after running:
+#     ./bootstrap.sh
+#     docker compose up -d
+#
+# See SETUP.md for the full walkthrough including the one-time Caddy CA
+# trust step.
+
+services:
+
+  # ── Caddy: TLS termination + path-based routing ──────────────────────────
+  caddy:
+    image: caddy:2.10-alpine
+    container_name: kanidm-admin-caddy
+    restart: unless-stopped
+    ports:
+      # If 80/443 are taken on your host (existing kanidm, another reverse
+      # proxy, etc.), pick free ports — e.g. "8080:80" and "8443:443" — then
+      # visit https://idm.localhost:8443/ instead of https://idm.localhost/.
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - admin-ui
+      - kanidm
+    networks:
+      - kanidm-net
+
+  # ── kanidm init: one-shot cert generator + first-boot helper ─────────────
+  kanidm-init:
+    image: alpine:3.20
+    container_name: kanidm-admin-init
+    # Alpine's base image doesn't ship openssl — install it then run the
+    # generator. Both are idempotent on subsequent boots (apk add is a
+    # no-op if already present; the generator skips if cert exists).
+    entrypoint: ["sh", "-c"]
+    command: ["apk add --no-cache openssl >/dev/null && exec sh /init/generate-cert.sh"]
+    volumes:
+      - ./kanidm/generate-cert.sh:/init/generate-cert.sh:ro
+      - kanidm_certs:/certs
+    restart: "no"
+
+  # ── kanidm server ────────────────────────────────────────────────────────
+  kanidm:
+    image: kanidm/server:1.10.0
+    container_name: kanidm-admin-kanidm
+    restart: unless-stopped
+    depends_on:
+      kanidm-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./kanidm/server.toml:/data/server.toml:ro
+      - kanidm_data:/data
+      - kanidm_certs:/certs:ro
+    networks:
+      - kanidm-net
+    environment:
+      KANIDM_LOG_LEVEL: info
+    healthcheck:
+      test: ["CMD", "/sbin/kanidmd", "scripting", "healthcheck", "-c", "/data/server.toml"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  # ── admin-ui (this project) ──────────────────────────────────────────────
+  admin-ui:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: kanidm-admin-ui:local
+    container_name: kanidm-admin-ui
+    restart: unless-stopped
+    depends_on:
+      kanidm:
+        condition: service_healthy
+    volumes:
+      - ./admin-ui/kanidm-admin-ui.toml:/app/kanidm-admin-ui.toml:ro
+    working_dir: /app
+    networks:
+      - kanidm-net
+
+volumes:
+  caddy_data:    # holds Caddy's internal CA + issued certs
+  caddy_config:
+  kanidm_data:   # holds kanidm.db + backups
+  kanidm_certs:  # holds the self-signed cert for kanidm:8443
+
+networks:
+  kanidm-net:
+    driver: bridge

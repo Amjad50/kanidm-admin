@@ -1,0 +1,172 @@
+{# Shared sessions card. Used from both:
+ #   - /admin/people/{id}/sessions  (admin view of another person's sessions)
+ #   - /me/sessions                 (user viewing their own sessions)
+ # Driven by `crate::views::sessions_card::SessionsCard`. The handler
+ # pre-renders this to a String and embeds it via `{{ card_html|safe }}` in
+ # the parent template.
+ #
+ # NOTE: All field access goes through `self.*` because this is a top-level
+ # struct-backed template (not an `{% include %}`d partial). Pass `String`
+ # fields to macros as `.as_str()` — passing the bare `self.field` errors
+ # with "cannot move out of a shared reference" because Askama treats the
+ # macro arg as by-value. #}
+{% import "macros/ui.html" as ui %}
+
+{% if let Some(err) = self.error.as_ref() %}
+<div class="mb-4">{{ ui::form_error_banner(message=err) }}</div>
+{% endif %}
+
+<section id="sessions-card-section" class="bg-card border border-border rounded-md shadow-sm">
+  <div class="px-5 py-4 border-b border-border flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <div class="text-sm font-semibold text-foreground">
+        {% if self.rows.is_empty() %}
+        No active sessions
+        {% else if self.rows.len() == 1 %}
+        1 session
+        {% else %}
+        {{ self.rows.len() }} sessions
+        {% endif %}
+      </div>
+      <div class="text-xs text-muted-foreground mt-0.5">{{ self.empty_subtitle }}</div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0 flex-wrap">
+      {# Toggle: include revoked + past-expiry rows. Always visible (even
+         when the row list is empty) because the empty-list state is itself
+         a thing the user might want to inspect with inactive included.
+         Askama 0.16 doesn't support an inline if-expression as a macro
+         arg, so two parallel macro calls. #}
+      {% if self.show_inactive %}
+      {{ ui::button(
+        variant="outline",
+        label="Hide inactive",
+        icon="eye-off",
+        size="sm",
+        is_link=true,
+        href=self.show_inactive_url.as_str(),
+        hx_attrs=" hx-get=\"" ~ self.show_inactive_url ~ "\" hx-target=\"#" ~ self.hx_target_id ~ "\" hx-swap=\"innerHTML\" hx-push-url=\"true\"",
+      ) }}
+      {% else %}
+      {{ ui::button(
+        variant="outline",
+        label="Show inactive",
+        icon="eye",
+        size="sm",
+        is_link=true,
+        href=self.show_inactive_url.as_str(),
+        hx_attrs=" hx-get=\"" ~ self.show_inactive_url ~ "\" hx-target=\"#" ~ self.hx_target_id ~ "\" hx-swap=\"innerHTML\" hx-push-url=\"true\"",
+      ) }}
+      {% endif %}
+      {% if !self.rows.is_empty() %}
+      {# Destructive bulk action — "Destroy all" (admin) or "Destroy other
+         sessions" (self, skipping the viewer's current session). #}
+      {{ ui::button(
+        variant="destructive",
+        label=self.bulk_revoke_label.as_str(),
+        icon="trash-2",
+        size="sm",
+        hx_attrs=" hx-post=\"" ~ self.bulk_revoke_url ~ "\" hx-target=\"#" ~ self.hx_target_id ~ "\" hx-swap=\"innerHTML\" hx-confirm=\"" ~ self.bulk_revoke_confirm ~ "\"",
+      ) }}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if self.rows.is_empty() %}
+  <div class="px-5 py-10 text-center text-muted-foreground text-sm">No active sessions.</div>
+  {% else %}
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border">
+        <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Session</th>
+        <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Issued</th>
+        <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Expires</th>
+        <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Purpose</th>
+        <th class="px-5 py-2.5 w-28"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in self.rows.iter() %}
+      {# `is_current` is true when this row matches the viewer's own current
+         session UAT id. Only populated in the self context — admin context
+         always renders the regular revoke button. Computed unconditionally
+         here at top-level scope to avoid the Askama 0.16 `{% let %}`-inside-
+         `{% if %}` scoping bug (see commit 2fdd965). #}
+      {% let is_current = self.current_session_id.as_deref() == Some(row.session_id_full.as_str()) %}
+      <tr class="border-b border-border last:border-0 hover:bg-accent transition-colors{% if is_current %} bg-primary-soft{% endif %}">
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-xs text-foreground">{{ row.session_id_short }}…</span>
+            {% if is_current %}
+            <span class="inline-flex items-center gap-1 bg-success-soft text-success rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-success"></span>
+              this session
+            </span>
+            {% endif %}
+            {{ ui::copy_button(value=row.session_id_full.as_str(), aria_label="Copy session ID") }}
+          </div>
+        </td>
+        <td class="px-5 py-3">
+          <span class="font-mono text-xs text-muted-foreground" title="{{ row.issued_at_absolute }}">{{ row.issued_at_relative }}</span>
+        </td>
+        <td class="px-5 py-3">
+          {% match &row.expiry_state %}
+          {% when crate::handlers::people::sessions::ExpiryDisplay::Never %}
+          <span class="font-mono text-xs text-muted-foreground">Never</span>
+          {% when crate::handlers::people::sessions::ExpiryDisplay::Revoked %}
+          <span class="inline-flex items-center gap-1.5 bg-destructive-soft text-destructive rounded-pill text-xs font-medium px-2 py-0.5">
+            <span class="w-1.5 h-1.5 rounded-pill bg-destructive"></span>
+            revoked
+          </span>
+          {% when crate::handlers::people::sessions::ExpiryDisplay::ExpiresAt { relative, absolute } %}
+          <span class="font-mono text-xs text-muted-foreground" title="{{ absolute }}">{{ relative }}</span>
+          {% when crate::handlers::people::sessions::ExpiryDisplay::Expired { absolute } %}
+          <span class="inline-flex items-center gap-1.5 bg-destructive-soft text-destructive rounded-pill text-xs font-medium px-2 py-0.5" title="{{ absolute }}">
+            <span class="w-1.5 h-1.5 rounded-pill bg-destructive"></span>
+            expired
+          </span>
+          {% endmatch %}
+        </td>
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            {% match &row.purpose %}
+            {% when crate::handlers::people::sessions::PurposeDisplay::ReadOnly %}
+            <span class="inline-flex items-center gap-1 bg-popover text-muted-foreground rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-muted-foreground"></span>
+              read-only
+            </span>
+            {% when crate::handlers::people::sessions::PurposeDisplay::ReadWrite %}
+            <span class="inline-flex items-center gap-1 bg-primary-soft text-primary rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-primary"></span>
+              read-write
+            </span>
+            {% when crate::handlers::people::sessions::PurposeDisplay::Privileged %}
+            <span class="inline-flex items-center gap-1 bg-primary-soft text-primary rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-primary"></span>
+              read-write
+            </span>
+            <span class="inline-flex items-center gap-1 bg-warning-soft text-warning rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-warning"></span>
+              privilege-capable
+            </span>
+            {% endmatch %}
+          </div>
+        </td>
+        <td class="px-5 py-3 text-right">
+          {# Per-row Revoke button. Text + x icon. Disabled (with a tooltip)
+             for the viewer's current session in self context. Each row carries
+             its own pre-formatted `revoke_url` so the partial doesn't need
+             to know about admin vs. self URL shapes. #}
+          <button type="button"
+                  class="bg-transparent border border-destructive text-destructive h-8 px-3 rounded text-sm hover:bg-destructive-soft inline-flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                  {% if is_current %}disabled aria-disabled="true" title="You cannot revoke the session you are currently using."{% else %} hx-post="{{ row.revoke_url }}" hx-target="#{{ self.hx_target_id }}" hx-swap="innerHTML" hx-confirm="{{ self.revoke_row_confirm }}"{% endif %}
+                  aria-label="Revoke session">
+            <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
+            <span>Revoke</span>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</section>

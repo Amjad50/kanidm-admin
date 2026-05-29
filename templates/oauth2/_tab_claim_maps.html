@@ -31,7 +31,7 @@
           <h3 class="font-mono text-sm font-semibold text-foreground">{{ group.claim_name }}</h3>
           <button type="button"
                   class="inline-flex items-center h-5 px-2 bg-primary-soft border border-primary rounded-pill text-xs text-primary font-medium hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
-                  hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/join-modal"
+                  hx-get="/admin/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/join-modal"
                   hx-target="#overlay-slot"
                   hx-swap="innerHTML"
                   title="Change join strategy">
@@ -70,7 +70,7 @@
               {# Edit button #}
               <button type="button"
                       class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
-                      hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/edit"
+                      hx-get="/admin/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
                       aria-label="Edit claim map for {{ row.group_spn }}">
@@ -78,7 +78,7 @@
                 Edit
               </button>
               {# Delete row button #}
-              <form hx-post="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/delete"
+              <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/delete"
                     hx-target="#tab-content"
                     hx-swap="innerHTML"
                     hx-confirm="Remove claim map for &quot;{{ row.group_spn }}&quot; under claim &quot;{{ group.claim_name }}&quot;?">
@@ -100,14 +100,14 @@
     <div class="px-5 py-3 border-t border-border bg-background flex items-center justify-between gap-3 flex-wrap">
       <button type="button"
               class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
-              hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/add-group"
+              hx-get="/admin/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/add-group"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
         <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
         Add group to {{ group.claim_name }}
       </button>
 
-      <form hx-post="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/delete-all"
+      <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/delete-all"
             hx-target="#tab-content"
             hx-swap="innerHTML"
             hx-confirm="Delete all group entries for claim &quot;{{ group.claim_name }}&quot;? This removes the entire claim.">
@@ -127,7 +127,7 @@
   <div class="flex">
     <button type="button"
             class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-9 px-4 transition-colors cursor-pointer"
-            hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/new"
+            hx-get="/admin/oauth2/{{ data.oauth2_id }}/claim-map/new"
             hx-target="#overlay-slot"
             hx-swap="innerHTML">
       <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>

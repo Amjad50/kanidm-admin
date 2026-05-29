@@ -228,7 +228,7 @@ pub(super) fn format_seconds(secs: u64) -> String {
 
 /// GET /groups/{id} → 308 to /groups/{id}/overview
 pub async fn redirect_to_overview(Path(id): Path<String>) -> Redirect {
-    Redirect::permanent(&format!("/groups/{id}/overview"))
+    Redirect::permanent(&format!("/admin/groups/{id}/overview"))
 }
 
 /// GET /groups/{id}/overview

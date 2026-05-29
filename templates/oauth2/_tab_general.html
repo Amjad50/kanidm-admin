@@ -16,7 +16,7 @@
           <span class="font-semibold">Warning:</span> Renaming an OAuth2 client breaks existing tokens and may require re-registering with the client application.
         </div>
         <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-name">System name</label>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               class="flex items-center gap-2">
@@ -28,7 +28,7 @@
                  autocomplete="off"
                  spellcheck="false"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
-          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
+          {{ ui::button(variant="outline", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">Used in URLs and tokens. Changing this will invalidate existing OAuth2 sessions.</div>
       </div>
@@ -36,7 +36,7 @@
       {# Display name #}
       <div>
         <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-displayname">Display name</label>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               class="flex items-center gap-2">
@@ -47,7 +47,7 @@
                  value="{{ g.displayname }}"
                  autocomplete="off"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
-          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
+          {{ ui::button(variant="outline", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">Shown on OAuth2 consent screens and the app listing.</div>
       </div>
@@ -55,7 +55,7 @@
       {# Landing URL #}
       <div>
         <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-landing">Landing URL</label>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               class="flex items-center gap-2">
@@ -66,7 +66,7 @@
                  value="{{ g.landing_url }}"
                  autocomplete="off"
                  class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
-          {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
+          {{ ui::button(variant="outline", label="Save", type_attr="submit", extra="shrink-0") }}
         </form>
         <div class="text-xs text-muted-foreground mt-1">The application's primary URL — users are redirected here after authentication.</div>
       </div>
@@ -92,7 +92,7 @@
       {% for row in g.redirect_urls %}
       <li class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-accent transition-colors">
         <span class="font-mono text-xs text-foreground break-all">{{ row.url }}</span>
-        <form hx-post="/oauth2/{{ g.id }}/redirect/{{ row.idx }}/remove"
+        <form hx-post="/admin/oauth2/{{ g.id }}/redirect/{{ row.idx }}/remove"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-confirm="Remove redirect URL &quot;{{ row.url }}&quot;?"
@@ -110,7 +110,7 @@
     {% endif %}
 
     <div class="px-5 py-4 border-t border-border">
-      <form hx-post="/oauth2/{{ g.id }}/redirect/add"
+      <form hx-post="/admin/oauth2/{{ g.id }}/redirect/add"
             hx-target="#tab-content"
             hx-swap="innerHTML"
             class="flex items-center gap-2">
@@ -141,7 +141,7 @@
             {% endif %}
           </div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
@@ -166,7 +166,7 @@
           <div class="text-sm font-medium text-foreground">Strict redirect URI</div>
           <div class="text-xs text-muted-foreground mt-0.5">Reject redirect URIs that are not exactly registered. Recommended for security.</div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
@@ -191,7 +191,7 @@
           <div class="text-sm font-medium text-foreground">Allow localhost redirects</div>
           <div class="text-xs text-muted-foreground mt-0.5">Permit redirect URIs targeting localhost / 127.0.0.1. Useful for native and desktop apps.</div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
@@ -228,7 +228,7 @@
           <div class="text-sm font-medium text-foreground">Consent prompt</div>
           <div class="text-xs text-muted-foreground mt-0.5">Always show the OAuth2 consent screen, even when the user has already granted access.</div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
@@ -252,7 +252,7 @@
           <div class="text-sm font-medium text-foreground">Prefer short username</div>
           <div class="text-xs text-muted-foreground mt-0.5">Include only the short username in tokens instead of the full SPN (e.g. <span class="font-mono">alice</span> vs <span class="font-mono">alice@example.com</span>).</div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
@@ -276,7 +276,7 @@
           <div class="text-sm font-medium text-foreground">Legacy crypto</div>
           <div class="text-xs text-muted-foreground mt-0.5">Enable legacy JWT signing algorithms (RS256). Only for clients that do not support modern ES256. Not recommended.</div>
         </div>
-        <form hx-post="/oauth2/{{ g.id }}/general"
+        <form hx-post="/admin/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"

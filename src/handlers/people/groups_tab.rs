@@ -62,7 +62,7 @@ fn build_group_row(spn: &str, person_id: &str) -> GroupRow {
     let actions_html = render_actions_cell(
         vec![DropdownItem::htmx_post(
             "Remove from group",
-            format!("/groups/{spn}/members/{encoded_person}/remove"),
+            format!("/admin/groups/{spn}/members/{encoded_person}/remove"),
         )
         .with_icon("x")
         .with_target("#person-groups-tab")

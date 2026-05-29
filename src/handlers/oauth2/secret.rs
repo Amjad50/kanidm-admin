@@ -62,7 +62,7 @@ pub async fn tab(
 ) -> AppResult<Response> {
     // Non-HTMX: redirect back to the overview tab (full-page secret is gone).
     if !is_htmx {
-        return Ok(Redirect::to(&format!("/oauth2/{id}/overview")).into_response());
+        return Ok(Redirect::to(&format!("/admin/oauth2/{id}/overview")).into_response());
     }
 
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;

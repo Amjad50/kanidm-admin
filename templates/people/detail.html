@@ -4,7 +4,7 @@
 {% block title %}{{ person.displayname }} · People · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/people" class="hover:text-muted-foreground transition-colors no-underline">People</a>
+<a href="/admin/people" class="hover:text-muted-foreground transition-colors no-underline">People</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium font-mono truncate">{{ person.spn }}</span>
 {% endblock %}
@@ -36,9 +36,9 @@
     </div>
 
     <div class="flex items-center gap-2 shrink-0">
-      {{ ui::button(variant="secondary", label="Edit", icon="pencil", href="/people/" ~ person.spn_or_uuid ~ "/edit", is_link=true, size="sm") }}
-      {{ ui::button(variant="secondary", label="Generate reset link", icon="key", size="sm", hx_attrs=" hx-get=\"/people/" ~ person.spn_or_uuid ~ "/credentials/reset\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
-      {{ ui::button(variant="destructive", label="Delete", icon="trash-2", size="sm", hx_attrs=" hx-get=\"/people/" ~ person.spn_or_uuid ~ "/delete\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
+      {{ ui::button(variant="outline", label="Edit", icon="pencil", href="/admin/people/" ~ person.spn_or_uuid ~ "/edit", is_link=true, size="sm") }}
+      {{ ui::button(variant="outline", label="Generate reset link", icon="key", size="sm", hx_attrs=" hx-get=\"/admin/people/" ~ person.spn_or_uuid ~ "/credentials/reset\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
+      {{ ui::button(variant="destructive", label="Delete", icon="trash-2", size="sm", hx_attrs=" hx-get=\"/admin/people/" ~ person.spn_or_uuid ~ "/delete\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
     </div>
 
   </section>

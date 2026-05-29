@@ -5,9 +5,9 @@
 {% block title %}Edit {{ person_displayname }} · People · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/people" class="hover:text-muted-foreground transition-colors no-underline">People</a>
+<a href="/admin/people" class="hover:text-muted-foreground transition-colors no-underline">People</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<a href="/people/{{ person_id }}/overview" class="hover:text-muted-foreground transition-colors no-underline">{{ person_id }}</a>
+<a href="/admin/people/{{ person_id }}/overview" class="hover:text-muted-foreground transition-colors no-underline">{{ person_id }}</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-foreground font-medium">Edit</span>
 {% endblock %}
@@ -26,7 +26,7 @@
   <div class="mb-5" style="max-width:680px">{{ ui::form_error_banner(message=msg) }}</div>
   {% endif %}
 
-  <form method="post" action="/people/{{ person_id }}" style="max-width:680px">
+  <form method="post" action="/admin/people/{{ person_id }}" style="max-width:680px">
     <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-5">
 
       <div class="bg-warning-soft border border-warning text-warning text-sm rounded px-4 py-3">
@@ -42,7 +42,7 @@
       {{ forms::email_rows_field(field_id="email-rows", input_name="email", rows=emails, label="Emails", add_label="Add email", placeholder="user@example.com", helper="The starred email is primary. Other systems may use it first.") }}
 
       <div class="flex items-center justify-end gap-2 border-t border-border pt-4 mt-2">
-        {{ ui::button(variant="ghost", label="Cancel", href="/people/" ~ person_id ~ "/overview", is_link=true) }}
+        {{ ui::button(variant="ghost", label="Cancel", href="/admin/people/" ~ person_id ~ "/overview", is_link=true) }}
         {{ ui::button(variant="primary", label="Save changes", icon="save", type_attr="submit") }}
       </div>
 

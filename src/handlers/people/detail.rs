@@ -196,7 +196,7 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
 
 /// GET /people/{id}  →  308 to /people/{id}/overview
 pub async fn redirect_to_overview(Path(id): Path<String>) -> Redirect {
-    Redirect::permanent(&format!("/people/{id}/overview"))
+    Redirect::permanent(&format!("/admin/people/{id}/overview"))
 }
 
 /// GET /people/{id}/overview

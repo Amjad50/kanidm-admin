@@ -65,7 +65,7 @@ fn build_validity_field(
     clear_label: &'static str,
     clear_description: &'static str,
 ) -> ValidityField {
-    let form_action = format!("/people/{person_id}/validity/{field_name}");
+    let form_action = format!("/admin/people/{person_id}/validity/{field_name}");
     match raw.as_deref().and_then(parse_kanidm_datetime) {
         Some(dt) => {
             let (date_value, time_value) = split_datetime(dt);

@@ -8,7 +8,7 @@
   <span class="w-12 h-12 inline-flex shrink-0 text-muted-foreground">{{ crate::views::icons::icon("shield") }}</span>
   <h3 class="text-lg font-semibold">No OAuth2 applications yet</h3>
   <p class="text-muted-foreground text-sm max-w-xs">Register your first OAuth2 resource server to allow applications to authenticate with Kanidm.</p>
-  {{ ui::button(variant="primary", label="Create your first app", icon="plus", href="/oauth2/new", is_link=true, extra="mt-2") }}
+  {{ ui::button(variant="primary", label="Create your first app", icon="plus", href="/admin/oauth2/new", is_link=true, extra="mt-2") }}
   {% endif %}
 </div>
 {% else %}

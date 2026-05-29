@@ -1,0 +1,26 @@
+# Things the Dockerfile doesn't need.
+target/
+node_modules/
+# Exclude built artifacts (app.css, app.js — bun regenerates them inside
+# the image) but KEEP the source-tracked assets (favicon, logos, etc.)
+# which are git-tracked and have no build step.
+static/app.css
+static/app.js
+static/*.map
+.git/
+.github/
+.claude/
+.vscode/
+.zed/
+docs/
+design/
+deploy/
+*.md
+TODO.md
+.gitignore
+.dockerignore
+Caddyfile
+
+# Local config files — never bake secrets/host-specific config into the image.
+kanidm-admin-ui.toml
+.env

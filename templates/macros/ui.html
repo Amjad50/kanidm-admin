@@ -3,7 +3,15 @@
 {#
   Render a button or link.
 
-  variant  : "primary" | "secondary" | "ghost" | "destructive" | "icon_only"
+  variant  : "primary" | "secondary" | "outline" | "ghost" | "destructive" | "icon_only"
+             - primary: filled orange CTA
+             - secondary: subtle bg-card fill (modal-footer style)
+             - outline: clearly bordered, foreground text, deepens on hover.
+                        Use for top-of-detail action rows (Edit, View, etc.).
+             - destructive: outlined, muted-red text + soft-red hover bg.
+                        Use for top-of-detail Delete actions.
+             - ghost: borderless, hover deepens text.
+             - icon_only: square 7×7, used as raw <button> for chrome.
   label    : visible text (omitted for icon_only)
   icon     : lucide icon name; "" = no icon
   href     : the URL for link rendering; ignored when is_link=false
@@ -20,22 +28,19 @@
   disabled : render disabled attribute; default false
 #}
 {% macro button(variant="primary", label="", icon="", href="", is_link=false, hx_attrs="", type_attr="button", size="md", extra="", aria="", has_aria=false, form_id="", has_form=false, disabled=false) %}
-{%- set base = "inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer" -%}
-{%- set sizing = "h-9 px-4" -%}
-{%- if size == "sm" %}{% set sizing = "h-8 px-3" %}{% endif -%}
-{%- set palette = "" -%}
-{%- if variant == "primary" %}{% set palette = "bg-primary text-primary-foreground hover:bg-primary/90 border-0" %}{% endif -%}
-{%- if variant == "secondary" %}{% set palette = "bg-card border border-border text-foreground hover:bg-accent hover:border-input" %}{% endif -%}
-{%- if variant == "ghost" %}{% set palette = "bg-transparent border-0 text-muted-foreground hover:text-foreground hover:bg-accent" %}{% endif -%}
-{%- if variant == "destructive" %}{% set palette = "bg-transparent border border-border text-muted-foreground hover:border-destructive hover:text-destructive" %}{% endif -%}
-{%- if variant == "icon_only" %}{% set palette = "bg-transparent border-0 text-muted-foreground hover:text-foreground inline-flex items-center justify-center w-7 h-7 rounded" %}{% set sizing = "" %}{% endif -%}
+{# Askama 0.16 gotcha: {% set %} inside {% if %} branches is locally
+   scoped — the value does NOT leak to the outer macro body. So instead of
+   building sizing/palette via {% set %} inside conditionals, every class
+   string is inlined here inside the class= attribute via {% if %}/{% else
+   if %} chains. Ugly but correct, and every class still appears literally
+   in the template source (Tailwind v4 scanner happy). #}
 {%- if is_link -%}
-<a href="{{ href }}" class="{{ base }} {{ sizing }} {{ palette }} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
+<a href="{{ href }}" class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer {% if variant == "icon_only" %}items-center justify-center w-7 h-7 rounded{% else if size == "sm" %}h-8 px-3{% else %}h-9 px-4{% endif %} {% if variant == "primary" %}bg-primary text-primary-foreground hover:bg-primary/90 border-0{% else if variant == "secondary" %}bg-card border border-border text-foreground hover:bg-accent hover:border-input{% else if variant == "outline" %}bg-transparent border border-input text-foreground hover:bg-accent hover:border-ring{% else if variant == "ghost" %}bg-transparent border-0 text-muted-foreground hover:text-foreground hover:bg-accent{% else if variant == "destructive" %}bg-transparent border border-input text-foreground hover:bg-destructive-soft hover:border-destructive hover:text-destructive{% else if variant == "icon_only" %}bg-transparent border-0 text-muted-foreground hover:text-foreground{% endif %} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
   {%- if icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(icon) }}</span>{% endif -%}
   {%- if variant != "icon_only" %}<span>{{ label }}</span>{% endif -%}
 </a>
 {%- else -%}
-<button type="{{ type_attr }}"{% if has_form %} form="{{ form_id }}"{% endif %}{% if disabled %} disabled{% endif %} class="{{ base }} {{ sizing }} {{ palette }} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
+<button type="{{ type_attr }}"{% if has_form %} form="{{ form_id }}"{% endif %}{% if disabled %} disabled{% endif %} class="inline-flex items-center gap-2 rounded text-sm font-medium transition-colors no-underline cursor-pointer {% if variant == "icon_only" %}items-center justify-center w-7 h-7 rounded{% else if size == "sm" %}h-8 px-3{% else %}h-9 px-4{% endif %} {% if variant == "primary" %}bg-primary text-primary-foreground hover:bg-primary/90 border-0{% else if variant == "secondary" %}bg-card border border-border text-foreground hover:bg-accent hover:border-input{% else if variant == "outline" %}bg-transparent border border-input text-foreground hover:bg-accent hover:border-ring{% else if variant == "ghost" %}bg-transparent border-0 text-muted-foreground hover:text-foreground hover:bg-accent{% else if variant == "destructive" %}bg-transparent border border-input text-foreground hover:bg-destructive-soft hover:border-destructive hover:text-destructive{% else if variant == "icon_only" %}bg-transparent border-0 text-muted-foreground hover:text-foreground{% endif %} {{ extra }}"{{ hx_attrs|safe }}{% if has_aria %} aria-label="{{ aria }}"{% endif %}>
   {%- if icon != "" %}<span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(icon) }}</span>{% endif -%}
   {%- if variant != "icon_only" %}<span>{{ label }}</span>{% endif -%}
 </button>
@@ -74,12 +79,10 @@
             Default "alert-circle". Pass icon="" to omit the icon column.
 #}
 {% macro alert_banner(kind, message, icon="alert-circle") %}
-{%- set bg = "bg-destructive-soft" -%}{%- set border = "border-destructive" -%}{%- set txt = "text-destructive" -%}
-{%- if kind == "warning" %}{% set bg = "bg-warning-soft" %}{% set border = "border-warning" %}{% set txt = "text-warning" %}{% endif -%}
-{%- if kind == "success" %}{% set bg = "bg-success-soft" %}{% set border = "border-success" %}{% set txt = "text-success" %}{% endif -%}
-{%- if kind == "info" %}{% set bg = "bg-info-soft" %}{% set border = "border-info" %}{% set txt = "text-info" %}{% endif -%}
-<div class="flex gap-3 p-3 rounded-md border {{ border }}/30 {{ bg }} text-sm">
-  {% if icon != "" %}<div class="{{ txt }} shrink-0 mt-0.5"><span class="w-4 h-4 inline-flex">{{ crate::views::icons::icon(icon) }}</span></div>{% endif %}
+{# Conditionals inlined per the Askama 0.16 set-scoping gotcha (see
+   button macro above). #}
+<div class="flex gap-3 p-3 rounded-md border text-sm {% if kind == "warning" %}border-warning/30 bg-warning-soft{% else if kind == "success" %}border-success/30 bg-success-soft{% else if kind == "info" %}border-info/30 bg-info-soft{% else %}border-destructive/30 bg-destructive-soft{% endif %}">
+  {% if icon != "" %}<div class="shrink-0 mt-0.5 {% if kind == "warning" %}text-warning{% else if kind == "success" %}text-success{% else if kind == "info" %}text-info{% else %}text-destructive{% endif %}"><span class="w-4 h-4 inline-flex">{{ crate::views::icons::icon(icon) }}</span></div>{% endif %}
   <div class="flex-1 text-foreground">{{ message }}</div>
 </div>
 {% endmacro %}
@@ -107,13 +110,10 @@
         "no_credentials", "neutral", or any unknown value → popover / muted-foreground (the default)
 #}
 {% macro status_badge(label, kind="neutral") %}
-{%- set bg = "bg-popover" -%}{%- set txt = "text-muted-foreground" -%}{%- set dot = "bg-muted-foreground" -%}
-{%- if kind == "active" || kind == "success" %}{% set bg = "bg-success-soft" %}{% set txt = "text-success" %}{% set dot = "bg-success" %}{% endif -%}
-{%- if kind == "expired" || kind == "destructive" %}{% set bg = "bg-destructive-soft" %}{% set txt = "text-destructive" %}{% set dot = "bg-destructive" %}{% endif -%}
-{%- if kind == "not_yet_active" || kind == "warning" %}{% set bg = "bg-warning-soft" %}{% set txt = "text-warning" %}{% set dot = "bg-warning" %}{% endif -%}
-{%- if kind == "info" %}{% set bg = "bg-info-soft" %}{% set txt = "text-info" %}{% set dot = "bg-info" %}{% endif -%}
-<span class="inline-flex items-center gap-1.5 {{ bg }} {{ txt }} rounded-pill text-xs font-medium px-2 py-0.5">
-  <span class="w-1.5 h-1.5 rounded-pill {{ dot }}"></span>
+{# Conditionals inlined per the Askama 0.16 set-scoping gotcha (see
+   button macro above). #}
+<span class="inline-flex items-center gap-1.5 rounded-pill text-xs font-medium px-2 py-0.5 {% if kind == "active" || kind == "success" %}bg-success-soft text-success{% else if kind == "expired" || kind == "destructive" %}bg-destructive-soft text-destructive{% else if kind == "not_yet_active" || kind == "warning" %}bg-warning-soft text-warning{% else if kind == "info" %}bg-info-soft text-info{% else %}bg-popover text-muted-foreground{% endif %}">
+  <span class="w-1.5 h-1.5 rounded-pill {% if kind == "active" || kind == "success" %}bg-success{% else if kind == "expired" || kind == "destructive" %}bg-destructive{% else if kind == "not_yet_active" || kind == "warning" %}bg-warning{% else if kind == "info" %}bg-info{% else %}bg-muted-foreground{% endif %}"></span>
   {{ label }}
 </span>
 {% endmacro %}
@@ -130,10 +130,10 @@
                   Default "lg".
 #}
 {% macro identity_cell(initials, displayname, spn, href, avatar_size="lg") %}
-{%- set avatar = "w-9 h-9 text-xs rounded-pill" -%}
-{%- if avatar_size == "md" %}{% set avatar = "w-8 h-8 text-xs rounded" %}{% endif -%}
+{# Conditionals inlined per the Askama 0.16 set-scoping gotcha (see
+   button macro above). #}
 <div class="flex items-center gap-3">
-  <span class="{{ avatar }} bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center font-semibold shrink-0 font-sans">{{ initials }}</span>
+  <span class="{% if avatar_size == "md" %}w-8 h-8 text-xs rounded{% else %}w-9 h-9 text-xs rounded-pill{% endif %} bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center font-semibold shrink-0 font-sans">{{ initials }}</span>
   <div class="min-w-0">
     <a href="{{ href }}"
        class="font-medium text-foreground text-sm no-underline hover:underline"

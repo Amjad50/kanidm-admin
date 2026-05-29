@@ -10,7 +10,7 @@
   <section class="bg-card border border-border rounded-md shadow-sm">
     {{ ui::card_header(eyebrow="Refresh token expiry", subtitle="How long a refresh token remains valid. Leave blank to use the server default.") }}
     <div class="px-5 py-4">
-      <form hx-post="/oauth2/{{ data.oauth2_id }}/advanced"
+      <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/advanced"
             hx-target="#tab-content"
             hx-swap="innerHTML"
             class="flex items-center gap-2">
@@ -22,7 +22,7 @@
                {% if let Some(s) = data.refresh_expiry_seconds %}value="{{ s }}"{% endif %}
                class="bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors w-48" />
         <span class="text-sm text-muted-foreground shrink-0">seconds</span>
-        {{ ui::button(variant="secondary", label="Save", type_attr="submit", extra="shrink-0") }}
+        {{ ui::button(variant="outline", label="Save", type_attr="submit", extra="shrink-0") }}
       </form>
       <div class="text-xs text-muted-foreground mt-2">In seconds. Leave blank to use the server default. Typical: 7–30 days (604800–2592000).</div>
     </div>
@@ -39,7 +39,7 @@
           <div class="text-sm font-medium text-foreground">Device flow</div>
           <div class="text-xs text-muted-foreground mt-0.5">Enable OAuth2 device authorization grant (RFC 8628) for this client. Useful for devices without a browser, e.g. CLI tools.</div>
         </div>
-        <form hx-post="/oauth2/{{ data.oauth2_id }}/advanced"
+        <form hx-post="/admin/oauth2/{{ data.oauth2_id }}/advanced"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-trigger="change"
