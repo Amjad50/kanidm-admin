@@ -1,4 +1,4 @@
-mod common;
+pub(crate) mod common;
 pub mod create;
 pub mod credentials;
 pub mod delete;

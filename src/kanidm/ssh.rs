@@ -162,7 +162,7 @@ pub fn validate_pubkey_shape(key: &str) -> Result<(), &'static str> {
         return Err("Public key is required.");
     }
     let has_prefix = KNOWN_PREFIXES.iter().any(|p| key.starts_with(p));
-    let has_two_fields = key.splitn(2, ' ').nth(1).is_some_and(|s| !s.is_empty());
+    let has_two_fields = key.split_once(' ').map(|x| x.1).is_some_and(|s| !s.is_empty());
     if !has_prefix || !has_two_fields {
         return Err(
             "Key must start with a recognised SSH key type (ssh-ed25519, ssh-rsa, ecdsa-sha2-*, etc.).",

@@ -1,5 +1,3 @@
-use kanidm_client::{ClientError, StatusCode};
-
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::attr_first;
@@ -27,6 +25,13 @@ pub fn validate_group_name(s: &str) -> Result<(), &'static str> {
     Ok(())
 }
 
+pub(crate) fn validate_description_optional(s: &str) -> Result<(), &'static str> {
+    if s.trim().len() > 1024 {
+        return Err("Description must be 1024 characters or less.");
+    }
+    Ok(())
+}
+
 // ── Shared API helpers ────────────────────────────────────────────────────────
 
 pub(super) async fn fetch_group(
@@ -47,17 +52,7 @@ pub(super) async fn fetch_group(
         .ok_or(AppError::NotFound)
 }
 
-pub(super) fn friendly_error(context: &str, e: &ClientError) -> String {
-    match e {
-        ClientError::Http(StatusCode::CONFLICT, _, _) => {
-            format!("Could not {context}: this name is already in use.")
-        }
-        ClientError::Http(StatusCode::NOT_FOUND, _, _) => {
-            format!("Could not {context}: resource not found.")
-        }
-        _ => format!("Could not {context}: {e:?}"),
-    }
-}
+pub(super) use crate::handlers::common::friendly_client_error as friendly_error;
 
 // ── Computed group header ─────────────────────────────────────────────────────
 
@@ -129,6 +124,31 @@ pub(super) fn spn_initials(spn: &str) -> String {
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod description_tests {
+    use super::validate_description_optional;
+
+    #[test]
+    fn empty_is_ok() {
+        assert!(validate_description_optional("").is_ok());
+    }
+
+    #[test]
+    fn whitespace_only_is_ok() {
+        assert!(validate_description_optional("   ").is_ok());
+    }
+
+    #[test]
+    fn exactly_1024_chars_is_ok() {
+        assert!(validate_description_optional(&"a".repeat(1024)).is_ok());
+    }
+
+    #[test]
+    fn over_1024_chars_is_rejected() {
+        assert!(validate_description_optional(&"a".repeat(1025)).is_err());
+    }
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,15 +1,17 @@
 use askama::Template;
 use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect, Response};
-use axum::Form;
+use axum_extra::extract::Form;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::common::{emails_to_rows, EmailRow};
+use crate::handlers::people::common::validate_email_list_optional;
 use crate::handlers::people::create::FormField;
 use crate::views::BaseFields;
 use crate::AppState;
 
-use super::common::{friendly_error, validate_group_name};
+use super::common::{friendly_error, validate_description_optional, validate_group_name};
 
 // ── Form data ─────────────────────────────────────────────────────────────────
 
@@ -17,6 +19,10 @@ use super::common::{friendly_error, validate_group_name};
 pub struct CreateForm {
     pub name: String,
     pub entry_managed_by: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default, rename = "mail")]
+    pub mails: Vec<String>,
 }
 
 // ── View ──────────────────────────────────────────────────────────────────────
@@ -27,6 +33,8 @@ pub struct CreateView {
     pub base: BaseFields,
     pub name_field: FormField,
     pub entry_managed_by_field: FormField,
+    pub description_field: FormField,
+    pub emails: Vec<EmailRow>,
     pub form_error: Option<String>,
 }
 
@@ -42,7 +50,7 @@ impl IntoResponse for CreateView {
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 pub async fn create_form(user: AdminUser) -> AppResult<Response> {
-    Ok(build_view(&user, CreateForm::default(), None, None).into_response())
+    Ok(build_view(&user, CreateForm::default(), None, None, None, vec![]).into_response())
 }
 
 pub async fn submit(
@@ -51,14 +59,29 @@ pub async fn submit(
     Form(form): Form<CreateForm>,
 ) -> AppResult<Response> {
     let name_err = validate_group_name(&form.name).err();
+    let desc_err = validate_description_optional(&form.description).err();
+    let mails_err = validate_email_list_optional(&form.mails).err();
 
-    if name_err.is_some() {
-        return Ok(build_view(&user, form, name_err, None).into_response());
+    if name_err.is_some() || desc_err.is_some() || mails_err.is_some() {
+        let emails_for_view = emails_to_rows(&form.mails);
+        return Ok(
+            build_view(&user, form, name_err, desc_err, mails_err, emails_for_view)
+                .into_response(),
+        );
     }
 
     let trimmed_name = form.name.trim().to_string();
-    let managed_by = form.entry_managed_by.trim();
-    let managed_by_opt = if managed_by.is_empty() { None } else { Some(managed_by) };
+    let managed_by = form.entry_managed_by.trim().to_string();
+    let managed_by_opt: Option<&str> = if managed_by.is_empty() { None } else { Some(&managed_by) };
+    let trimmed_desc = form.description.trim().to_string();
+    let mails: Vec<String> = form
+        .mails
+        .iter()
+        .map(|e| e.trim().to_string())
+        .filter(|e| !e.is_empty())
+        .collect();
+
+    let has_extras = !trimmed_desc.is_empty() || !mails.is_empty();
 
     let client = state
         .kanidm
@@ -66,22 +89,75 @@ pub async fn submit(
         .await
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-    match client.idm_group_create(&trimmed_name, managed_by_opt).await {
-        Ok(_) => Ok(Redirect::to(&format!("/groups/{trimmed_name}/overview")).into_response()),
-        Err(e) => {
-            let msg = friendly_error("create group", &e);
-            tracing::warn!(error = ?e, "kanidm rejected group create");
-            Ok(build_view(&user, form, None, Some(msg)).into_response())
+    if let Err(e) = client.idm_group_create(&trimmed_name, managed_by_opt).await {
+        let msg = friendly_error("create group", &e);
+        tracing::warn!(error = ?e, "kanidm rejected group create");
+        let emails_for_view = emails_to_rows(&form.mails);
+        let mut view = build_view(&user, form, None, None, None, emails_for_view);
+        view.form_error = Some(msg);
+        return Ok(view.into_response());
+    }
+
+    tracing::info!(group = %trimmed_name, "group created");
+
+    if has_extras {
+        let mut extras_err: Option<String> = None;
+
+        if !trimmed_desc.is_empty()
+            && let Err(e) = client.idm_group_set_description(&trimmed_name, &trimmed_desc).await {
+                tracing::warn!(error = ?e, group = %trimmed_name, "setting description failed");
+                extras_err = Some(friendly_error("set group description", &e));
+            }
+
+        if extras_err.is_none() && !mails.is_empty() {
+            let mail_refs: Vec<&str> = mails.iter().map(String::as_str).collect();
+            if let Err(e) = client.idm_group_set_mail(&trimmed_name, &mail_refs).await {
+                tracing::warn!(error = ?e, group = %trimmed_name, "setting mail failed");
+                extras_err = Some(friendly_error("set group mail", &e));
+            }
+        }
+
+        if let Some(extras_msg) = extras_err {
+            match client.idm_group_delete(&trimmed_name).await {
+                Ok(_) => {
+                    let emails_for_view = emails_to_rows(&form.mails);
+                    let mut view = build_view(&user, form, None, None, None, emails_for_view);
+                    view.form_error = Some(extras_msg);
+                    return Ok(view.into_response());
+                }
+                Err(rollback_err) => {
+                    tracing::error!(
+                        error = ?rollback_err,
+                        group = %trimmed_name,
+                        "ROLLBACK FAILED after partial group create"
+                    );
+                    let msg = format!(
+                        "{extras_msg} The group \"{trimmed_name}\" was partially created and could not be cleaned up automatically — fix it via Edit or delete it manually."
+                    );
+                    let emails_for_view = emails_to_rows(&form.mails);
+                    let mut view = build_view(&user, form, None, None, None, emails_for_view);
+                    view.form_error = Some(msg);
+                    return Ok(view.into_response());
+                }
+            }
         }
     }
+
+    Ok(Redirect::to(&format!("/groups/{trimmed_name}/overview")).into_response())
 }
 
+// ── View builder ──────────────────────────────────────────────────────────────
+
+#[allow(clippy::too_many_arguments)]
 fn build_view(
     user: &AdminUser,
     form: CreateForm,
     name_err: Option<&'static str>,
-    form_error: Option<String>,
+    desc_err: Option<&'static str>,
+    mails_err: Option<&'static str>,
+    emails: Vec<EmailRow>,
 ) -> CreateView {
+    let resolved_form_error = mails_err.map(str::to_owned);
     CreateView {
         base: BaseFields::new(user, "groups"),
         name_field: FormField {
@@ -120,6 +196,22 @@ fn build_view(
             multiline: false,
             rows: 0,
         },
-        form_error,
+        description_field: FormField {
+            id: "description",
+            name: "description",
+            label: "Description",
+            input_type: "text",
+            value: form.description,
+            placeholder: "Short description of this group's purpose",
+            required: false,
+            autofocus: false,
+            suffix: None,
+            helper: None,
+            error: desc_err.map(str::to_owned),
+            multiline: true,
+            rows: 3,
+        },
+        emails,
+        form_error: resolved_form_error,
     }
 }

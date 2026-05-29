@@ -45,6 +45,76 @@ document.addEventListener('click', (event) => {
   if (radioDatetime) radioDatetime.checked = true;
 });
 
+// Email-rows handler — binds to any container marked [data-email-rows].
+// Add button: [data-add-email][data-target="container-id"]
+// Remove button inside a row: [data-remove]
+// Star button inside a row: [data-make-primary]
+// Clone template: <template id="${container-id}-tpl">
+document.addEventListener('click', (event) => {
+  const target = event.target as HTMLElement | null;
+  if (!target) return;
+
+  const addBtn = target.closest<HTMLElement>('[data-add-email]');
+  if (addBtn) {
+    const containerId = addBtn.getAttribute('data-target');
+    if (!containerId) return;
+    const rows = document.getElementById(containerId);
+    if (!rows) return;
+    const tpl = document.getElementById(`${containerId}-tpl`) as HTMLTemplateElement | null;
+    let newRow: HTMLElement | null = null;
+    if (tpl) {
+      newRow = tpl.content.cloneNode(true) as HTMLElement;
+      newRow = (newRow as DocumentFragment).firstElementChild as HTMLElement;
+    } else {
+      const first = rows.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      newRow = first.cloneNode(true) as HTMLElement;
+      const star = newRow.querySelector<HTMLElement>('[data-make-primary]');
+      if (star) {
+        star.classList.remove('text-warning');
+        star.classList.add('text-tertiary', 'hover:text-warning');
+        star.querySelector('svg')?.setAttribute('fill', 'none');
+      }
+      const input = newRow.querySelector<HTMLInputElement>('input[type=email]');
+      if (input) input.value = '';
+    }
+    if (!newRow) return;
+    rows.appendChild(newRow);
+    newRow.querySelector<HTMLInputElement>('input[type=email]')?.focus();
+    return;
+  }
+
+  const removeBtn = target.closest<HTMLElement>('[data-remove]');
+  if (removeBtn) {
+    const rows = removeBtn.closest<HTMLElement>('[data-email-rows]');
+    if (!rows) return;
+    removeBtn.closest<HTMLElement>('.flex')?.remove();
+    return;
+  }
+
+  const starBtn = target.closest<HTMLElement>('[data-make-primary]');
+  if (starBtn) {
+    const rows = starBtn.closest<HTMLElement>('[data-email-rows]');
+    if (!rows) return;
+    const row = starBtn.closest<HTMLElement>('.flex');
+    if (!row) return;
+
+    rows.querySelectorAll<HTMLElement>('[data-make-primary]').forEach(b => {
+      b.classList.remove('text-warning');
+      b.classList.add('text-tertiary', 'hover:text-warning');
+      b.querySelector('svg')?.setAttribute('fill', 'none');
+    });
+
+    starBtn.classList.add('text-warning');
+    starBtn.classList.remove('text-tertiary', 'hover:text-warning');
+    starBtn.querySelector('svg')?.setAttribute('fill', 'currentColor');
+
+    if (rows.firstElementChild !== row) {
+      rows.insertBefore(row, rows.firstElementChild);
+    }
+  }
+});
+
 function showCopiedFeedback(button: HTMLElement) {
   const svg = button.querySelector('svg');
   if (!svg) return;

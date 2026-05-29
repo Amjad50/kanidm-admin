@@ -16,7 +16,7 @@
   <div class="mb-7">
     <h1 class="text-2xl font-semibold tracking-tight">Create a new person</h1>
     <div class="text-secondary text-sm mt-1" style="max-width:560px">
-      Just the basics — you can add email, set credentials, and configure groups on the next page.
+      Set the basics and optional contact details. You can add credentials and configure groups on the next page.
     </div>
   </div>
 
@@ -32,6 +32,32 @@
       {{ name_field|safe }}
 
       {{ displayname_field|safe }}
+
+      {{ legalname_field|safe }}
+
+      <div>
+        <label class="block text-sm font-medium text-primary mb-1.5">Emails</label>
+        <div id="email-rows" data-email-rows="email-rows" class="flex flex-col gap-2">
+          {% for email in emails %}
+          <div class="flex items-center gap-2">
+            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if email.is_primary %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+            <input type="email" name="email" value="{{ email.value }}" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
+            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+              {% include "icons/_x.html" %}
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" data-add-email data-target="email-rows" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add email</span>
+        </button>
+        <div class="text-tertiary text-xs mt-2">The starred email is primary. Other systems may use it first.</div>
+      </div>
 
       <div class="flex items-center justify-end gap-2 border-t border-subtle pt-4 mt-2">
         <a href="/people"
@@ -55,4 +81,19 @@
   </form>
 
 </div>
+
+<template id="email-rows-tpl">
+  <div class="flex items-center gap-2">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </button>
+    <input type="email" name="email" value="" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</template>
+
 {% endblock %}

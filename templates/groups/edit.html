@@ -38,49 +38,31 @@
       {{ description_field.render().unwrap()|safe }}
 
       <div>
-        <label class="block text-sm font-medium text-secondary mb-1.5">
+        <label class="block text-sm font-medium text-primary mb-1.5">
           Mail addresses
         </label>
-        <div id="emails-list">
+        <div id="group-edit-mail-rows" data-email-rows="group-edit-mail-rows" class="flex flex-col gap-2">
           {% for row in emails %}
-          <div class="flex items-center gap-2 mb-2">
-            <input
-              type="email"
-              name="email"
-              value="{{ row.value }}"
-              class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
-              placeholder="group@example.com"
-            />
-            {% if row.is_primary %}
-            <span class="text-xs text-tertiary shrink-0">primary</span>
-            {% endif %}
-            <button type="button"
-                    class="text-tertiary hover:text-danger transition-colors shrink-0"
-                    onclick="this.closest('div').remove()">
+          <div class="flex items-center gap-2">
+            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if row.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if row.is_primary %}Primary{% else %}Set as primary{% endif %}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if row.is_primary %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+            <input type="email" name="email" value="{{ row.value }}" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" />
+            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
               {% include "icons/_x.html" %}
             </button>
           </div>
           {% endfor %}
         </div>
-        <button type="button"
-                class="mt-1 text-sm text-link hover:underline inline-flex items-center gap-1"
-                onclick="addEmail()">
+        <button type="button" data-add-email data-target="group-edit-mail-rows" class="mt-1 text-sm text-secondary hover:text-primary inline-flex items-center gap-1.5 cursor-pointer border-0 bg-transparent transition-colors">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 5v14M5 12h14"/>
           </svg>
           Add mail
         </button>
         <div class="text-tertiary text-xs mt-1.5">First address is primary. Leave empty to remove all mail.</div>
-        <script>
-          function addEmail() {
-            const list = document.getElementById('emails-list');
-            const row = document.createElement('div');
-            row.className = 'flex items-center gap-2 mb-2';
-            row.innerHTML = '<input type="email" name="email" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" /><button type="button" class="text-tertiary hover:text-danger transition-colors shrink-0" onclick="this.closest(\'div\').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
-            list.appendChild(row);
-            row.querySelector('input').focus();
-          }
-        </script>
       </div>
 
       {{ entry_managed_by_field.render().unwrap()|safe }}
@@ -100,4 +82,19 @@
   </form>
 
 </div>
+
+<template id="group-edit-mail-rows-tpl">
+  <div class="flex items-center gap-2">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </button>
+    <input type="email" name="email" value="" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</template>
+
 {% endblock %}

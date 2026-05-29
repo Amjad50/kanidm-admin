@@ -126,10 +126,10 @@ pub async fn list(
         })
         .collect();
 
-    filtered.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    filtered.sort_by_key(|a| a.name.to_lowercase());
 
     let filtered_count = filtered.len();
-    let total_pages = (filtered_count + per - 1) / per;
+    let total_pages = filtered_count.div_ceil(per);
     let page = page.min(total_pages.max(1));
 
     let start = (page - 1) * per;

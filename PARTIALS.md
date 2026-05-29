@@ -47,13 +47,15 @@ Each row below documents which strategy applies.
 | 14 | Star icon (filled vs outline, for primary-email indicator) | rejected | n/a | n/a | Inlined in `templates/people/edit.html` email rows loop — only one call-site so far; extract if 4D reuses it | 2D |
 | 15 | Remove "×" button (small icon-only delete affordance, used in list rows / chips) | extracted | `{% include %}` icon-only | `templates/icons/_x.html` | 2B (group chip), 2D (email row), 2E (modal close button), 3C (member chip), 4E (scope row), 4F (claim row) | 2E |
 | 16 | Confirm-destructive modal body (type-NAME-to-confirm input + confirm button disabled until match) | extracted | nested `Template` + `\|safe` | `templates/partials/_destructive_confirm.html` (struct: `DestructiveConfirm` in `src/views/partials.rs`) | 2E, 3E, 4J | 2E |
-| 17 | Email-row interactive script (add / remove / star-to-primary JS) | candidate | inline `<script>` in template, or hoist to `static/app.js` | Inline in `templates/people/edit.html` now | 2D; any future multi-email edit form | TBD (hoist when a second form needs it) |
+| 17 | Email-row interactive script (add / remove / star-to-primary JS) | extracted | global delegated handler in `islands/entry.ts` — attaches to `[data-email-rows]` containers; add button uses `[data-add-email][data-target="<container-id>"]`; template element named `<container-id>-tpl`; remove rows via `[data-remove]`; star/primary via `[data-make-primary]` | `islands/entry.ts` (see JS companions row 6) | people/create, people/edit, groups/create, groups/edit | this task |
 | 18 | Identity row (avatar initials + display name + SPN mono) | extracted | nested `Template` + `\|safe` | `templates/partials/_identity_row.html` (struct: `IdentityRow` in `src/views/partials.rs`) | 2E (delete modal), 3E (delete group), 4J (delete oauth2) | 2E |
 | 19 | Destructive-action footer (Cancel + disabled confirm button wired to `_destructive_confirm` input) | extracted | nested `Template` + `\|safe` | `templates/partials/_delete_footer.html` (struct: `DeleteFooter` with `action_url: String`, `confirm_label: String`, `input_id: String` in `src/views/partials.rs`) | 2E, 3A (group delete), 3C (member purge); reusable by 4J | 2E |
 | 20 | SPN initials helper (`spn → "AB"` for avatar badges) | extracted (groups only) | Rust fn, not a template | `pub(super) fn spn_initials(spn: &str) -> String` in `src/handlers/groups/common.rs` | 3B (overview member chips), 3C (member rows) | 3 |
 | 21 | Accent ring shadow (search-match-highlight box-shadow using accent color, 20% mix) | extracted | Tailwind `shadow-accent-ring` utility backed by `--shadow-accent-ring` token in `styles/tokens.css` | 3A (groups list row search hit) | 3 |
 | 22 | Policy error fragment (inline danger banner returned from HTMX policy set/reset failures, Askama-escaped) | extracted | inline `#[derive(Template)] #[template(source = …)]` in `src/handlers/groups/policy.rs` (`PolicyErrorFragment`) | 3D | 3 |
 | 23 | Members error slot (HTMX `hx-swap-oob` target above members table for add/remove errors) | extracted | `<div id="members-error">` slot in `templates/groups/_tab_members.html`; OOB fragment returned by `add`/`remove` handlers in `src/handlers/groups/members.rs` | 3C; pattern reusable for any tab subscreen with a list mutation | 3 |
+
+| 24 | `EmailRow` struct + `emails_to_rows` helper | extracted | Rust shared type | `src/handlers/common.rs` | people/create, people/edit, groups/create, groups/edit | this task |
 
 ---
 
@@ -68,6 +70,7 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 | 3 | Toast renderer | proposed | `islands/toast.tsx` (Preact island bound to `#toast-stack`) | `htmx:trigger` event `toast` payload |
 | 4 | Datetime picker with keyword shortcuts (now / never / clear) | proposed | `islands/datetime_keyword.tsx` (mounted by data-attr — v1 skipped: 2J uses native date/time inputs + global [data-set-now] handler in row 5 instead; Preact island deferred) | 2J validity form |
 | 5 | `[data-set-now]` click handler (sets nearest date+time inputs to UTC now, selects datetime radio) | extracted | `islands/entry.ts` global delegated listener | Click on any `[data-set-now]` element — used in validity cards |
+| 6 | Email-rows add/remove/star handler (delegated, `[data-email-rows]` container) | extracted | `islands/entry.ts` global delegated listener on document | `[data-add-email]`, `[data-remove]`, `[data-make-primary]` within any `[data-email-rows]` container — used in people/create, people/edit, groups/create, groups/edit |
 
 ---
 

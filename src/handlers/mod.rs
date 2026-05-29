@@ -1,3 +1,4 @@
+pub mod common;
 mod dashboard;
 mod empty;
 mod groups;

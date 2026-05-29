@@ -5,6 +5,7 @@ use axum_extra::extract::Form;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::common::{emails_to_rows, EmailRow};
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::views::BaseFields;
 use crate::AppState;
@@ -21,13 +22,6 @@ pub struct EditForm {
     pub legalname: String,
     #[serde(default, rename = "email")]
     pub emails: Vec<String>,
-}
-
-// ── View structs ─────────────────────────────────────────────────────────────
-
-pub struct EmailRow {
-    pub value: String,
-    pub is_primary: bool,
 }
 
 #[derive(Template)]
@@ -50,16 +44,6 @@ impl IntoResponse for EditView {
             Err(e) => AppError::Template(e).into_response(),
         }
     }
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-fn emails_to_rows(emails: &[String]) -> Vec<EmailRow> {
-    emails
-        .iter()
-        .enumerate()
-        .map(|(i, v)| EmailRow { value: v.clone(), is_primary: i == 0 })
-        .collect()
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────────────

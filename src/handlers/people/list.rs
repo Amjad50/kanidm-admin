@@ -159,7 +159,7 @@ pub async fn list(
     });
 
     let filtered_count = filtered.len();
-    let total_pages = (filtered_count + per - 1) / per;
+    let total_pages = filtered_count.div_ceil(per);
     let page = page.min(total_pages.max(1));
 
     let start = (page - 1) * per;

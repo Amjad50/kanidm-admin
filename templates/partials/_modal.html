@@ -1,8 +1,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-canvas/80"
-     hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML" hx-trigger="click">
+     hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML" hx-trigger="click[target===this]">
   <div class="bg-surface border border-default rounded-md shadow-modal {{ size_class }} w-full mx-4"
-       role="dialog" aria-modal="true" aria-labelledby="modal-title"
-       onclick="event.stopPropagation()">
+       role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="flex items-start justify-between gap-4 p-5 border-b border-subtle">
       <h2 id="modal-title" class="text-lg font-semibold tracking-tight flex items-center gap-2.5">
         {% if let Some(svg) = icon_svg %}

@@ -45,7 +45,7 @@
 
       <div>
         <label class="block text-sm font-medium text-primary mb-1.5">Emails</label>
-        <div id="email-rows" class="flex flex-col gap-2">
+        <div id="email-rows" data-email-rows="email-rows" class="flex flex-col gap-2">
           {% for email in emails %}
           <div class="flex items-center gap-2">
             <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
@@ -60,7 +60,7 @@
           </div>
           {% endfor %}
         </div>
-        <button type="button" id="add-email" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+        <button type="button" data-add-email data-target="email-rows" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           <span>Add email</span>
         </button>
@@ -89,7 +89,7 @@
 
 </div>
 
-<template id="email-row-tpl">
+<template id="email-rows-tpl">
   <div class="flex items-center gap-2">
     <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -103,61 +103,4 @@
   </div>
 </template>
 
-<script>
-(function () {
-  const rows = document.getElementById('email-rows');
-  const addBtn = document.getElementById('add-email');
-  const tpl = document.getElementById('email-row-tpl');
-  if (!rows || !addBtn) return;
-
-  addBtn.addEventListener('click', () => {
-    let newRow;
-    if (tpl) {
-      newRow = tpl.content.cloneNode(true).firstElementChild;
-    } else {
-      const first = rows.firstElementChild;
-      if (!first) return;
-      newRow = first.cloneNode(true);
-      const star = newRow.querySelector('[data-make-primary]');
-      if (star) {
-        star.classList.remove('text-warning');
-        star.classList.add('text-tertiary', 'hover:text-warning');
-        star.querySelector('svg')?.setAttribute('fill', 'none');
-      }
-      const input = newRow.querySelector('input[type=email]');
-      if (input) input.value = '';
-    }
-    rows.appendChild(newRow);
-    newRow.querySelector('input[type=email]')?.focus();
-  });
-
-  rows.addEventListener('click', (e) => {
-    const removeBtn = e.target.closest('[data-remove]');
-    if (removeBtn) {
-      removeBtn.closest('.flex')?.remove();
-      return;
-    }
-
-    const starBtn = e.target.closest('[data-make-primary]');
-    if (starBtn) {
-      const row = starBtn.closest('.flex');
-      if (!row) return;
-
-      rows.querySelectorAll('[data-make-primary]').forEach(b => {
-        b.classList.remove('text-warning');
-        b.classList.add('text-tertiary', 'hover:text-warning');
-        b.querySelector('svg')?.setAttribute('fill', 'none');
-      });
-
-      starBtn.classList.add('text-warning');
-      starBtn.classList.remove('text-tertiary', 'hover:text-warning');
-      starBtn.querySelector('svg')?.setAttribute('fill', 'currentColor');
-
-      if (rows.firstElementChild !== row) {
-        rows.insertBefore(row, rows.firstElementChild);
-      }
-    }
-  });
-})();
-</script>
 {% endblock %}

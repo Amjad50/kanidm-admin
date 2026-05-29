@@ -1,4 +1,3 @@
-use kanidm_client::{ClientError, StatusCode};
 use kanidm_proto::internal::{CredentialDetailType, CredentialStatus};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
@@ -44,19 +43,30 @@ pub fn validate_displayname(s: &str) -> Result<(), &'static str> {
     Ok(())
 }
 
-/// Map kanidm client errors to a short user-friendly sentence.
-/// `context` is a short verb phrase like `"create person"` or `"add SSH key"`.
-pub fn friendly_client_error(context: &str, e: &ClientError) -> String {
-    match e {
-        ClientError::Http(StatusCode::CONFLICT, _, _) => {
-            format!("Could not {context}: this value is already in use.")
-        }
-        ClientError::Http(StatusCode::NOT_FOUND, _, _) => {
-            format!("Could not {context}: resource not found.")
-        }
-        _ => format!("Could not {context}: {e:?}"),
+pub(crate) fn validate_legalname_optional(s: &str) -> Result<(), &'static str> {
+    if s.trim().len() > 255 {
+        return Err("Legal name must be 255 characters or less.");
     }
+    Ok(())
 }
+
+pub(crate) fn validate_email_list_optional(emails: &[String]) -> Result<(), &'static str> {
+    for e in emails {
+        let trimmed = e.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if !trimmed.contains('@') {
+            return Err("All emails must contain '@'.");
+        }
+        if trimmed.len() > 320 {
+            return Err("Email addresses must be 320 characters or less.");
+        }
+    }
+    Ok(())
+}
+
+pub use crate::handlers::common::friendly_client_error;
 
 // ── Status ────────────────────────────────────────────────────────────────────
 
@@ -210,17 +220,15 @@ pub(super) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDate
         .as_deref()
         .and_then(parse_kanidm_datetime);
 
-    if let Some(exp) = expire {
-        if exp <= now {
+    if let Some(exp) = expire
+        && exp <= now {
             return PersonStatus::Expired;
         }
-    }
 
-    if let Some(vf) = valid_from {
-        if vf > now {
+    if let Some(vf) = valid_from
+        && vf > now {
             return PersonStatus::NotYetActive;
         }
-    }
 
     PersonStatus::Active
 }
@@ -361,6 +369,66 @@ mod tests {
     fn parse_rfc3339_invalid_returns_none() {
         assert!(parse_kanidm_datetime("1700000000").is_none());
         assert!(parse_kanidm_datetime("not-a-date").is_none());
+    }
+}
+
+#[cfg(test)]
+mod optional_validator_tests {
+    use super::{validate_email_list_optional, validate_legalname_optional};
+
+    #[test]
+    fn legalname_empty_is_ok() {
+        assert!(validate_legalname_optional("").is_ok());
+    }
+
+    #[test]
+    fn legalname_whitespace_only_is_ok() {
+        assert!(validate_legalname_optional("   ").is_ok());
+    }
+
+    #[test]
+    fn legalname_exactly_255_chars_is_ok() {
+        assert!(validate_legalname_optional(&"a".repeat(255)).is_ok());
+    }
+
+    #[test]
+    fn legalname_256_chars_is_rejected() {
+        assert!(validate_legalname_optional(&"a".repeat(256)).is_err());
+    }
+
+    #[test]
+    fn email_list_empty_is_ok() {
+        assert!(validate_email_list_optional(&[]).is_ok());
+    }
+
+    #[test]
+    fn email_list_all_empty_strings_is_ok() {
+        let emails = vec!["".to_string(), "  ".to_string()];
+        assert!(validate_email_list_optional(&emails).is_ok());
+    }
+
+    #[test]
+    fn email_list_valid_address_is_ok() {
+        let emails = vec!["user@example.com".to_string()];
+        assert!(validate_email_list_optional(&emails).is_ok());
+    }
+
+    #[test]
+    fn email_list_missing_at_is_rejected() {
+        let emails = vec!["notanemail".to_string()];
+        assert!(validate_email_list_optional(&emails).is_err());
+    }
+
+    #[test]
+    fn email_list_over_320_chars_is_rejected() {
+        let long = format!("{}@example.com", "a".repeat(310));
+        assert!(validate_email_list_optional(&[long]).is_err());
+    }
+
+    #[test]
+    fn email_list_skips_empty_entries_between_valid() {
+        let emails = vec!["a@b.com".to_string(), "".to_string(), "c@d.com".to_string()];
+        assert!(validate_email_list_optional(&emails).is_ok());
     }
 }
 

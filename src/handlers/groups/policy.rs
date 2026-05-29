@@ -191,14 +191,13 @@ pub async fn set_field(
         .await
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-    if !has_policy {
-        if let Err(e) = client.group_account_policy_enable(&id).await {
+    if !has_policy
+        && let Err(e) = client.group_account_policy_enable(&id).await {
             tracing::warn!(group = %id, error = ?e, "failed to enable account policy");
             let msg = friendly_error("enable account policy", &e);
             let (group, data) = build_policy_data_with_error(&state, &user, &id, msg).await?;
             return render_policy_fragment(group, data);
         }
-    }
 
     let value = form.value.trim().to_string();
 
