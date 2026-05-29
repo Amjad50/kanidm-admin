@@ -21,14 +21,14 @@ impl ShowInactiveQuery {
     }
 }
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::views::sessions_card::SessionsCard;
 use crate::views::{format_absolute, format_relative_future, format_relative_past};
-use crate::AppState;
 
 use super::common::friendly_client_error;
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── View model ────────────────────────────────────────────────────────────────
 
@@ -165,7 +165,11 @@ async fn fetch_sessions(
             }
             // Newest first.
             list.sort_by_key(|uat| std::cmp::Reverse(uat.issued_at));
-            let suffix = if show_inactive { "?show_inactive=1" } else { "" };
+            let suffix = if show_inactive {
+                "?show_inactive=1"
+            } else {
+                ""
+            };
             let rows = list
                 .into_iter()
                 .map(|uat| build_session_row(uat, revoke_url_prefix, suffix))
@@ -190,20 +194,21 @@ fn build_admin_card(
     person_id: &str,
     show_inactive: bool,
 ) -> SessionsCard {
-    let suffix = if show_inactive { "?show_inactive=1" } else { "" };
+    let suffix = if show_inactive {
+        "?show_inactive=1"
+    } else {
+        ""
+    };
     SessionsCard {
         rows,
         error,
         hx_target_id: "tab-content".to_string(),
-        bulk_revoke_url: format!(
-            "/admin/people/{}/sessions/destroy_all{}",
-            person_id, suffix,
-        ),
+        bulk_revoke_url: format!("/admin/people/{}/sessions/destroy_all{}", person_id, suffix,),
         bulk_revoke_label: "Destroy all".to_string(),
         bulk_revoke_confirm:
             "Destroy all sessions for this person? They will be signed out everywhere.".to_string(),
-        revoke_row_confirm:
-            "Destroy this session? The person will be signed out on that device.".to_string(),
+        revoke_row_confirm: "Destroy this session? The person will be signed out on that device."
+            .to_string(),
         empty_subtitle: "Where this person is currently signed in.".to_string(),
         current_session_id: None,
         show_inactive,
@@ -342,7 +347,10 @@ pub async fn destroy_all(
     let combined_error = if errors.is_empty() {
         None
     } else {
-        Some(format!("Some sessions could not be destroyed: {}", errors.join("; ")))
+        Some(format!(
+            "Some sessions could not be destroyed: {}",
+            errors.join("; ")
+        ))
     };
 
     let entry = fetch_person(&state, &user, &id).await?;
@@ -356,4 +364,3 @@ pub async fn destroy_all(
 
     render_sessions_fragment(person, TabContent::Sessions(SessionsData { card_html }))
 }
-

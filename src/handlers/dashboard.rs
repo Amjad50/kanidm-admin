@@ -2,11 +2,13 @@ use askama::Template;
 use askama_web::WebTemplate;
 use axum::extract::State;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::AppResult;
 use crate::kanidm::entry::attr_first;
-use crate::views::{format_relative_future, format_relative_past, format_relative_remaining, BaseFields};
-use crate::AppState;
+use crate::views::{
+    BaseFields, format_relative_future, format_relative_past, format_relative_remaining,
+};
 
 #[derive(Template, WebTemplate)]
 #[template(path = "dashboard.html")]
@@ -25,10 +27,7 @@ pub struct DashboardView {
     pub privileged_remaining: Option<String>,
 }
 
-pub async fn dashboard(
-    State(state): State<AppState>,
-    user: AdminUser,
-) -> AppResult<DashboardView> {
+pub async fn dashboard(State(state): State<AppState>, user: AdminUser) -> AppResult<DashboardView> {
     // Build a kanidm client carrying the admin's token; all queries below run
     // as that user, with their permissions and audit trail.
     let client = state
@@ -87,4 +86,3 @@ pub async fn dashboard(
         privileged_remaining,
     })
 }
-

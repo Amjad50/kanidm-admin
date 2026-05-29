@@ -1,17 +1,19 @@
+use axum::Form;
 use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
-use axum::Form;
 use axum_htmx::HxRequest;
-use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
+use time::format_description::well_known::Rfc3339;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::views::{format_absolute, format_relative_future, format_relative_past};
-use crate::AppState;
 
-use super::common::{compute_status_at, friendly_client_error, parse_kanidm_datetime, PersonStatus};
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::common::{
+    PersonStatus, compute_status_at, friendly_client_error, parse_kanidm_datetime,
+};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── View model ────────────────────────────────────────────────────────────────
 
@@ -89,7 +91,10 @@ fn build_validity_field(
     }
 }
 
-fn build_status_message(entry: &kanidm_proto::v1::Entry, now: OffsetDateTime) -> (PersonStatus, String, &'static str) {
+fn build_status_message(
+    entry: &kanidm_proto::v1::Entry,
+    now: OffsetDateTime,
+) -> (PersonStatus, String, &'static str) {
     use crate::kanidm::entry::attr_first;
 
     let status = compute_status_at(entry, now);
@@ -244,15 +249,13 @@ async fn apply_validity_change(
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
     let mutation_error: Option<String> = match form.mode.as_str() {
-        "clear" => {
-            match client.idm_person_account_purge_attr(id, attr_name).await {
-                Ok(()) => None,
-                Err(e) => {
-                    tracing::warn!(person = %id, attr = %attr_name, error = ?e, "purge attr failed");
-                    Some(friendly_client_error("clear attribute", &e))
-                }
+        "clear" => match client.idm_person_account_purge_attr(id, attr_name).await {
+            Ok(()) => None,
+            Err(e) => {
+                tracing::warn!(person = %id, attr = %attr_name, error = ?e, "purge attr failed");
+                Some(friendly_client_error("clear attribute", &e))
             }
-        }
+        },
         "datetime" => {
             if form.date.is_empty() || form.time.is_empty() {
                 Some("Date and time are both required for a specific date.".to_string())

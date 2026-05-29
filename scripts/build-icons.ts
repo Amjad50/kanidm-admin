@@ -133,6 +133,10 @@ function emitRust(icons: Map<string, string>): string {
   lines.push("/// Resolve a Lucide icon name to its raw SVG markup.");
   lines.push("/// Returns `Safe<&'static str>` so templates can write `{{ icon(\"name\") }}`");
   lines.push("/// without a trailing `|safe` filter. Unknown names render as empty.");
+  // rustfmt would break the single-line match arms below into multi-line block
+  // arms, which makes the file ~10x longer and creates churn the generator and
+  // CI's `fmt --check` keep fighting over. The file is machine-generated; skip.
+  lines.push("#[rustfmt::skip]");
   lines.push("pub fn icon(name: &str) -> Safe<&'static str> {");
   lines.push("    let svg = match name {");
   for (const [name, svg] of icons) {

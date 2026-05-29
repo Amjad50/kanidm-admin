@@ -82,7 +82,10 @@ mod tests {
         assert_eq!(parsed.group_spn, "kavita-users@idm.home.amsh.dev");
         let mut scopes = parsed.scopes.clone();
         scopes.sort();
-        assert_eq!(scopes, ["email", "offline_access", "openid", "profile", "roles"]);
+        assert_eq!(
+            scopes,
+            ["email", "offline_access", "openid", "profile", "roles"]
+        );
     }
 
     #[test]
@@ -122,7 +125,10 @@ mod tests {
     #[test]
     fn malformed_not_braces() {
         let raw = "group: notbraces";
-        assert!(parse_scope_map(raw).is_none(), "should fail when body is not in braces");
+        assert!(
+            parse_scope_map(raw).is_none(),
+            "should fail when body is not in braces"
+        );
     }
 
     #[test]

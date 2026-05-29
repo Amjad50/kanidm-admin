@@ -1,6 +1,6 @@
 use anyhow::Result;
-use figment::providers::{Env, Format, Toml};
 use figment::Figment;
+use figment::providers::{Env, Format, Toml};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]

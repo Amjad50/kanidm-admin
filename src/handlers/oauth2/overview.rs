@@ -2,15 +2,15 @@ use axum::extract::{Path, State};
 use axum::response::Response;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::AppResult;
+use crate::kanidm::claim_map::parse_claim_map;
 use crate::kanidm::entry::attr_all;
 use crate::kanidm::key_state::parse_key_state;
 use crate::kanidm::scope_map::parse_scope_map;
-use crate::kanidm::claim_map::parse_claim_map;
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 use super::general::pkce_required;
 use crate::kanidm::entry::attr_first;
 
@@ -114,15 +114,14 @@ pub(super) fn build_overview_data(
         })
         .collect();
 
-    let supplementary_scope_maps: Vec<ScopeMapSummary> =
-        attr_all(entry, "oauth2_rs_sup_scope_map")
-            .into_iter()
-            .filter_map(|raw| parse_scope_map(&raw))
-            .map(|m| ScopeMapSummary {
-                group_name: short_group_name(&m.group_spn),
-                scopes: m.scopes,
-            })
-            .collect();
+    let supplementary_scope_maps: Vec<ScopeMapSummary> = attr_all(entry, "oauth2_rs_sup_scope_map")
+        .into_iter()
+        .filter_map(|raw| parse_scope_map(&raw))
+        .map(|m| ScopeMapSummary {
+            group_name: short_group_name(&m.group_spn),
+            scopes: m.scopes,
+        })
+        .collect();
 
     // Claim maps
     let claim_map_summaries: Vec<ClaimMapSummary> = attr_all(entry, "oauth2_rs_claim_map")
@@ -185,5 +184,11 @@ pub async fn tab(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let overview_data = build_overview_data(&id, &entry, &header);
-    render_detail(is_htmx, user, header, "overview", TabContent::Overview(overview_data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "overview",
+        TabContent::Overview(overview_data),
+    )
 }

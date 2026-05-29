@@ -1,20 +1,20 @@
 use askama::Template;
 use askama_web::WebTemplate;
+use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
-use axum::Json;
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::{attr_first, spn_or_uuid};
-use crate::views::{initials, BaseFields};
-use crate::AppState;
+use crate::views::{BaseFields, initials};
 
-use super::common::{compute_status_at, PersonStatus};
-use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
+use super::common::{PersonStatus, compute_status_at};
+use crate::handlers::common::{PaletteItem, PaletteResponse, wants_json};
 
 #[derive(serde::Deserialize, Default)]
 pub struct ListParams {
@@ -48,7 +48,6 @@ impl StatusFilter {
     }
 }
 
-
 pub struct PersonRow {
     pub initials: String,
     pub displayname: String,
@@ -61,10 +60,11 @@ pub struct PersonRow {
 }
 
 fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
-    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+    use crate::views::dropdown::{DropdownItem, render_actions_cell};
     render_actions_cell(
         vec![
-            DropdownItem::link("Edit", format!("/admin/people/{spn_or_uuid}/edit")).with_icon("pencil"),
+            DropdownItem::link("Edit", format!("/admin/people/{spn_or_uuid}/edit"))
+                .with_icon("pencil"),
             DropdownItem::htmx_get(
                 "Generate reset link",
                 format!("/admin/people/{spn_or_uuid}/credentials/reset"),
@@ -103,7 +103,6 @@ pub struct PeopleRowsFragment {
 pub struct PaginationOob<'a> {
     pub pagination: &'a crate::views::pagination::Pagination,
 }
-
 
 fn matches_query(entry: &kanidm_proto::v1::Entry, q: &str) -> bool {
     let q_lower = q.to_lowercase();
@@ -274,4 +273,3 @@ pub async fn list(
 
     Ok(view.into_response())
 }
-

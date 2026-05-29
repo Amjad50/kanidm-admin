@@ -267,4 +267,3 @@ fn color_classes(danger: bool) -> &'static str {
         "text-tertiary hover:text-primary hover:bg-hover"
     }
 }
-

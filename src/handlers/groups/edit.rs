@@ -3,13 +3,13 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::Form;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{emails_to_rows, EmailRow};
+use crate::handlers::common::{EmailRow, emails_to_rows};
 use crate::handlers::people::create::FormField;
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::views::BaseFields;
-use crate::AppState;
 
 use super::common::{fetch_group, friendly_error, validate_group_name};
 
@@ -104,7 +104,16 @@ pub async fn submit(
     if name_err.is_some() || emails_err.is_some() {
         let emails_view = emails_to_rows(&form.emails);
         let name_for_label = form.name.clone();
-        return Ok(build_view(&user, &id, &name_for_label, form, name_err, emails_err.map(|e| e.to_string()), emails_view).into_response());
+        return Ok(build_view(
+            &user,
+            &id,
+            &name_for_label,
+            form,
+            name_err,
+            emails_err.map(|e| e.to_string()),
+            emails_view,
+        )
+        .into_response());
     }
 
     let client = state
@@ -126,10 +135,13 @@ pub async fn submit(
     }
 
     if !trimmed_mgr.is_empty()
-        && let Err(e) = client.idm_group_set_entry_managed_by(&id, &trimmed_mgr).await {
-            tracing::warn!(error = ?e, group = %id, "failed to update entry_managed_by");
-            field_errors.push(friendly_error("update entry managed by", &e));
-        }
+        && let Err(e) = client
+            .idm_group_set_entry_managed_by(&id, &trimmed_mgr)
+            .await
+    {
+        tracing::warn!(error = ?e, group = %id, "failed to update entry_managed_by");
+        field_errors.push(friendly_error("update entry managed by", &e));
+    }
 
     let mail_result = if mails.is_empty() {
         client.idm_group_purge_mail(&id).await
@@ -146,17 +158,36 @@ pub async fn submit(
         let combined = field_errors.join("; ");
         let emails_view = emails_to_rows(&form.emails);
         let name_for_label = form.name.clone();
-        return Ok(build_view(&user, &id, &name_for_label, form, None, Some(combined), emails_view).into_response());
+        return Ok(build_view(
+            &user,
+            &id,
+            &name_for_label,
+            form,
+            None,
+            Some(combined),
+            emails_view,
+        )
+        .into_response());
     }
 
     if trimmed_name != id
-        && let Err(e) = client.group_rename(&id, &trimmed_name).await {
-            let msg = friendly_error("rename group", &e);
-            tracing::warn!(error = ?e, group = %id, "kanidm rejected group rename");
-            let emails_view = emails_to_rows(&form.emails);
-            let name_for_label = form.name.clone();
-            return Ok(build_view(&user, &id, &name_for_label, form, None, Some(msg), emails_view).into_response());
-        }
+        && let Err(e) = client.group_rename(&id, &trimmed_name).await
+    {
+        let msg = friendly_error("rename group", &e);
+        tracing::warn!(error = ?e, group = %id, "kanidm rejected group rename");
+        let emails_view = emails_to_rows(&form.emails);
+        let name_for_label = form.name.clone();
+        return Ok(build_view(
+            &user,
+            &id,
+            &name_for_label,
+            form,
+            None,
+            Some(msg),
+            emails_view,
+        )
+        .into_response());
+    }
 
     Ok(Redirect::to(&format!("/admin/groups/{trimmed_name}/overview")).into_response())
 }

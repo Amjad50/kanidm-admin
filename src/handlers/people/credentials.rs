@@ -1,15 +1,15 @@
-use askama::Template;
-use axum::extract::{Form, Path, State};
-use axum::response::{Html, IntoResponse, Response};
-use axum_htmx::HxRequest;
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::views::partials::{Modal, OneTimeSecret};
 use crate::views::{format_absolute, format_relative_future};
-use crate::AppState;
+use askama::Template;
+use axum::extract::{Form, Path, State};
+use axum::response::{Html, IntoResponse, Response};
+use axum_htmx::HxRequest;
 
 use super::common::{friendly_client_error, summarize_credentials};
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── View data structs ─────────────────────────────────────────────────────────
 
@@ -62,8 +62,8 @@ fn ttl_to_seconds(ttl: u32) -> u32 {
 // ── QR code helper ────────────────────────────────────────────────────────────
 
 fn build_qr_svg(url: &str) -> Option<String> {
-    use qrcode::render::svg;
     use qrcode::QrCode;
+    use qrcode::render::svg;
 
     let code = QrCode::new(url.as_bytes()).ok()?;
     let svg_string = code
@@ -109,11 +109,14 @@ pub async fn tab(
         }
     };
 
-    let primary = cred_summary.primary.label().map(|label| PrimaryCredentialInfo {
-        label: label.to_string(),
-        totp_labels: cred_summary.totp_labels,
-        backup_code_count: cred_summary.backup_codes_remaining.unwrap_or(0),
-    });
+    let primary = cred_summary
+        .primary
+        .label()
+        .map(|label| PrimaryCredentialInfo {
+            label: label.to_string(),
+            totp_labels: cred_summary.totp_labels,
+            backup_code_count: cred_summary.backup_codes_remaining.unwrap_or(0),
+        });
     let passkeys = PasskeyInfo {
         count: cred_summary.passkey_count,
         names: cred_summary.passkey_names,
@@ -139,13 +142,13 @@ pub async fn tab(
 // ── Reset modal GET handler ───────────────────────────────────────────────────
 
 pub async fn reset_modal(Path(id): Path<String>, _user: AdminUser) -> AppResult<Response> {
-    let body_html = ResetModalBody { person_id: id.clone() }
-        .render()
-        .map_err(AppError::Template)?;
+    let body_html = ResetModalBody {
+        person_id: id.clone(),
+    }
+    .render()
+    .map_err(AppError::Template)?;
 
-    let footer_html = ResetModalFooter {}
-        .render()
-        .map_err(AppError::Template)?;
+    let footer_html = ResetModalFooter {}.render().map_err(AppError::Template)?;
 
     let html = Modal {
         title: "Generate reset link".to_string(),
@@ -160,7 +163,6 @@ pub async fn reset_modal(Path(id): Path<String>, _user: AdminUser) -> AppResult<
 
     Ok(Html(html).into_response())
 }
-
 
 #[derive(Template)]
 #[template(path = "people/_credentials_reset_modal.html")]
@@ -193,8 +195,7 @@ pub async fn submit_reset(
         .await
     {
         Ok(token) => {
-            let reset_url =
-                format!("{}/ui/reset?token={}", state.config.kanidm_url, token.token);
+            let reset_url = format!("{}/ui/reset?token={}", state.config.kanidm_url, token.token);
             let qr_svg = build_qr_svg(&reset_url);
 
             let relative = format_relative_future(token.expiry_time);
@@ -217,9 +218,11 @@ pub async fn submit_reset(
             .render()
             .map_err(AppError::Template)?;
 
-            let footer_html = ResetResultFooter { person_id: id.clone() }
-                .render()
-                .map_err(AppError::Template)?;
+            let footer_html = ResetResultFooter {
+                person_id: id.clone(),
+            }
+            .render()
+            .map_err(AppError::Template)?;
 
             let modal_html = Modal {
                 title: "Reset link ready".to_string(),
@@ -242,9 +245,11 @@ pub async fn submit_reset(
                 .render()
                 .map_err(AppError::Template)?;
 
-            let footer_html = ResetResultFooter { person_id: id.clone() }
-                .render()
-                .map_err(AppError::Template)?;
+            let footer_html = ResetResultFooter {
+                person_id: id.clone(),
+            }
+            .render()
+            .map_err(AppError::Template)?;
 
             let modal_html = Modal {
                 title: "Reset link failed".to_string(),
@@ -262,8 +267,6 @@ pub async fn submit_reset(
     }
 }
 
-
-
 #[derive(Template)]
 #[template(path = "people/_credentials_reset_result_footer.html")]
 pub struct ResetResultFooter {
@@ -275,4 +278,3 @@ pub struct ResetResultFooter {
 pub struct ResetErrorBody {
     pub message: String,
 }
-

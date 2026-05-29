@@ -34,9 +34,8 @@ pub fn wants_json(headers: &axum::http::HeaderMap) -> bool {
         .get(axum::http::header::ACCEPT)
         .and_then(|v| v.to_str().ok())
         .is_some_and(|s| {
-            s.split(',').any(|part| {
-                part.split(';').next().map(str::trim) == Some("application/json")
-            })
+            s.split(',')
+                .any(|part| part.split(';').next().map(str::trim) == Some("application/json"))
         })
 }
 
@@ -46,7 +45,13 @@ pub fn wants_json(headers: &axum::http::HeaderMap) -> bool {
 /// Any character that isn't ASCII alphanumeric, `-`, or `_` is replaced with `-`.
 pub(crate) fn safe_id(s: &str) -> String {
     s.chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect()
 }
 
@@ -62,7 +67,10 @@ pub fn emails_to_rows(emails: &[String]) -> Vec<EmailRow> {
     emails
         .iter()
         .enumerate()
-        .map(|(i, v)| EmailRow { value: v.clone(), is_primary: i == 0 })
+        .map(|(i, v)| EmailRow {
+            value: v.clone(),
+            is_primary: i == 0,
+        })
         .collect()
 }
 
@@ -83,9 +91,10 @@ pub fn friendly_client_error(context: &str, e: &ClientError) -> String {
 
     if let ClientError::Http(status, op_err, body) = e {
         if let Some(op) = op_err
-            && let Some(msg) = friendly_operation_error(op) {
-                return msg;
-            }
+            && let Some(msg) = friendly_operation_error(op)
+        {
+            return msg;
+        }
         // No structured OperationError. Fall back on body-sniffing for the
         // common conflict case before the generic per-status message.
         if let Some(msg) = body_sniff_message(*status, body, context) {
@@ -157,7 +166,10 @@ fn friendly_operation_error(op: &OperationError) -> Option<String> {
         }
         OperationError::PasswordQuality(feedback) => {
             let parts: Vec<String> = feedback.iter().map(|f| format!("{f}")).collect();
-            Some(format!("Password is not strong enough: {}.", parts.join("; ")))
+            Some(format!(
+                "Password is not strong enough: {}.",
+                parts.join("; ")
+            ))
         }
         OperationError::Plugin(PluginError::Base(msg))
         | OperationError::Plugin(PluginError::ReferentialIntegrity(msg))
@@ -240,9 +252,7 @@ fn context_specific_conflict_message(context: &str) -> String {
         "set group description" => {
             "Could not set the group description (server reported a conflict).".to_string()
         }
-        "set group mail" => {
-            "One of the email addresses you entered is already in use.".to_string()
-        }
+        "set group mail" => "One of the email addresses you entered is already in use.".to_string(),
         "update mail" => {
             "One of the email addresses you entered is already taken by another account."
                 .to_string()
@@ -257,9 +267,7 @@ fn context_specific_conflict_message(context: &str) -> String {
         "update oauth2 client" => {
             "Could not update the OAuth2 client (server reported a conflict).".to_string()
         }
-        "add redirect URL" => {
-            "That redirect URL is already configured on this client.".to_string()
-        }
+        "add redirect URL" => "That redirect URL is already configured on this client.".to_string(),
         "reset oauth2 secret" => {
             "Could not reset the secret (server reported a conflict).".to_string()
         }
@@ -268,19 +276,11 @@ fn context_specific_conflict_message(context: &str) -> String {
             "One of the members you tried to add already belongs to this group, or doesn't exist."
                 .to_string()
         }
-        "add scope map" => {
-            "Could not add scope map (conflict or invalid input).".to_string()
-        }
-        "delete scope map" => {
-            "Could not delete scope map (not found or already gone).".to_string()
-        }
-        "add claim map" => {
-            "Could not add claim map (conflict or invalid input).".to_string()
-        }
+        "add scope map" => "Could not add scope map (conflict or invalid input).".to_string(),
+        "delete scope map" => "Could not delete scope map (not found or already gone).".to_string(),
+        "add claim map" => "Could not add claim map (conflict or invalid input).".to_string(),
         "delete claim map" => "Could not delete claim map.".to_string(),
-        "set claim map join" => {
-            "Could not change the claim's join strategy.".to_string()
-        }
+        "set claim map join" => "Could not change the claim's join strategy.".to_string(),
         "rotate keys" => "Could not schedule key rotation.".to_string(),
         "revoke key" => "Could not revoke key (not found or already revoked).".to_string(),
         "upload image" => {

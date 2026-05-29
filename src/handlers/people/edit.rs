@@ -3,14 +3,16 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::Form;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{emails_to_rows, EmailRow};
+use crate::handlers::common::{EmailRow, emails_to_rows};
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::views::BaseFields;
-use crate::AppState;
 
-use super::common::{fetch_domain_name, friendly_client_error, validate_displayname, validate_name};
+use super::common::{
+    fetch_domain_name, friendly_client_error, validate_displayname, validate_name,
+};
 use super::create::FormField;
 
 // ── Form data ────────────────────────────────────────────────────────────────
@@ -84,8 +86,18 @@ pub async fn edit_form(
 
     let emails = emails_to_rows(&mails);
 
-    Ok(build_view(&user, &id, &displayname, form, domain_suffix, None, None, None, emails)
-        .into_response())
+    Ok(build_view(
+        &user,
+        &id,
+        &displayname,
+        form,
+        domain_suffix,
+        None,
+        None,
+        None,
+        emails,
+    )
+    .into_response())
 }
 
 /// POST /people/{id} — submit edits, redirect to /people/{new_name}/overview on success.
@@ -153,9 +165,9 @@ pub async fn submit(
         )
         .await
     {
-        Ok(()) => Ok(
-            Redirect::to(&format!("/admin/people/{trimmed_name}/overview")).into_response(),
-        ),
+        Ok(()) => {
+            Ok(Redirect::to(&format!("/admin/people/{trimmed_name}/overview")).into_response())
+        }
         Err(e) => {
             let msg = friendly_client_error("update person", &e);
             tracing::warn!(error = ?e, person = %id, "kanidm rejected person update");
@@ -245,4 +257,3 @@ fn build_view(
         form_error,
     }
 }
-

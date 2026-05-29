@@ -1,16 +1,16 @@
+use axum::Form;
 use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
-use axum::Form;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::{attr_all, attr_first};
-use crate::kanidm::policy::{PolicyField, PolicyKind, POLICY_FIELDS};
-use crate::AppState;
+use crate::kanidm::policy::{POLICY_FIELDS, PolicyField, PolicyKind};
 
-use super::common::{compute_header, fetch_group, friendly_error, GroupHeader};
-use super::detail::{format_seconds, render_detail, TabContent};
+use super::common::{GroupHeader, compute_header, fetch_group, friendly_error};
+use super::detail::{TabContent, format_seconds, render_detail};
 
 // ── Policy data ───────────────────────────────────────────────────────────────
 
@@ -58,10 +58,7 @@ pub struct PolicyData {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn resolve_field(
-    entry: &kanidm_proto::v1::Entry,
-    field: &PolicyField,
-) -> PolicyFieldView {
+fn resolve_field(entry: &kanidm_proto::v1::Entry, field: &PolicyField) -> PolicyFieldView {
     let current_value = attr_first(entry, field.key);
     let is_set = current_value.is_some();
 
@@ -74,7 +71,11 @@ fn resolve_field(
             }
             PolicyKind::Int => v.clone(),
             PolicyKind::Bool => {
-                if v == "true" { "Enabled".to_string() } else { "Disabled".to_string() }
+                if v == "true" {
+                    "Enabled".to_string()
+                } else {
+                    "Disabled".to_string()
+                }
             }
             PolicyKind::Enum(_) => v.clone(),
             PolicyKind::JsonBlob => "Configured".to_string(),
@@ -132,7 +133,11 @@ pub(super) fn build_policy_data(entry: &kanidm_proto::v1::Entry) -> PolicyData {
         .collect();
 
     let customized_count = fields.iter().filter(|f| f.is_set).count();
-    PolicyData { fields, customized_count, error: None }
+    PolicyData {
+        fields,
+        customized_count,
+        error: None,
+    }
 }
 
 /// Build the policy data with an inline error banner. Re-fetches the entry to
@@ -191,57 +196,82 @@ pub async fn set_field(
         .await
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-    if !has_policy
-        && let Err(e) = client.group_account_policy_enable(&id).await {
-            tracing::warn!(group = %id, error = ?e, "failed to enable account policy");
-            let msg = friendly_error("enable account policy", &e);
-            let (group, data) = build_policy_data_with_error(&state, &user, &id, msg).await?;
-            return render_policy_fragment(group, data);
-        }
+    if !has_policy && let Err(e) = client.group_account_policy_enable(&id).await {
+        tracing::warn!(group = %id, error = ?e, "failed to enable account policy");
+        let msg = friendly_error("enable account policy", &e);
+        let (group, data) = build_policy_data_with_error(&state, &user, &id, msg).await?;
+        return render_policy_fragment(group, data);
+    }
 
     let value = form.value.trim().to_string();
 
     let parse_int = |label: &str| -> Result<u32, String> {
-        value.parse::<u32>().map_err(|_| format!("{label} must be a positive integer"))
+        value
+            .parse::<u32>()
+            .map_err(|_| format!("{label} must be a positive integer"))
     };
 
     let result = match field.as_str() {
         "authsession_expiry" => match parse_int("authsession_expiry") {
-            Ok(v) => client.group_account_policy_authsession_expiry_set(&id, v).await,
+            Ok(v) => {
+                client
+                    .group_account_policy_authsession_expiry_set(&id, v)
+                    .await
+            }
             Err(msg) => {
                 let (g, d) = build_policy_data_with_error(&state, &user, &id, msg).await?;
                 return render_policy_fragment(g, d);
             }
         },
         "credential_type_minimum" => {
-            client.group_account_policy_credential_type_minimum_set(&id, &value).await
+            client
+                .group_account_policy_credential_type_minimum_set(&id, &value)
+                .await
         }
         "auth_password_minimum_length" => match parse_int("auth_password_minimum_length") {
-            Ok(v) => client.group_account_policy_password_minimum_length_set(&id, v).await,
+            Ok(v) => {
+                client
+                    .group_account_policy_password_minimum_length_set(&id, v)
+                    .await
+            }
             Err(msg) => {
                 let (g, d) = build_policy_data_with_error(&state, &user, &id, msg).await?;
                 return render_policy_fragment(g, d);
             }
         },
         "privilege_expiry" => match parse_int("privilege_expiry") {
-            Ok(v) => client.group_account_policy_privilege_expiry_set(&id, v).await,
+            Ok(v) => {
+                client
+                    .group_account_policy_privilege_expiry_set(&id, v)
+                    .await
+            }
             Err(msg) => {
                 let (g, d) = build_policy_data_with_error(&state, &user, &id, msg).await?;
                 return render_policy_fragment(g, d);
             }
         },
         "webauthn_attestation_ca_list" => {
-            client.group_account_policy_webauthn_attestation_set(&id, &value).await
+            client
+                .group_account_policy_webauthn_attestation_set(&id, &value)
+                .await
         }
         "limit_search_max_results" => match parse_int("limit_search_max_results") {
-            Ok(v) => client.group_account_policy_limit_search_max_results(&id, v).await,
+            Ok(v) => {
+                client
+                    .group_account_policy_limit_search_max_results(&id, v)
+                    .await
+            }
             Err(msg) => {
                 let (g, d) = build_policy_data_with_error(&state, &user, &id, msg).await?;
                 return render_policy_fragment(g, d);
             }
         },
         "limit_search_max_filter_test" => match parse_int("limit_search_max_filter_test") {
-            Ok(v) => client.group_account_policy_limit_search_max_filter_test(&id, v).await,
+            Ok(v) => {
+                client
+                    .group_account_policy_limit_search_max_filter_test(&id, v)
+                    .await
+            }
             Err(msg) => {
                 let (g, d) = build_policy_data_with_error(&state, &user, &id, msg).await?;
                 return render_policy_fragment(g, d);
@@ -249,10 +279,18 @@ pub async fn set_field(
         },
         "allow_primary_cred_fallback" => {
             let allow = value == "true";
-            client.group_account_policy_allow_primary_cred_fallback(&id, allow).await
+            client
+                .group_account_policy_allow_primary_cred_fallback(&id, allow)
+                .await
         }
         _ => {
-            let (g, d) = build_policy_data_with_error(&state, &user, &id, "Unknown policy field".to_string()).await?;
+            let (g, d) = build_policy_data_with_error(
+                &state,
+                &user,
+                &id,
+                "Unknown policy field".to_string(),
+            )
+            .await?;
             return render_policy_fragment(g, d);
         }
     };
@@ -285,31 +323,53 @@ pub async fn reset_field(
 
     let result = match field.as_str() {
         "authsession_expiry" => {
-            client.group_account_policy_authsession_expiry_reset(&id).await
+            client
+                .group_account_policy_authsession_expiry_reset(&id)
+                .await
         }
         "credential_type_minimum" => {
-            client.idm_group_purge_attr(&id, "credential_type_minimum").await
+            client
+                .idm_group_purge_attr(&id, "credential_type_minimum")
+                .await
         }
         "auth_password_minimum_length" => {
-            client.group_account_policy_password_minimum_length_reset(&id).await
+            client
+                .group_account_policy_password_minimum_length_reset(&id)
+                .await
         }
         "privilege_expiry" => {
-            client.group_account_policy_privilege_expiry_reset(&id).await
+            client
+                .group_account_policy_privilege_expiry_reset(&id)
+                .await
         }
         "webauthn_attestation_ca_list" => {
-            client.group_account_policy_webauthn_attestation_reset(&id).await
+            client
+                .group_account_policy_webauthn_attestation_reset(&id)
+                .await
         }
         "limit_search_max_results" => {
-            client.group_account_policy_limit_search_max_results_reset(&id).await
+            client
+                .group_account_policy_limit_search_max_results_reset(&id)
+                .await
         }
         "limit_search_max_filter_test" => {
-            client.group_account_policy_limit_search_max_filter_test_reset(&id).await
+            client
+                .group_account_policy_limit_search_max_filter_test_reset(&id)
+                .await
         }
         "allow_primary_cred_fallback" => {
-            client.idm_group_purge_attr(&id, "allow_primary_cred_fallback").await
+            client
+                .idm_group_purge_attr(&id, "allow_primary_cred_fallback")
+                .await
         }
         _ => {
-            let (g, d) = build_policy_data_with_error(&state, &user, &id, "Unknown policy field".to_string()).await?;
+            let (g, d) = build_policy_data_with_error(
+                &state,
+                &user,
+                &id,
+                "Unknown policy field".to_string(),
+            )
+            .await?;
             return render_policy_fragment(g, d);
         }
     };

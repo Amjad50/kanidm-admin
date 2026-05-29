@@ -1,7 +1,7 @@
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::attr_first;
-use crate::AppState;
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,10 @@ pub fn validate_group_name(s: &str) -> Result<(), &'static str> {
     if !first.is_ascii_lowercase() && first != '_' {
         return Err("Group name must start with a lowercase letter or underscore.");
     }
-    if !s.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-')) {
+    if !s
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-'))
+    {
         return Err("Group name may only contain lowercase letters, digits, '.', '_', '-'.");
     }
     Ok(())

@@ -3,13 +3,13 @@ use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::Form;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{emails_to_rows, EmailRow};
+use crate::handlers::common::{EmailRow, emails_to_rows};
 use crate::handlers::people::common::validate_email_list_optional;
 use crate::handlers::people::create::FormField;
 use crate::views::BaseFields;
-use crate::AppState;
 
 use super::common::{friendly_error, validate_description_optional, validate_group_name};
 
@@ -65,14 +65,17 @@ pub async fn submit(
     if name_err.is_some() || desc_err.is_some() || mails_err.is_some() {
         let emails_for_view = emails_to_rows(&form.mails);
         return Ok(
-            build_view(&user, form, name_err, desc_err, mails_err, emails_for_view)
-                .into_response(),
+            build_view(&user, form, name_err, desc_err, mails_err, emails_for_view).into_response(),
         );
     }
 
     let trimmed_name = form.name.trim().to_string();
     let managed_by = form.entry_managed_by.trim().to_string();
-    let managed_by_opt: Option<&str> = if managed_by.is_empty() { None } else { Some(&managed_by) };
+    let managed_by_opt: Option<&str> = if managed_by.is_empty() {
+        None
+    } else {
+        Some(&managed_by)
+    };
     let trimmed_desc = form.description.trim().to_string();
     let mails: Vec<String> = form
         .mails
@@ -104,10 +107,13 @@ pub async fn submit(
         let mut extras_err: Option<String> = None;
 
         if !trimmed_desc.is_empty()
-            && let Err(e) = client.idm_group_set_description(&trimmed_name, &trimmed_desc).await {
-                tracing::warn!(error = ?e, group = %trimmed_name, "setting description failed");
-                extras_err = Some(friendly_error("set group description", &e));
-            }
+            && let Err(e) = client
+                .idm_group_set_description(&trimmed_name, &trimmed_desc)
+                .await
+        {
+            tracing::warn!(error = ?e, group = %trimmed_name, "setting description failed");
+            extras_err = Some(friendly_error("set group description", &e));
+        }
 
         if extras_err.is_none() && !mails.is_empty() {
             let mail_refs: Vec<&str> = mails.iter().map(String::as_str).collect();

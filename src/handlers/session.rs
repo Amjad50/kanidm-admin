@@ -1,16 +1,16 @@
+use axum::Router;
 use axum::extract::State;
 use axum::http::{HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::post;
-use axum::Router;
-use axum_extra::extract::cookie::{Cookie, SameSite};
 use axum_extra::extract::CookieJar;
+use axum_extra::extract::cookie::{Cookie, SameSite};
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-use crate::auth::AdminUser;
 use crate::AppState;
+use crate::auth::AdminUser;
 
 pub fn router() -> Router<AppState> {
     Router::new().route("/logout", post(logout))
@@ -35,7 +35,10 @@ pub async fn destroy_session_best_effort(
             return;
         }
     };
-    if let Err(e) = client.idm_account_destroy_user_auth_token(spn, parsed).await {
+    if let Err(e) = client
+        .idm_account_destroy_user_auth_token(spn, parsed)
+        .await
+    {
         tracing::warn!(spn, %session_id, error = ?e, "destroying current session on kanidm failed");
     }
 }

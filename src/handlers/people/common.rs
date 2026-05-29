@@ -1,10 +1,10 @@
 use kanidm_proto::internal::{CredentialDetailType, CredentialStatus};
-use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
+use time::format_description::well_known::Rfc3339;
 
-use crate::kanidm::entry::{attr_all, attr_first, attr_present};
 use crate::AppState;
 use crate::auth::AdminUser;
+use crate::kanidm::entry::{attr_all, attr_first, attr_present};
 
 // ── Domain helper ─────────────────────────────────────────────────────────────
 
@@ -27,10 +27,18 @@ pub fn validate_name(s: &str) -> Result<(), &'static str> {
     if s.len() > 63 {
         return Err("Username must be 63 characters or less.");
     }
-    if !s.chars().next().map(|c| c.is_ascii_lowercase()).unwrap_or(false) {
+    if !s
+        .chars()
+        .next()
+        .map(|c| c.is_ascii_lowercase())
+        .unwrap_or(false)
+    {
         return Err("Username must start with a lowercase letter.");
     }
-    if !s.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-')) {
+    if !s
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-'))
+    {
         return Err("Username may only contain lowercase letters, digits, '.', '_', '-'.");
     }
     Ok(())
@@ -153,46 +161,45 @@ pub fn summarize_credentials(
     let ssh_key_count = attr_all(entry, "ssh_publickey").len();
     let radius_configured = attr_present(entry, "radius_secret");
 
-    let (primary, totp_labels, backup_codes_remaining) =
-        if let Some(st) = status {
-            let mut primary = PrimaryCred::None;
-            let mut totp_labels: Vec<String> = vec![];
-            let mut backup_codes_remaining: Option<usize> = None;
+    let (primary, totp_labels, backup_codes_remaining) = if let Some(st) = status {
+        let mut primary = PrimaryCred::None;
+        let mut totp_labels: Vec<String> = vec![];
+        let mut backup_codes_remaining: Option<usize> = None;
 
-            for cred in &st.creds {
-                match &cred.type_ {
-                    CredentialDetailType::Password => {
-                        primary = PrimaryCred::Password;
-                    }
-                    CredentialDetailType::GeneratedPassword => {
-                        primary = PrimaryCred::GeneratedPassword;
-                    }
-                    CredentialDetailType::PasswordMfa(totps, _wan_labels, count) => {
-                        if !totps.is_empty() {
-                            primary = PrimaryCred::PasswordWithTotp;
-                            totp_labels = totps.clone();
-                        } else if *count > 0 {
-                            primary = PrimaryCred::PasswordWithBackupCode;
-                        } else {
-                            primary = PrimaryCred::Other;
-                        }
-                        if *count > 0 {
-                            backup_codes_remaining = Some(*count);
-                        }
-                    }
-                    CredentialDetailType::Passkey(_) => {}
+        for cred in &st.creds {
+            match &cred.type_ {
+                CredentialDetailType::Password => {
+                    primary = PrimaryCred::Password;
                 }
+                CredentialDetailType::GeneratedPassword => {
+                    primary = PrimaryCred::GeneratedPassword;
+                }
+                CredentialDetailType::PasswordMfa(totps, _wan_labels, count) => {
+                    if !totps.is_empty() {
+                        primary = PrimaryCred::PasswordWithTotp;
+                        totp_labels = totps.clone();
+                    } else if *count > 0 {
+                        primary = PrimaryCred::PasswordWithBackupCode;
+                    } else {
+                        primary = PrimaryCred::Other;
+                    }
+                    if *count > 0 {
+                        backup_codes_remaining = Some(*count);
+                    }
+                }
+                CredentialDetailType::Passkey(_) => {}
             }
+        }
 
-            (primary, totp_labels, backup_codes_remaining)
+        (primary, totp_labels, backup_codes_remaining)
+    } else {
+        let primary = if attr_present(entry, "primary_credential") {
+            PrimaryCred::Password
         } else {
-            let primary = if attr_present(entry, "primary_credential") {
-                PrimaryCred::Password
-            } else {
-                PrimaryCred::None
-            };
-            (primary, vec![], None)
+            PrimaryCred::None
         };
+        (primary, vec![], None)
+    };
 
     CredentialSummary {
         primary,
@@ -211,7 +218,10 @@ pub(super) fn parse_kanidm_datetime(s: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(s, &Rfc3339).ok()
 }
 
-pub(crate) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDateTime) -> PersonStatus {
+pub(crate) fn compute_status_at(
+    entry: &kanidm_proto::v1::Entry,
+    now: OffsetDateTime,
+) -> PersonStatus {
     let valid_from = attr_first(entry, "account_valid_from")
         .as_deref()
         .and_then(parse_kanidm_datetime);
@@ -221,25 +231,27 @@ pub(crate) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDate
         .and_then(parse_kanidm_datetime);
 
     if let Some(exp) = expire
-        && exp <= now {
-            return PersonStatus::Expired;
-        }
+        && exp <= now
+    {
+        return PersonStatus::Expired;
+    }
 
     if let Some(vf) = valid_from
-        && vf > now {
-            return PersonStatus::NotYetActive;
-        }
+        && vf > now
+    {
+        return PersonStatus::NotYetActive;
+    }
 
     PersonStatus::Active
 }
 
 #[cfg(test)]
 mod credential_summary_tests {
-    use std::collections::BTreeMap;
     use kanidm_proto::internal::{CredentialDetail, CredentialDetailType, CredentialStatus};
+    use std::collections::BTreeMap;
     use uuid::Uuid;
 
-    use super::{summarize_credentials, PrimaryCred};
+    use super::{PrimaryCred, summarize_credentials};
 
     fn entry(attrs: &[(&str, &[&str])]) -> kanidm_proto::v1::Entry {
         let mut map: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -294,7 +306,7 @@ mod tests {
 
     use time::macros::datetime;
 
-    use super::{compute_status_at, parse_kanidm_datetime, PersonStatus};
+    use super::{PersonStatus, compute_status_at, parse_kanidm_datetime};
 
     fn entry(attrs: &[(&str, &str)]) -> kanidm_proto::v1::Entry {
         let mut map: BTreeMap<String, Vec<String>> = BTreeMap::new();

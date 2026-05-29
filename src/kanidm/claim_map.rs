@@ -174,14 +174,20 @@ mod tests {
     #[test]
     fn malformed_empty_string() {
         let raw = "";
-        assert!(parse_claim_map(raw).is_none(), "should return None for empty");
+        assert!(
+            parse_claim_map(raw).is_none(),
+            "should return None for empty"
+        );
     }
 
     #[test]
     fn malformed_missing_at_in_group() {
         // No '@' in the group SPN → cannot find SPN boundary.
         let raw = r#"claim:nogroup:,:"value""#;
-        assert!(parse_claim_map(raw).is_none(), "should return None when no @ in group");
+        assert!(
+            parse_claim_map(raw).is_none(),
+            "should return None when no @ in group"
+        );
     }
 
     #[test]
@@ -194,7 +200,10 @@ mod tests {
     #[test]
     fn empty_claim_name() {
         let raw = r#":group@domain:,:"value""#;
-        assert!(parse_claim_map(raw).is_none(), "empty claim name should fail");
+        assert!(
+            parse_claim_map(raw).is_none(),
+            "empty claim name should fail"
+        );
     }
 
     #[test]

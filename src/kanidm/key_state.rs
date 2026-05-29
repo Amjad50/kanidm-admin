@@ -78,7 +78,12 @@ pub fn parse_key_state(value: &str) -> Option<ParsedKey> {
     // Step 4: parse counter.
     let counter: u64 = counter_str.parse().ok()?;
 
-    Some(ParsedKey { id, status, algorithm, counter })
+    Some(ParsedKey {
+        id,
+        status,
+        algorithm,
+        counter,
+    })
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -139,7 +144,10 @@ mod tests {
 
     #[test]
     fn malformed_bad_counter_returns_none() {
-        assert_eq!(parse_key_state("57850d1d41fd: valid jws_es256 not_a_number"), None);
+        assert_eq!(
+            parse_key_state("57850d1d41fd: valid jws_es256 not_a_number"),
+            None
+        );
     }
 
     #[test]

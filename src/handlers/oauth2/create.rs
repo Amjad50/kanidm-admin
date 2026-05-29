@@ -4,14 +4,14 @@ use axum::extract::{Query, State};
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_extra::extract::Form;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::people::create::FormField;
 use crate::views::BaseFields;
-use crate::AppState;
 
 use super::common::{
-    validate_landing_url, validate_oauth2_displayname, validate_oauth2_name, OAuth2CreateKind,
+    OAuth2CreateKind, validate_landing_url, validate_oauth2_displayname, validate_oauth2_name,
 };
 use crate::handlers::common::friendly_client_error;
 
@@ -82,23 +82,14 @@ pub async fn pick_type(user: AdminUser) -> AppResult<Response> {
 }
 
 /// GET /oauth2/new/details?type=basic|public — step 2: fill in details.
-pub async fn details_form(
-    user: AdminUser,
-    Query(q): Query<DetailsQuery>,
-) -> AppResult<Response> {
+pub async fn details_form(user: AdminUser, Query(q): Query<DetailsQuery>) -> AppResult<Response> {
     let Some(kind) = q.kind else {
         return Ok(Redirect::to("/admin/oauth2/new").into_response());
     };
-    Ok(build_details_view(
-        &user,
-        kind,
-        SubmitForm::default(),
-        None,
-        None,
-        None,
-        None,
+    Ok(
+        build_details_view(&user, kind, SubmitForm::default(), None, None, None, None)
+            .into_response(),
     )
-    .into_response())
 }
 
 /// POST /oauth2 — validate + create.
@@ -112,16 +103,10 @@ pub async fn submit(
     let landing_err = validate_landing_url(&form.landing).err();
 
     if name_err.is_some() || dn_err.is_some() || landing_err.is_some() {
-        return Ok(build_details_view(
-            &user,
-            form.kind,
-            form,
-            name_err,
-            dn_err,
-            landing_err,
-            None,
-        )
-        .into_response());
+        return Ok(
+            build_details_view(&user, form.kind, form, name_err, dn_err, landing_err, None)
+                .into_response(),
+        );
     }
 
     let trimmed_name = form.name.trim().to_string();

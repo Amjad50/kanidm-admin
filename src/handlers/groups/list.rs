@@ -1,17 +1,17 @@
 use askama::Template;
 use askama_web::WebTemplate;
+use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
-use axum::Json;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
+use crate::handlers::common::{PaletteItem, PaletteResponse, wants_json};
 use crate::kanidm::entry::{attr_all, attr_first, spn_or_uuid};
 use crate::views::BaseFields;
-use crate::AppState;
 
 // ── Query params ─────────────────────────────────────────────────────────────
 
@@ -36,17 +36,17 @@ pub struct GroupRow {
 }
 
 fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> String {
-    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+    use crate::views::dropdown::{DropdownItem, render_actions_cell};
 
-    let mut items = vec![DropdownItem::link(
-        "Members",
-        format!("/admin/groups/{spn_or_uuid}/members"),
-    )
-    .with_icon("users")];
+    let mut items = vec![
+        DropdownItem::link("Members", format!("/admin/groups/{spn_or_uuid}/members"))
+            .with_icon("users"),
+    ];
 
     if !is_builtin {
         items.push(
-            DropdownItem::link("Edit", format!("/admin/groups/{spn_or_uuid}/edit")).with_icon("pencil"),
+            DropdownItem::link("Edit", format!("/admin/groups/{spn_or_uuid}/edit"))
+                .with_icon("pencil"),
         );
         items.push(DropdownItem::Divider);
         items.push(

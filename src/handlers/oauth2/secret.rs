@@ -3,16 +3,15 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::views::partials::Modal;
-use crate::AppState;
 
 use crate::handlers::common::friendly_client_error;
 
 use super::common::OAuth2Kind;
-use super::detail::{compute_header, fetch_oauth2_entry, OAuth2Header};
-
+use super::detail::{OAuth2Header, compute_header, fetch_oauth2_entry};
 
 // ── Data model ────────────────────────────────────────────────────────────────
 
@@ -74,10 +73,7 @@ pub async fn tab(
             format!("{} — Basic secret", header.displayname),
             "text-accent",
         ),
-        OAuth2Kind::Public => (
-            format!("{} — Client type", header.displayname),
-            "text-info",
-        ),
+        OAuth2Kind::Public => (format!("{} — Client type", header.displayname), "text-info"),
     };
 
     let data = match &header.kind {
@@ -98,7 +94,11 @@ pub async fn tab(
                 }
             };
 
-            SecretData::Basic { secret, fresh: false, error }
+            SecretData::Basic {
+                secret,
+                fresh: false,
+                error,
+            }
         }
     };
 
@@ -106,9 +106,7 @@ pub async fn tab(
         .render()
         .map_err(AppError::Template)?;
 
-    let footer_html = SecretModalFooter {}
-        .render()
-        .map_err(AppError::Template)?;
+    let footer_html = SecretModalFooter {}.render().map_err(AppError::Template)?;
 
     let html = Modal {
         title: modal_title,
@@ -139,7 +137,10 @@ pub async fn reset(
 
     // Trigger regeneration by passing reset_secret=true (clears the attribute,
     // causing kanidm to generate a new one on the next read).
-    let reset_error = match client.idm_oauth2_rs_update(&id, None, None, None, true).await {
+    let reset_error = match client
+        .idm_oauth2_rs_update(&id, None, None, None, true)
+        .await
+    {
         Ok(()) => None,
         Err(e) => {
             tracing::warn!(id, error = ?e, "oauth2 secret reset failed");
@@ -160,7 +161,11 @@ pub async fn reset(
                 None
             }
         };
-        SecretData::Basic { secret: current, fresh: false, error: Some(err) }
+        SecretData::Basic {
+            secret: current,
+            fresh: false,
+            error: Some(err),
+        }
     } else {
         // Reset succeeded — read the new secret and auto-reveal it.
         let new_secret = match client.idm_oauth2_rs_get_basic_secret(&id).await {
@@ -170,7 +175,11 @@ pub async fn reset(
                 None
             }
         };
-        SecretData::Basic { secret: new_secret, fresh: true, error: None }
+        SecretData::Basic {
+            secret: new_secret,
+            fresh: true,
+            error: None,
+        }
     };
 
     Ok(SecretCardFragment { header, data }.into_response())

@@ -4,15 +4,15 @@ use axum::response::{Html, IntoResponse, Response};
 use axum_extra::extract::Form;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::friendly_client_error;
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::kanidm::scope_map::parse_scope_map;
 use crate::views::partials::Modal;
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 
 // SVG icon used on scope-map modals (key icon from secret.rs)
 
@@ -269,7 +269,13 @@ pub async fn tab(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
-    render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "scope-maps",
+        TabContent::ScopeMaps(data),
+    )
 }
 
 /// Build and render a scope-map modal (add or edit).
@@ -329,7 +335,11 @@ async fn add_scope_map_impl(
     form: AddScopeMapForm,
     supplementary: bool,
 ) -> AppResult<Response> {
-    let section: &'static str = if supplementary { "supplementary" } else { "standard" };
+    let section: &'static str = if supplementary {
+        "supplementary"
+    } else {
+        "standard"
+    };
     let group = form.group.trim().to_string();
 
     // Validate group SPN.
@@ -340,13 +350,20 @@ async fn add_scope_map_impl(
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
             let existing_groups: Vec<String> = if supplementary {
-                data.supplementary.iter().map(|r| r.group_spn.clone()).collect()
+                data.supplementary
+                    .iter()
+                    .map(|r| r.group_spn.clone())
+                    .collect()
             } else {
                 data.standard.iter().map(|r| r.group_spn.clone()).collect()
             };
             let modal_title = format!(
                 "Add {} scope map",
-                if supplementary { "supplementary" } else { "standard" }
+                if supplementary {
+                    "supplementary"
+                } else {
+                    "standard"
+                }
             );
             let html = render_scope_map_modal(
                 modal_title,
@@ -365,7 +382,13 @@ async fn add_scope_map_impl(
         let entry = fetch_oauth2_entry(&state, &user, &id).await?;
         let header = compute_header(&state, &entry);
         let data = build_scope_maps_data(&state, &user, &id, &entry, Some(err_msg)).await;
-        return render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data));
+        return render_detail(
+            is_htmx,
+            user,
+            header,
+            "scope-maps",
+            TabContent::ScopeMaps(data),
+        );
     }
 
     // Build and validate scopes.
@@ -376,13 +399,20 @@ async fn add_scope_map_impl(
                 let entry = fetch_oauth2_entry(&state, &user, &id).await?;
                 let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
                 let existing_groups: Vec<String> = if supplementary {
-                    data.supplementary.iter().map(|r| r.group_spn.clone()).collect()
+                    data.supplementary
+                        .iter()
+                        .map(|r| r.group_spn.clone())
+                        .collect()
                 } else {
                     data.standard.iter().map(|r| r.group_spn.clone()).collect()
                 };
                 let modal_title = format!(
                     "Add {} scope map",
-                    if supplementary { "supplementary" } else { "standard" }
+                    if supplementary {
+                        "supplementary"
+                    } else {
+                        "standard"
+                    }
                 );
                 let html = render_scope_map_modal(
                     modal_title,
@@ -457,12 +487,17 @@ async fn add_scope_map_impl(
                 };
                 // Primary response: empty (clears overlay-slot / closes modal).
                 // OOB: tab-content update + nav update.
-                let tab_oob = format!(
-                    r#"<div id="tab-content" hx-swap-oob="innerHTML">{tab_html}</div>"#
-                );
+                let tab_oob =
+                    format!(r#"<div id="tab-content" hx-swap-oob="innerHTML">{tab_html}</div>"#);
                 return Ok(Html(format!("{tab_oob}{nav_html}")).into_response());
             }
-            render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data))
+            render_detail(
+                is_htmx,
+                user,
+                header,
+                "scope-maps",
+                TabContent::ScopeMaps(data),
+            )
         }
         Err(e) => {
             tracing::warn!(id = %id, group = %group, supplementary, error = ?e, "add scope map failed");
@@ -472,13 +507,20 @@ async fn add_scope_map_impl(
                 let entry = fetch_oauth2_entry(&state, &user, &id).await?;
                 let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
                 let existing_groups: Vec<String> = if supplementary {
-                    data.supplementary.iter().map(|r| r.group_spn.clone()).collect()
+                    data.supplementary
+                        .iter()
+                        .map(|r| r.group_spn.clone())
+                        .collect()
                 } else {
                     data.standard.iter().map(|r| r.group_spn.clone()).collect()
                 };
                 let modal_title = format!(
                     "Add {} scope map",
-                    if supplementary { "supplementary" } else { "standard" }
+                    if supplementary {
+                        "supplementary"
+                    } else {
+                        "standard"
+                    }
                 );
                 let html = render_scope_map_modal(
                     modal_title,
@@ -497,7 +539,13 @@ async fn add_scope_map_impl(
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
             let data = build_scope_maps_data(&state, &user, &id, &entry, Some(err_msg)).await;
-            render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data))
+            render_detail(
+                is_htmx,
+                user,
+                header,
+                "scope-maps",
+                TabContent::ScopeMaps(data),
+            )
         }
     }
 }
@@ -537,7 +585,13 @@ pub async fn delete_standard(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_scope_maps_data(&state, &user, &id, &entry, error).await;
-    render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "scope-maps",
+        TabContent::ScopeMaps(data),
+    )
 }
 
 /// POST /oauth2/{id}/scope-map/supplementary
@@ -564,10 +618,7 @@ pub async fn delete_supplementary(
         .await
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-    let error = match client
-        .idm_oauth2_rs_delete_sup_scope_map(&id, &group)
-        .await
-    {
+    let error = match client.idm_oauth2_rs_delete_sup_scope_map(&id, &group).await {
         Ok(()) => None,
         Err(e) => {
             tracing::warn!(id = %id, group = %group, error = ?e, "delete supplementary scope map failed");
@@ -578,7 +629,13 @@ pub async fn delete_supplementary(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_scope_maps_data(&state, &user, &id, &entry, error).await;
-    render_detail(is_htmx, user, header, "scope-maps", TabContent::ScopeMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "scope-maps",
+        TabContent::ScopeMaps(data),
+    )
 }
 
 /// Shared helper for rendering the Add modal (new scope map entry).
@@ -588,19 +645,30 @@ async fn new_modal_impl(
     user: AdminUser,
     supplementary: bool,
 ) -> AppResult<Response> {
-    let section: &'static str = if supplementary { "supplementary" } else { "standard" };
+    let section: &'static str = if supplementary {
+        "supplementary"
+    } else {
+        "standard"
+    };
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
 
     let existing_groups: Vec<String> = if supplementary {
-        data.supplementary.iter().map(|r| r.group_spn.clone()).collect()
+        data.supplementary
+            .iter()
+            .map(|r| r.group_spn.clone())
+            .collect()
     } else {
         data.standard.iter().map(|r| r.group_spn.clone()).collect()
     };
 
     let modal_title = format!(
         "Add {} scope map",
-        if supplementary { "supplementary" } else { "standard" }
+        if supplementary {
+            "supplementary"
+        } else {
+            "standard"
+        }
     );
 
     let html = render_scope_map_modal(
@@ -625,13 +693,23 @@ async fn edit_modal_impl(
     user: AdminUser,
     supplementary: bool,
 ) -> AppResult<Response> {
-    let section: &'static str = if supplementary { "supplementary" } else { "standard" };
+    let section: &'static str = if supplementary {
+        "supplementary"
+    } else {
+        "standard"
+    };
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let data = build_scope_maps_data(&state, &user, &id, &entry, None).await;
 
     // Find the row being edited.
-    let rows = if supplementary { &data.supplementary } else { &data.standard };
-    let row = rows.iter().find(|r| r.group_spn == group || r.encoded_group == group);
+    let rows = if supplementary {
+        &data.supplementary
+    } else {
+        &data.standard
+    };
+    let row = rows
+        .iter()
+        .find(|r| r.group_spn == group || r.encoded_group == group);
 
     let (active_scopes, custom_scopes_prefill) = if let Some(r) = row {
         (r.scopes.clone(), r.custom_scopes.join(", "))
@@ -641,7 +719,11 @@ async fn edit_modal_impl(
 
     let modal_title = format!(
         "Edit {} scope map — {}",
-        if supplementary { "supplementary" } else { "standard" },
+        if supplementary {
+            "supplementary"
+        } else {
+            "standard"
+        },
         group
     );
 
@@ -653,8 +735,8 @@ async fn edit_modal_impl(
         group,
         active_scopes,
         custom_scopes_prefill,
-        vec![],      // no datalist needed for edit
-        vec![],      // no overwrite warning needed for edit
+        vec![], // no datalist needed for edit
+        vec![], // no overwrite warning needed for edit
         None,
     )?;
     Ok(Html(html).into_response())

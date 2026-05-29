@@ -38,19 +38,39 @@ fn format_relative_past_at(t: OffsetDateTime, now: OffsetDateTime) -> String {
         "just now".to_string()
     } else if secs < 3600 {
         let n = secs / 60;
-        if n == 1 { "1 minute ago".to_string() } else { format!("{n} minutes ago") }
+        if n == 1 {
+            "1 minute ago".to_string()
+        } else {
+            format!("{n} minutes ago")
+        }
     } else if secs < 86400 {
         let n = secs / 3600;
-        if n == 1 { "1 hour ago".to_string() } else { format!("{n} hours ago") }
+        if n == 1 {
+            "1 hour ago".to_string()
+        } else {
+            format!("{n} hours ago")
+        }
     } else if secs < 604800 {
         let n = secs / 86400;
-        if n == 1 { "1 day ago".to_string() } else { format!("{n} days ago") }
+        if n == 1 {
+            "1 day ago".to_string()
+        } else {
+            format!("{n} days ago")
+        }
     } else if secs < 2592000 {
         let n = secs / 604800;
-        if n == 1 { "1 week ago".to_string() } else { format!("{n} weeks ago") }
+        if n == 1 {
+            "1 week ago".to_string()
+        } else {
+            format!("{n} weeks ago")
+        }
     } else {
         let n = secs / 2592000;
-        if n == 1 { "1 month ago".to_string() } else { format!("{n} months ago") }
+        if n == 1 {
+            "1 month ago".to_string()
+        } else {
+            format!("{n} months ago")
+        }
     }
 }
 
@@ -64,7 +84,11 @@ fn format_relative_future_at(t: OffsetDateTime, now: OffsetDateTime) -> String {
         "in less than a minute".to_string()
     } else if secs < 3600 {
         let n = secs / 60;
-        if n == 1 { "in 1 minute".to_string() } else { format!("in {n} minutes") }
+        if n == 1 {
+            "in 1 minute".to_string()
+        } else {
+            format!("in {n} minutes")
+        }
     } else if secs < 86400 {
         let hours = secs / 3600;
         let mins = (secs % 3600) / 60;
@@ -77,10 +101,18 @@ fn format_relative_future_at(t: OffsetDateTime, now: OffsetDateTime) -> String {
         }
     } else if secs < 2592000 {
         let n = secs / 86400;
-        if n == 1 { "in 1 day".to_string() } else { format!("in {n} days") }
+        if n == 1 {
+            "in 1 day".to_string()
+        } else {
+            format!("in {n} days")
+        }
     } else {
         let n = secs / 2592000;
-        if n == 1 { "in 1 month".to_string() } else { format!("in {n} months") }
+        if n == 1 {
+            "in 1 month".to_string()
+        } else {
+            format!("in {n} months")
+        }
     }
 }
 
@@ -94,7 +126,11 @@ fn format_relative_remaining_at(t: OffsetDateTime, now: OffsetDateTime) -> Strin
         "less than a minute".to_string()
     } else if secs < 3600 {
         let n = secs / 60;
-        if n == 1 { "1 minute".to_string() } else { format!("{n} minutes") }
+        if n == 1 {
+            "1 minute".to_string()
+        } else {
+            format!("{n} minutes")
+        }
     } else if secs < 86400 {
         let hours = secs / 3600;
         let mins = (secs % 3600) / 60;
@@ -107,10 +143,18 @@ fn format_relative_remaining_at(t: OffsetDateTime, now: OffsetDateTime) -> Strin
         }
     } else if secs < 2592000 {
         let n = secs / 86400;
-        if n == 1 { "1 day".to_string() } else { format!("{n} days") }
+        if n == 1 {
+            "1 day".to_string()
+        } else {
+            format!("{n} days")
+        }
     } else {
         let n = secs / 2592000;
-        if n == 1 { "1 month".to_string() } else { format!("{n} months") }
+        if n == 1 {
+            "1 month".to_string()
+        } else {
+            format!("{n} months")
+        }
     }
 }
 
@@ -118,7 +162,10 @@ fn format_relative_remaining_at(t: OffsetDateTime, now: OffsetDateTime) -> Strin
 mod tests {
     use time::macros::datetime;
 
-    use super::{format_absolute, format_relative_future_at, format_relative_past_at, format_relative_remaining_at};
+    use super::{
+        format_absolute, format_relative_future_at, format_relative_past_at,
+        format_relative_remaining_at,
+    };
 
     // ── format_absolute ───────────────────────────────────────────────────────
 

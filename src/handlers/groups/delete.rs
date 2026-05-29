@@ -3,12 +3,12 @@ use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::safe_id;
 use crate::kanidm::entry::attr_first;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
-use crate::AppState;
 
 use super::common::friendly_error;
 
@@ -110,7 +110,9 @@ pub async fn submit(
             let mut headers = HeaderMap::new();
             headers.insert(
                 "HX-Redirect",
-                "/admin/groups".parse().expect("static header value is valid"),
+                "/admin/groups"
+                    .parse()
+                    .expect("static header value is valid"),
             );
             Ok((headers, Html(String::new())).into_response())
         }

@@ -3,16 +3,16 @@ use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::attr_first;
 use crate::views::initials;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
-use crate::AppState;
 
 use super::common::friendly_client_error;
-use crate::handlers::common::safe_id;
 use super::detail::fetch_person;
+use crate::handlers::common::safe_id;
 
 /// Build the complete delete modal HTML.  Called by both GET and POST (error
 /// path) so all rendering logic lives in one place.
@@ -106,7 +106,9 @@ pub async fn submit(
             let mut headers = HeaderMap::new();
             headers.insert(
                 "HX-Redirect",
-                "/admin/people".parse().expect("static header value is valid"),
+                "/admin/people"
+                    .parse()
+                    .expect("static header value is valid"),
             );
             Ok((headers, Html(String::new())).into_response())
         }

@@ -3,13 +3,12 @@ use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::{friendly_client_error, safe_id};
 use crate::kanidm::entry::attr_first;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
-use crate::AppState;
-
 
 async fn build_modal(
     state: &AppState,
@@ -107,7 +106,10 @@ pub async fn submit(
     match client.idm_oauth2_rs_delete(&id).await {
         Ok(()) => {
             let mut headers = HeaderMap::new();
-            headers.insert("HX-Redirect", "/admin/oauth2".parse().expect("valid header"));
+            headers.insert(
+                "HX-Redirect",
+                "/admin/oauth2".parse().expect("valid header"),
+            );
             Ok((headers, Html(String::new())).into_response())
         }
         Err(e) => {

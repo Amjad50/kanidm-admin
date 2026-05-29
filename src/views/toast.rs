@@ -21,16 +21,32 @@ pub struct Toast {
 #[allow(dead_code)]
 impl Toast {
     pub fn success(title: impl Into<String>) -> Self {
-        Self { title: title.into(), kind: ToastKind::Success, desc: None }
+        Self {
+            title: title.into(),
+            kind: ToastKind::Success,
+            desc: None,
+        }
     }
     pub fn info(title: impl Into<String>) -> Self {
-        Self { title: title.into(), kind: ToastKind::Info, desc: None }
+        Self {
+            title: title.into(),
+            kind: ToastKind::Info,
+            desc: None,
+        }
     }
     pub fn warn(title: impl Into<String>) -> Self {
-        Self { title: title.into(), kind: ToastKind::Warn, desc: None }
+        Self {
+            title: title.into(),
+            kind: ToastKind::Warn,
+            desc: None,
+        }
     }
     pub fn error(title: impl Into<String>) -> Self {
-        Self { title: title.into(), kind: ToastKind::Error, desc: None }
+        Self {
+            title: title.into(),
+            kind: ToastKind::Error,
+            desc: None,
+        }
     }
     pub fn with_desc(mut self, desc: impl Into<String>) -> Self {
         self.desc = Some(desc.into());
@@ -44,8 +60,8 @@ impl Toast {
         struct Envelope<'a> {
             toast: &'a Toast,
         }
-        let json = serde_json::to_string(&Envelope { toast: self })
-            .expect("Toast is always serialisable");
+        let json =
+            serde_json::to_string(&Envelope { toast: self }).expect("Toast is always serialisable");
         HeaderValue::from_str(&json).expect("toast JSON is always valid HTTP header bytes")
     }
 }

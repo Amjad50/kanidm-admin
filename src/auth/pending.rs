@@ -89,10 +89,7 @@ impl PendingAuthStore {
         let id = Uuid::new_v4();
         let mut guard = self.inner.lock().expect("pending store poisoned");
         sweep_expired(&mut guard);
-        guard.insert(
-            id,
-            PendingAuth::fresh(client, ident, available, return_to),
-        );
+        guard.insert(id, PendingAuth::fresh(client, ident, available, return_to));
         id
     }
 

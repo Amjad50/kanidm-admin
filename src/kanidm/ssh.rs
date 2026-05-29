@@ -33,11 +33,7 @@ pub fn algorithm_friendly(raw: &str) -> Cow<'static, str> {
         "ecdsa-sha2-nistp521" => Cow::Borrowed("ECDSA P-521"),
         other => {
             if let Some(rest) = other.strip_prefix("sk-") {
-                let base = rest
-                    .split('@')
-                    .next()
-                    .unwrap_or(rest)
-                    .trim_end_matches('-');
+                let base = rest.split('@').next().unwrap_or(rest).trim_end_matches('-');
                 // Recursively resolve the base algorithm name, then append suffix.
                 let base_friendly = algorithm_friendly(base);
                 Cow::Owned(format!("{base_friendly} (security key)"))
@@ -162,7 +158,10 @@ pub fn validate_pubkey_shape(key: &str) -> Result<(), &'static str> {
         return Err("Public key is required.");
     }
     let has_prefix = KNOWN_PREFIXES.iter().any(|p| key.starts_with(p));
-    let has_two_fields = key.split_once(' ').map(|x| x.1).is_some_and(|s| !s.is_empty());
+    let has_two_fields = key
+        .split_once(' ')
+        .map(|x| x.1)
+        .is_some_and(|s| !s.is_empty());
     if !has_prefix || !has_two_fields {
         return Err(
             "Key must start with a recognised SSH key type (ssh-ed25519, ssh-rsa, ecdsa-sha2-*, etc.).",
@@ -183,7 +182,10 @@ mod tests {
     fn fingerprint_known_data() {
         // base64("test key data") → deterministic SHA256 fingerprint
         let fp = compute_fingerprint(VALID_B64).expect("valid base64 must produce a fingerprint");
-        assert!(fp.starts_with("SHA256:"), "fingerprint must start with SHA256:");
+        assert!(
+            fp.starts_with("SHA256:"),
+            "fingerprint must start with SHA256:"
+        );
         assert!(fp.len() > 8, "fingerprint must have content after prefix");
         // Verify the exact value matches the expected SHA256 of "test key data"
         assert_eq!(fp, "SHA256:qAS3v+C3Ba0KaEO/tkZpCW7xhNhj3kh5A7Y2Y0xKmVk");
@@ -260,9 +262,18 @@ mod tests {
         assert_eq!(algorithm_friendly("ssh-ed25519").as_ref(), "Ed25519");
         assert_eq!(algorithm_friendly("ssh-rsa").as_ref(), "RSA");
         assert_eq!(algorithm_friendly("ssh-dss").as_ref(), "DSA");
-        assert_eq!(algorithm_friendly("ecdsa-sha2-nistp256").as_ref(), "ECDSA P-256");
-        assert_eq!(algorithm_friendly("ecdsa-sha2-nistp384").as_ref(), "ECDSA P-384");
-        assert_eq!(algorithm_friendly("ecdsa-sha2-nistp521").as_ref(), "ECDSA P-521");
+        assert_eq!(
+            algorithm_friendly("ecdsa-sha2-nistp256").as_ref(),
+            "ECDSA P-256"
+        );
+        assert_eq!(
+            algorithm_friendly("ecdsa-sha2-nistp384").as_ref(),
+            "ECDSA P-384"
+        );
+        assert_eq!(
+            algorithm_friendly("ecdsa-sha2-nistp521").as_ref(),
+            "ECDSA P-521"
+        );
     }
 
     #[test]
@@ -276,7 +287,10 @@ mod tests {
 
     #[test]
     fn algorithm_friendly_unknown_passthrough() {
-        assert_eq!(algorithm_friendly("x-custom-algo").as_ref(), "x-custom-algo");
+        assert_eq!(
+            algorithm_friendly("x-custom-algo").as_ref(),
+            "x-custom-algo"
+        );
     }
 
     // ── parse_ssh_publickey_line ──────────────────────────────────────
@@ -301,10 +315,7 @@ mod tests {
             key.fingerprint,
             "SHA256:zA/xpGjbERsh5GZw0tULpPJnNsenLHmA/MtVkfYHnJM"
         );
-        assert_eq!(
-            key.openssh_line,
-            format!("ssh-ed25519 {REAL_ED25519_B64}")
-        );
+        assert_eq!(key.openssh_line, format!("ssh-ed25519 {REAL_ED25519_B64}"));
     }
 
     #[test]
@@ -325,7 +336,10 @@ mod tests {
         assert_eq!(key.tag, "laptop");
         assert_eq!(key.algorithm_friendly, "Ed25519");
         assert!(key.fingerprint.starts_with("SHA256:"));
-        assert_eq!(key.openssh_line, format!("ssh-ed25519 {VALID_B64} alice@host"));
+        assert_eq!(
+            key.openssh_line,
+            format!("ssh-ed25519 {VALID_B64} alice@host")
+        );
     }
 
     #[test]

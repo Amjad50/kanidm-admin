@@ -7,14 +7,14 @@ use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::attr_all;
-use crate::kanidm::key_state::{parse_key_state, KeyStatus};
+use crate::kanidm::key_state::{KeyStatus, parse_key_state};
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 use crate::handlers::common::{friendly_client_error, safe_id};
 
 // ── Data structs ──────────────────────────────────────────────────────────────
@@ -89,45 +89,55 @@ fn parse_rotate_at(s: &str) -> Result<OffsetDateTime, String> {
 }
 
 /// Build `CryptoData` from an OAuth2 entry.
-fn build_crypto_data(id: &str, entry: &kanidm_proto::v1::Entry, error: Option<String>) -> CryptoData {
+fn build_crypto_data(
+    id: &str,
+    entry: &kanidm_proto::v1::Entry,
+    error: Option<String>,
+) -> CryptoData {
     let raw_keys = attr_all(entry, "key_internal_data");
 
     // Collect (KeyStatus, KeyRow) pairs so we can sort by status order.
     let mut pairs: Vec<(KeyStatus, KeyRow)> = raw_keys
         .iter()
-        .filter_map(|v| {
-            match parse_key_state(v) {
-                Some(k) => {
-                    let status = k.status;
-                    Some((status, KeyRow {
+        .filter_map(|v| match parse_key_state(v) {
+            Some(k) => {
+                let status = k.status;
+                Some((
+                    status,
+                    KeyRow {
                         id: k.id,
                         status_label: k.status.label(),
                         status_badge_classes: k.status.badge_classes(),
                         algorithm: k.algorithm,
                         counter: k.counter,
-                    }))
-                }
-                None => {
-                    tracing::warn!(
-                        oauth2_id = %id,
-                        raw_value = %v,
-                        "key_internal_data value failed to parse — skipping"
-                    );
-                    None
-                }
+                    },
+                ))
+            }
+            None => {
+                tracing::warn!(
+                    oauth2_id = %id,
+                    raw_value = %v,
+                    "key_internal_data value failed to parse — skipping"
+                );
+                None
             }
         })
         .collect();
 
     // Sort: Valid < Retired < Revoked < Unknown; secondary by algorithm asc.
     pairs.sort_by(|(sa, ra), (sb, rb)| {
-        sa.sort_order().cmp(&sb.sort_order()).then_with(|| ra.algorithm.cmp(&rb.algorithm))
+        sa.sort_order()
+            .cmp(&sb.sort_order())
+            .then_with(|| ra.algorithm.cmp(&rb.algorithm))
     });
 
     let keys = pairs.into_iter().map(|(_, row)| row).collect();
-    CryptoData { oauth2_id: id.to_string(), keys, error }
+    CryptoData {
+        oauth2_id: id.to_string(),
+        keys,
+        error,
+    }
 }
-
 
 /// Render the revoke-key modal (shared by both GET and error re-render).
 async fn build_revoke_modal(

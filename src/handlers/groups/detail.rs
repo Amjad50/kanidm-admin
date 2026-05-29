@@ -3,13 +3,13 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::views::BaseFields;
-use crate::AppState;
 
-use super::common::{compute_header, fetch_group, spn_initials, GroupHeader};
+use super::common::{GroupHeader, compute_header, fetch_group, spn_initials};
 use super::members::MembersData;
 use super::policy::PolicyData;
 
@@ -21,9 +21,18 @@ pub struct TabDef {
 }
 
 pub const TABS: &[TabDef] = &[
-    TabDef { slug: "overview", label: "Overview" },
-    TabDef { slug: "members",  label: "Members"  },
-    TabDef { slug: "policy",   label: "Account policy" },
+    TabDef {
+        slug: "overview",
+        label: "Overview",
+    },
+    TabDef {
+        slug: "members",
+        label: "Members",
+    },
+    TabDef {
+        slug: "policy",
+        label: "Account policy",
+    },
 ];
 
 // ── Overview tab data ─────────────────────────────────────────────────────────
@@ -172,7 +181,10 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
             policy_summary.push(("Credential type minimum".to_string(), v));
         }
         if let Some(v) = attr_first(entry, "auth_password_minimum_length") {
-            policy_summary.push(("Password minimum length".to_string(), format!("{v} characters")));
+            policy_summary.push((
+                "Password minimum length".to_string(),
+                format!("{v} characters"),
+            ));
         }
         if let Some(v) = attr_first(entry, "authsession_expiry") {
             let secs: u64 = v.parse().unwrap_or(0);

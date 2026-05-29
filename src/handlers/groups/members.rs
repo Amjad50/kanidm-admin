@@ -1,24 +1,24 @@
 use std::collections::HashMap;
 
 use askama::Template;
+use axum::Form;
 use axum::extract::{Path, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
-use axum::Form;
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::people::common::{compute_status_at, PersonStatus};
+use crate::handlers::people::common::{PersonStatus, compute_status_at};
 use crate::kanidm::entry::{attr_all, attr_first};
-use crate::views::dropdown::{render_actions_cell, DropdownItem};
+use crate::views::dropdown::{DropdownItem, render_actions_cell};
 use crate::views::initials;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
-use crate::AppState;
 
-use super::common::{compute_header, fetch_group, friendly_error, spn_initials, GroupHeader};
-use super::detail::{render_detail, TabContent};
+use super::common::{GroupHeader, compute_header, fetch_group, friendly_error, spn_initials};
+use super::detail::{TabContent, render_detail};
 
 // ── Member row data ───────────────────────────────────────────────────────────
 
@@ -103,21 +103,31 @@ fn build_member_row(
     let encoded_id = encode_member_id(spn);
 
     let actions_html = render_actions_cell(
-        vec![DropdownItem::htmx_post(
-            "Remove from group",
-            format!("/admin/groups/{group_id}/members/{encoded_id}/remove"),
-        )
-        .with_icon("x")
-        .with_target("#members-table-body")
-        .with_swap("innerHTML")
-        .with_confirm(format!(
-            "Remove {} from this group?",
-            if !displayname.is_empty() { &displayname } else { spn }
-        ))
-        .danger()],
+        vec![
+            DropdownItem::htmx_post(
+                "Remove from group",
+                format!("/admin/groups/{group_id}/members/{encoded_id}/remove"),
+            )
+            .with_icon("x")
+            .with_target("#members-table-body")
+            .with_swap("innerHTML")
+            .with_confirm(format!(
+                "Remove {} from this group?",
+                if !displayname.is_empty() {
+                    &displayname
+                } else {
+                    spn
+                }
+            ))
+            .danger(),
+        ],
         format!(
             "Remove {} from group",
-            if !displayname.is_empty() { &displayname } else { spn }
+            if !displayname.is_empty() {
+                &displayname
+            } else {
+                spn
+            }
         ),
     );
 
@@ -156,10 +166,7 @@ async fn build_members_data(
         .iter()
         .filter_map(|e| attr_first(e, "spn").map(|spn| (spn, e)))
         .collect();
-    let people_spns: Vec<String> = people
-        .iter()
-        .filter_map(|e| attr_first(e, "spn"))
-        .collect();
+    let people_spns: Vec<String> = people.iter().filter_map(|e| attr_first(e, "spn")).collect();
 
     let now = OffsetDateTime::now_utc();
     let members: Vec<MemberRow> = member_spns
@@ -167,7 +174,11 @@ async fn build_members_data(
         .map(|spn| build_member_row(group_id, spn, person_by_spn.get(spn).copied(), now))
         .collect();
 
-    MembersData { members, is_dynamic, people_spns }
+    MembersData {
+        members,
+        is_dynamic,
+        people_spns,
+    }
 }
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -198,7 +209,11 @@ pub async fn add(
         return Ok(Html(String::new()).into_response());
     }
 
-    let members: Vec<&str> = member.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+    let members: Vec<&str> = member
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
 
     let entry = fetch_group(&state, &user, &id).await?;
     let group = compute_header(&entry);
@@ -291,7 +306,6 @@ fn render_members_error_oob(msg: Option<String>) -> String {
     }
 }
 
-
 /// POST /groups/{id}/members/purge
 pub async fn purge(
     State(state): State<AppState>,
@@ -306,7 +320,10 @@ pub async fn purge(
         let html = build_purge_modal(
             &id,
             &group_name,
-            Some("Dynamic group membership is computed automatically and cannot be edited.".to_string()),
+            Some(
+                "Dynamic group membership is computed automatically and cannot be edited."
+                    .to_string(),
+            ),
         );
         return Ok(Html(html).into_response());
     }
@@ -326,10 +343,7 @@ pub async fn purge(
                 .map_err(AppError::Template)?;
             // Also close the modal overlay
             let mut headers = HeaderMap::new();
-            headers.insert(
-                "HX-Trigger",
-                "closeModal".parse().expect("static header"),
-            );
+            headers.insert("HX-Trigger", "closeModal".parse().expect("static header"));
             Ok((headers, Html(html)).into_response())
         }
         Err(e) => {
@@ -346,7 +360,11 @@ pub async fn purge(
 
 fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> String {
     let input_id = format!("purge-{id}");
-    let initials: String = group_name.chars().take(2).collect::<String>().to_uppercase();
+    let initials: String = group_name
+        .chars()
+        .take(2)
+        .collect::<String>()
+        .to_uppercase();
 
     let target_html = IdentityRow {
         initials,

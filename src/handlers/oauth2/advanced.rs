@@ -3,13 +3,13 @@ use axum::response::Response;
 use axum_extra::extract::Form;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::friendly_client_error;
 use crate::kanidm::entry::attr_first;
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 
 // ── Advanced tab data ─────────────────────────────────────────────────────────
 
@@ -29,8 +29,8 @@ fn build_advanced_data(
     error: Option<String>,
 ) -> AdvancedData {
     // oauth2_refresh_token_expiry — stored as a uint string, e.g. "2592000"
-    let refresh_expiry_seconds = attr_first(entry, "oauth2_refresh_token_expiry")
-        .and_then(|v| v.parse::<u32>().ok());
+    let refresh_expiry_seconds =
+        attr_first(entry, "oauth2_refresh_token_expiry").and_then(|v| v.parse::<u32>().ok());
 
     // oauth2_device_flow_enable — stored as "true" / absent
     let device_flow_enabled = attr_first(entry, "oauth2_device_flow_enable")
@@ -70,7 +70,13 @@ pub async fn tab(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_advanced_data(&id, &entry, None);
-    render_detail(is_htmx, user, header, "advanced", TabContent::Advanced(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "advanced",
+        TabContent::Advanced(data),
+    )
 }
 
 /// POST /oauth2/{id}/advanced
@@ -134,11 +140,7 @@ pub async fn update(
             tracing::warn!(field = %other, "unknown advanced update field");
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
-            let data = build_advanced_data(
-                &id,
-                &entry,
-                Some(format!("Unknown field: {other}")),
-            );
+            let data = build_advanced_data(&id, &entry, Some(format!("Unknown field: {other}")));
             return render_detail(
                 is_htmx,
                 user,
@@ -154,14 +156,26 @@ pub async fn update(
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
             let data = build_advanced_data(&id, &entry, None);
-            render_detail(is_htmx, user, header, "advanced", TabContent::Advanced(data))
+            render_detail(
+                is_htmx,
+                user,
+                header,
+                "advanced",
+                TabContent::Advanced(data),
+            )
         }
         Err(e) => {
             let msg = friendly_client_error("update advanced settings", &e);
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
             let data = build_advanced_data(&id, &entry, Some(msg));
-            render_detail(is_htmx, user, header, "advanced", TabContent::Advanced(data))
+            render_detail(
+                is_htmx,
+                user,
+                header,
+                "advanced",
+                TabContent::Advanced(data),
+            )
         }
     }
 }
@@ -170,15 +184,18 @@ pub async fn update(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
     use kanidm_proto::v1::Entry;
+    use std::collections::BTreeMap;
 
     use super::build_advanced_data;
 
     fn make_entry(attrs: &[(&str, &[&str])]) -> Entry {
         let mut map = BTreeMap::new();
         for (key, vals) in attrs {
-            map.insert(key.to_string(), vals.iter().map(|v| v.to_string()).collect());
+            map.insert(
+                key.to_string(),
+                vals.iter().map(|v| v.to_string()).collect(),
+            );
         }
         Entry { attrs: map }
     }

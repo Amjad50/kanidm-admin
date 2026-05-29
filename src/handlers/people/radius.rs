@@ -2,12 +2,12 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::AppState;
 
 use super::common::friendly_client_error;
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── View data ─────────────────────────────────────────────────────────────────
 

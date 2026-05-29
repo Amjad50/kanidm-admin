@@ -5,6 +5,7 @@ use axum_extra::extract::Form;
 use axum_htmx::HxRequest;
 use kanidm_proto::internal::Oauth2ClaimMapJoin;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::friendly_client_error;
@@ -12,9 +13,8 @@ use crate::handlers::oauth2::scope_maps::encode_group_spn;
 use crate::kanidm::claim_map::parse_claim_map;
 use crate::kanidm::entry::{attr_all, attr_first};
 use crate::views::partials::Modal;
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 
 // SVG icon for claim map modals (tag/label icon fits "claims")
 
@@ -210,7 +210,10 @@ async fn build_claim_maps_data(
             values_csv,
         };
 
-        if let Some(group_view) = claims.iter_mut().find(|g| g.claim_name == parsed.claim_name) {
+        if let Some(group_view) = claims
+            .iter_mut()
+            .find(|g| g.claim_name == parsed.claim_name)
+        {
             // Update join strategy — last value wins (all rows for a claim share the same join).
             group_view.current_join = parsed.join;
             group_view.current_join_label = join_label(&parsed.join);
@@ -289,7 +292,13 @@ pub async fn tab(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_claim_maps_data(&state, &user, &id, &entry, None).await;
-    render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "claim-maps",
+        TabContent::ClaimMaps(data),
+    )
 }
 
 /// POST /oauth2/{id}/claim-map  — Add a (claim, group) row with values + initial join.
@@ -315,7 +324,13 @@ pub async fn add(
             Some("Claim name must start with a lowercase letter and contain only lowercase letters, digits, and underscores.".to_string()),
         )
         .await;
-        return render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data));
+        return render_detail(
+            is_htmx,
+            user,
+            header,
+            "claim-maps",
+            TabContent::ClaimMaps(data),
+        );
     }
 
     // Validate group SPN.
@@ -330,7 +345,13 @@ pub async fn add(
             Some("Group must be a valid SPN (e.g. my-group@domain.example).".to_string()),
         )
         .await;
-        return render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data));
+        return render_detail(
+            is_htmx,
+            user,
+            header,
+            "claim-maps",
+            TabContent::ClaimMaps(data),
+        );
     }
 
     // Parse and validate values.
@@ -351,7 +372,13 @@ pub async fn add(
             Some("Values must not be empty. Enter at least one value.".to_string()),
         )
         .await;
-        return render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data));
+        return render_detail(
+            is_htmx,
+            user,
+            header,
+            "claim-maps",
+            TabContent::ClaimMaps(data),
+        );
     }
 
     // Validate join strategy.
@@ -420,7 +447,13 @@ pub async fn add(
         let html = render_claim_tab_with_oob_close(&header, data)?;
         return Ok(Html(html).into_response());
     }
-    render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "claim-maps",
+        TabContent::ClaimMaps(data),
+    )
 }
 
 /// POST /oauth2/{id}/claim-map/{claim}/{group}/delete
@@ -451,7 +484,13 @@ pub async fn delete(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_claim_maps_data(&state, &user, &id, &entry, error).await;
-    render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "claim-maps",
+        TabContent::ClaimMaps(data),
+    )
 }
 
 /// POST /oauth2/{id}/claim-map/{claim}/join  — Change the join strategy for a claim.
@@ -510,7 +549,13 @@ pub async fn set_join(
         let html = render_claim_tab_with_oob_close(&header, data)?;
         return Ok(Html(html).into_response());
     }
-    render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "claim-maps",
+        TabContent::ClaimMaps(data),
+    )
 }
 
 // ── New modal GET handlers ────────────────────────────────────────────────────
@@ -560,19 +605,18 @@ pub async fn edit_row_modal(
     let data = build_claim_maps_data(&state, &user, &id, &entry, None).await;
 
     // Find the existing row to pre-fill values and join.
-    let (values_prefill, join_lbl) = if let Some(claim_view) =
-        data.claims.iter().find(|c| c.claim_name == claim)
-    {
-        let row_vals = claim_view
-            .rows
-            .iter()
-            .find(|r| r.group_spn == group || r.encoded_group == group)
-            .map(|r| r.values_csv.clone())
-            .unwrap_or_default();
-        (row_vals, claim_view.current_join_label)
-    } else {
-        (String::new(), "csv")
-    };
+    let (values_prefill, join_lbl) =
+        if let Some(claim_view) = data.claims.iter().find(|c| c.claim_name == claim) {
+            let row_vals = claim_view
+                .rows
+                .iter()
+                .find(|r| r.group_spn == group || r.encoded_group == group)
+                .map(|r| r.values_csv.clone())
+                .unwrap_or_default();
+            (row_vals, claim_view.current_join_label)
+        } else {
+            (String::new(), "csv")
+        };
 
     let body_html = ClaimRowModalBody {
         oauth2_id: id.clone(),
@@ -710,9 +754,10 @@ pub async fn delete_all_for_claim(
     let mut pairs: Vec<(String, String)> = Vec::new();
     for raw in &raw_values {
         if let Some(parsed) = parse_claim_map(raw)
-            && parsed.claim_name == claim {
-                pairs.push((parsed.claim_name, parsed.group_spn));
-            }
+            && parsed.claim_name == claim
+        {
+            pairs.push((parsed.claim_name, parsed.group_spn));
+        }
     }
 
     let client = state
@@ -741,11 +786,20 @@ pub async fn delete_all_for_claim(
     let combined_error = if errors.is_empty() {
         None
     } else {
-        Some(format!("Some rows could not be deleted: {}", errors.join("; ")))
+        Some(format!(
+            "Some rows could not be deleted: {}",
+            errors.join("; ")
+        ))
     };
 
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let data = build_claim_maps_data(&state, &user, &id, &entry, combined_error).await;
-    render_detail(is_htmx, user, header, "claim-maps", TabContent::ClaimMaps(data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "claim-maps",
+        TabContent::ClaimMaps(data),
+    )
 }

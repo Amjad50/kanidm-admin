@@ -12,13 +12,13 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum::routing::get;
 use axum::{Form, Router};
-use axum_extra::extract::cookie::{Cookie, SameSite};
 use axum_extra::extract::CookieJar;
-use kanidm_proto::v1::{AuthAllowed, AuthMech, AuthState};
-use kanidm_proto::internal::UserAuthToken;
-use kanidm_proto::webauthn::PublicKeyCredential;
-use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
+use axum_extra::extract::cookie::{Cookie, SameSite};
 use base64::Engine;
+use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
+use kanidm_proto::internal::UserAuthToken;
+use kanidm_proto::v1::{AuthAllowed, AuthMech, AuthState};
+use kanidm_proto::webauthn::PublicKeyCredential;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -35,7 +35,10 @@ pub fn router() -> Router<AppState> {
         .route("/login/totp", get(get_totp).post(post_totp))
         .route("/login/backup-code", get(get_backup).post(post_backup))
         .route("/login/passkey", get(get_passkey).post(post_passkey))
-        .route("/login/security-key", get(get_security_key).post(post_security_key))
+        .route(
+            "/login/security-key",
+            get(get_security_key).post(post_security_key),
+        )
         .route("/login/denied", get(get_denied))
 }
 
@@ -301,7 +304,10 @@ fn route_for_next_allowed(allowed: &[AuthAllowed]) -> Result<&'static str, Strin
         Ok("/login/backup-code")
     } else if allowed.iter().any(|a| matches!(a, AuthAllowed::Passkey(_))) {
         Err("Passkey login isn't wired up yet. Use a different sign-in method.".to_string())
-    } else if allowed.iter().any(|a| matches!(a, AuthAllowed::SecurityKey(_))) {
+    } else if allowed
+        .iter()
+        .any(|a| matches!(a, AuthAllowed::SecurityKey(_)))
+    {
         Err("Security-key login isn't wired up yet. Use a different sign-in method.".to_string())
     } else {
         Err("This account requires a credential we don't support yet.".to_string())
@@ -373,13 +379,21 @@ async fn post_username(
         Ok(m) => m,
         Err(e) => {
             tracing::debug!(ident = %ident, error = ?e, "auth_step_init failed");
-            return render_username_error(&state, jar, "Unable to start authentication. Check the username and try again.");
+            return render_username_error(
+                &state,
+                jar,
+                "Unable to start authentication. Check the username and try again.",
+            );
         }
     };
 
     let presentable = presentable_mechs(mechs.into_iter().collect());
     if presentable.is_empty() {
-        return render_username_error(&state, jar, "No supported sign-in mechanisms are available for this account.");
+        return render_username_error(
+            &state,
+            jar,
+            "No supported sign-in mechanisms are available for this account.",
+        );
     }
 
     // Clear any prior pending entry.
@@ -474,7 +488,10 @@ async fn post_mech(
 /// Call `auth_step_begin` on the pending entry's client; on success, route
 /// the user to the matching step page.
 async fn call_begin(state: &AppState, id: Uuid, mech: AuthMech) -> Result<&'static str, String> {
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         return Err("Session expired. Sign in again.".to_string());
     };
 
@@ -546,7 +563,10 @@ async fn post_password(
     let Some(id) = pending_id(&jar) else {
         return Redirect::to("/login").into_response();
     };
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         let jar = jar.add(clear_login_cookie(&state));
         return redirect_with_cookies("/login?expired=1", jar);
     };
@@ -600,7 +620,10 @@ async fn post_totp(
         Ok(v) => v,
         Err(_) => return Redirect::to("/login/totp?err=Enter+a+6-digit+code.").into_response(),
     };
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         let jar = jar.add(clear_login_cookie(&state));
         return redirect_with_cookies("/login?expired=1", jar);
     };
@@ -649,7 +672,10 @@ async fn post_backup(
     let Some(id) = pending_id(&jar) else {
         return Redirect::to("/login").into_response();
     };
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         let jar = jar.add(clear_login_cookie(&state));
         return redirect_with_cookies("/login?expired=1", jar);
     };
@@ -715,7 +741,10 @@ async fn post_passkey(
             .into_response();
         }
     };
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         let jar = jar.add(clear_login_cookie(&state));
         return redirect_with_cookies("/login?expired=1", jar);
     };
@@ -780,14 +809,15 @@ async fn post_security_key(
             .into_response();
         }
     };
-    let Some(client) = state.pending.with_mut(id, |p| std::sync::Arc::clone(&p.client)) else {
+    let Some(client) = state
+        .pending
+        .with_mut(id, |p| std::sync::Arc::clone(&p.client))
+    else {
         let jar = jar.add(clear_login_cookie(&state));
         return redirect_with_cookies("/login?expired=1", jar);
     };
     match client.auth_step_securitykey_complete(pkc).await {
-        Ok(resp) => {
-            handle_terminal_or_continue(state, jar, id, resp.state, "/login/security-key")
-        }
+        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/security-key"),
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_securitykey_complete failed");
             Redirect::to(&format!(
@@ -819,9 +849,9 @@ async fn get_denied(
     };
     let view = DeniedView {
         domain_name: extract_domain(&state),
-        message: q
-            .msg
-            .unwrap_or_else(|| "Sign-in was denied. Try again or contact your administrator.".to_string()),
+        message: q.msg.unwrap_or_else(|| {
+            "Sign-in was denied. Try again or contact your administrator.".to_string()
+        }),
     };
     (jar, view).into_response()
 }

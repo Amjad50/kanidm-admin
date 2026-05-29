@@ -3,11 +3,11 @@ use axum::extract::State;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::Form;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{emails_to_rows, EmailRow};
+use crate::handlers::common::{EmailRow, emails_to_rows};
 use crate::views::BaseFields;
-use crate::AppState;
 
 use super::common::{
     fetch_domain_name, friendly_client_error, validate_displayname, validate_email_list_optional,
@@ -78,12 +78,20 @@ impl IntoResponse for CreateView {
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
-pub async fn create_form(
-    State(state): State<AppState>,
-    user: AdminUser,
-) -> AppResult<Response> {
+pub async fn create_form(State(state): State<AppState>, user: AdminUser) -> AppResult<Response> {
     let domain_name = fetch_domain_name(&state, &user).await;
-    Ok(build_view(&user, CreateForm::default(), domain_name, None, None, None, None, None, vec![]).into_response())
+    Ok(build_view(
+        &user,
+        CreateForm::default(),
+        domain_name,
+        None,
+        None,
+        None,
+        None,
+        None,
+        vec![],
+    )
+    .into_response())
 }
 
 pub async fn submit(
@@ -131,18 +139,36 @@ pub async fn submit(
         .await
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-    if let Err(e) = client.idm_person_account_create(&trimmed_name, &trimmed_dn).await {
+    if let Err(e) = client
+        .idm_person_account_create(&trimmed_name, &trimmed_dn)
+        .await
+    {
         let msg = friendly_client_error("create person", &e);
         tracing::warn!(error = ?e, "kanidm rejected person create");
         let domain_name = fetch_domain_name(&state, &user).await;
         let emails_for_view = emails_to_rows(&form.emails);
-        return Ok(build_view(&user, form, domain_name, None, None, None, None, Some(msg), emails_for_view).into_response());
+        return Ok(build_view(
+            &user,
+            form,
+            domain_name,
+            None,
+            None,
+            None,
+            None,
+            Some(msg),
+            emails_for_view,
+        )
+        .into_response());
     }
 
     tracing::info!(person = %trimmed_name, "person account created");
 
     if has_extras {
-        let legal_opt = if trimmed_legal.is_empty() { None } else { Some(trimmed_legal.as_str()) };
+        let legal_opt = if trimmed_legal.is_empty() {
+            None
+        } else {
+            Some(trimmed_legal.as_str())
+        };
         let mail_opt: Option<&[String]> = if mails.is_empty() { None } else { Some(&mails) };
 
         if let Err(e) = client
@@ -156,7 +182,18 @@ pub async fn submit(
                 Ok(_) => {
                     let domain_name = fetch_domain_name(&state, &user).await;
                     let emails_for_view = emails_to_rows(&form.emails);
-                    return Ok(build_view(&user, form, domain_name, None, None, None, None, Some(extras_msg), emails_for_view).into_response());
+                    return Ok(build_view(
+                        &user,
+                        form,
+                        domain_name,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(extras_msg),
+                        emails_for_view,
+                    )
+                    .into_response());
                 }
                 Err(rollback_err) => {
                     tracing::error!(
@@ -169,7 +206,18 @@ pub async fn submit(
                     );
                     let domain_name = fetch_domain_name(&state, &user).await;
                     let emails_for_view = emails_to_rows(&form.emails);
-                    return Ok(build_view(&user, form, domain_name, None, None, None, None, Some(msg), emails_for_view).into_response());
+                    return Ok(build_view(
+                        &user,
+                        form,
+                        domain_name,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(msg),
+                        emails_for_view,
+                    )
+                    .into_response());
                 }
             }
         }

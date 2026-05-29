@@ -2,22 +2,22 @@ pub mod pending;
 
 use std::path::PathBuf;
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum_extra::extract::CookieJar;
 use axum_htmx::HxRequest;
-use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use kanidm_client::{KanidmClient, KanidmClientBuilder};
 use kanidm_proto::internal::{UatPurpose, UserAuthToken};
 use kanidm_proto::v1::Entry;
 use time::OffsetDateTime;
 
+use crate::AppState;
 use crate::config::Config;
 use crate::error::AppError;
 use crate::kanidm::entry::attr_first;
-use crate::AppState;
 
 pub use pending::PendingAuthStore;
 
@@ -200,9 +200,7 @@ fn entry_in_group(entry: &Entry, group: &str) -> bool {
         .into_iter()
         .flatten()
         .chain(entry.attrs.get("directmemberof").into_iter().flatten())
-        .any(|m| {
-            m == group || m.split('@').next().map(|n| n == group).unwrap_or(false)
-        })
+        .any(|m| m == group || m.split('@').next().map(|n| n == group).unwrap_or(false))
 }
 
 /// Decode the payload segment of a JWS compact-serialised token without

@@ -1,22 +1,22 @@
 use askama::Template;
 use askama_web::WebTemplate;
+use axum::Router;
 use axum::extract::{Query, State};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
-use axum::Router;
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::people::sessions::{
-    build_session_row, is_dead_state, SessionRow, ShowInactiveQuery,
+    SessionRow, ShowInactiveQuery, build_session_row, is_dead_state,
 };
 use crate::kanidm::entry::{attr_all, attr_first, attr_present};
 use crate::views::sessions_card::SessionsCard;
-use crate::views::{format_relative_future, format_relative_past, initials, BaseFields};
-use crate::AppState;
+use crate::views::{BaseFields, format_relative_future, format_relative_past, initials};
 
 /// URL prefix passed to `build_session_row` so per-row revoke URLs come out
 /// as `/me/sessions/{uuid}/destroy`. Lifted to a constant so all the call
@@ -102,7 +102,10 @@ pub async fn profile(State(state): State<AppState>, user: AdminUser) -> AppResul
         .take(8)
         .map(|spn| {
             let n = spn.split('@').next().unwrap_or(&spn).to_string();
-            GroupChip { name: n, spn_or_id: spn }
+            GroupChip {
+                name: n,
+                spn_or_id: spn,
+            }
         })
         .collect();
 
@@ -155,7 +158,11 @@ fn build_self_card(
     current_session_id: Option<String>,
     show_inactive: bool,
 ) -> SessionsCard {
-    let suffix = if show_inactive { "?show_inactive=1" } else { "" };
+    let suffix = if show_inactive {
+        "?show_inactive=1"
+    } else {
+        ""
+    };
     SessionsCard {
         rows,
         error,
@@ -202,7 +209,11 @@ async fn fetch_my_sessions(
                 list.retain(|uat| !is_dead_state(&uat.state, now));
             }
             list.sort_by_key(|uat| std::cmp::Reverse(uat.issued_at));
-            let suffix = if show_inactive { "?show_inactive=1" } else { "" };
+            let suffix = if show_inactive {
+                "?show_inactive=1"
+            } else {
+                ""
+            };
             (
                 list.into_iter()
                     .map(|uat| build_session_row(uat, SELF_SESSIONS_PREFIX, suffix))
@@ -228,7 +239,14 @@ pub async fn sessions_tab(
     let (sessions, error) = fetch_my_sessions(&state, &user, show_inactive).await;
     let current_session_id = user.session_id.clone();
 
-    respond_self_sessions(is_htmx, &user, sessions, error, current_session_id, show_inactive)
+    respond_self_sessions(
+        is_htmx,
+        &user,
+        sessions,
+        error,
+        current_session_id,
+        show_inactive,
+    )
 }
 
 /// Render either the full page (non-HTMX) or just the inner card fragment
@@ -271,20 +289,21 @@ pub async fn destroy_session(
     // disables this button on the current-session row, so this branch only
     // trips if a client hand-crafts the request.
     if let Some(cur) = &current_session_id
-        && cur == &session_id.to_string() {
-            let (sessions, _err) = fetch_my_sessions(&state, &user, show_inactive).await;
-            return respond_self_sessions(
-                is_htmx,
-                &user,
-                sessions,
-                Some(
-                    "Cannot destroy the session you are currently using — use Log out instead."
-                        .to_string(),
-                ),
-                current_session_id,
-                show_inactive,
-            );
-        }
+        && cur == &session_id.to_string()
+    {
+        let (sessions, _err) = fetch_my_sessions(&state, &user, show_inactive).await;
+        return respond_self_sessions(
+            is_htmx,
+            &user,
+            sessions,
+            Some(
+                "Cannot destroy the session you are currently using — use Log out instead."
+                    .to_string(),
+            ),
+            current_session_id,
+            show_inactive,
+        );
+    }
 
     let client = state
         .kanidm
@@ -299,14 +318,24 @@ pub async fn destroy_session(
         Ok(()) => None,
         Err(e) => {
             tracing::warn!(spn = %user.spn, session = %session_id, error = ?e, "self session destroy failed");
-            Some(crate::handlers::common::friendly_client_error("destroy session", &e))
+            Some(crate::handlers::common::friendly_client_error(
+                "destroy session",
+                &e,
+            ))
         }
     };
 
     let (sessions, fetch_error) = fetch_my_sessions(&state, &user, show_inactive).await;
     let error = destroy_error.or(fetch_error);
 
-    respond_self_sessions(is_htmx, &user, sessions, error, current_session_id, show_inactive)
+    respond_self_sessions(
+        is_htmx,
+        &user,
+        sessions,
+        error,
+        current_session_id,
+        show_inactive,
+    )
 }
 
 // ── POST /me/sessions/destroy_others ─────────────────────────────────────────
@@ -356,7 +385,10 @@ pub async fn destroy_others(
             .await
         {
             tracing::warn!(spn = %user.spn, session = %uat.session_id, error = ?e, "destroy_others failed for session");
-            errors.push(crate::handlers::common::friendly_client_error("destroy session", &e));
+            errors.push(crate::handlers::common::friendly_client_error(
+                "destroy session",
+                &e,
+            ));
         }
     }
 
@@ -372,6 +404,12 @@ pub async fn destroy_others(
     let (sessions, fetch_error) = fetch_my_sessions(&state, &user, show_inactive).await;
     let error = combined_error.or(fetch_error);
 
-    respond_self_sessions(is_htmx, &user, sessions, error, current_session_id, show_inactive)
+    respond_self_sessions(
+        is_htmx,
+        &user,
+        sessions,
+        error,
+        current_session_id,
+        show_inactive,
+    )
 }
-

@@ -1,16 +1,16 @@
 use axum::extract::{Form, Multipart, Path, State};
+use axum::http::HeaderMap;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_htmx::HxRequest;
 use kanidm_proto::internal::{ImageType, ImageValue};
-use axum::http::HeaderMap;
 use std::time::Duration;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::AppResult;
 use crate::kanidm::entry::attr_present;
-use crate::AppState;
 
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 use crate::handlers::common::friendly_client_error;
 
 // ── 1 MiB cap applied in the handler (axum default body limit is 2 MiB) ─────
@@ -29,7 +29,12 @@ pub struct ImageData {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn build_image_data(_state: &AppState, id: &str, entry: &kanidm_proto::v1::Entry, error: Option<String>) -> ImageData {
+fn build_image_data(
+    _state: &AppState,
+    id: &str,
+    entry: &kanidm_proto::v1::Entry,
+    error: Option<String>,
+) -> ImageData {
     let has_image = attr_present(entry, "image");
     let name = crate::kanidm::entry::attr_first(entry, "name").unwrap_or_default();
     let image_url = has_image.then(|| format!("/admin/oauth2/{}/image-proxy", name));
@@ -131,10 +136,18 @@ pub async fn upload(
             Ok(opt) => opt,
             Err(e) => {
                 tracing::warn!(oauth2_id = %id, error = ?e, "multipart parse failed");
-                return render_error(&state, &user, &id, "Could not read upload (the file may be too large or malformed).").await;
+                return render_error(
+                    &state,
+                    &user,
+                    &id,
+                    "Could not read upload (the file may be too large or malformed).",
+                )
+                .await;
             }
         };
-        let Some(field) = field_opt else { break; };
+        let Some(field) = field_opt else {
+            break;
+        };
 
         if field.name() == Some("image") {
             file_name = field.file_name().map(|s| s.to_string());
@@ -153,20 +166,28 @@ pub async fn upload(
     let bytes = match file_bytes {
         Some(b) if !b.is_empty() => b,
         _ => {
-            return render_error(&state, &user, &id, "No file uploaded. Please select an image.").await;
+            return render_error(
+                &state,
+                &user,
+                &id,
+                "No file uploaded. Please select an image.",
+            )
+            .await;
         }
     };
 
     // ── Validate: content type (before size — wrong format beats too large) ──
-    let ct = content_type_str.as_deref().unwrap_or("application/octet-stream");
+    let ct = content_type_str
+        .as_deref()
+        .unwrap_or("application/octet-stream");
     let filetype = match ImageType::try_from_content_type(ct) {
         Ok(t) => t,
         Err(_) => {
             return render_error(
-                &state, &user, &id,
-                &format!(
-                    "Unsupported file type ({ct}). Allowed formats: {ALLOWED_TYPES}."
-                ),
+                &state,
+                &user,
+                &id,
+                &format!("Unsupported file type ({ct}). Allowed formats: {ALLOWED_TYPES}."),
             )
             .await;
         }
@@ -175,7 +196,9 @@ pub async fn upload(
     // ── Validate: file size ───────────────────────────────────────────────
     if bytes.len() > MAX_IMAGE_BYTES {
         return render_error(
-            &state, &user, &id,
+            &state,
+            &user,
+            &id,
             &format!(
                 "File is too large ({} KB). Maximum allowed size is 1 MB.",
                 bytes.len() / 1024
@@ -290,19 +313,21 @@ pub async fn upload_from_url(
         Ok(r) => r,
         Err(e) => {
             tracing::warn!(oauth2_id = %id, url = %parsed_url, error = ?e, "image url fetch failed");
-            return render_error(
-                &state, &user, &id,
-                &format!("Could not fetch the URL: {e}"),
-            )
-            .await;
+            return render_error(&state, &user, &id, &format!("Could not fetch the URL: {e}"))
+                .await;
         }
     };
 
     if !resp.status().is_success() {
         tracing::warn!(oauth2_id = %id, url = %parsed_url, status = %resp.status(), "image url upstream non-2xx");
         return render_error(
-            &state, &user, &id,
-            &format!("The URL returned HTTP {} — make sure it's a public image link.", resp.status().as_u16()),
+            &state,
+            &user,
+            &id,
+            &format!(
+                "The URL returned HTTP {} — make sure it's a public image link.",
+                resp.status().as_u16()
+            ),
         )
         .await;
     }
@@ -331,23 +356,32 @@ pub async fn upload_from_url(
 
     // ── Reject early if Content-Length advertises something too big ─────
     if let Some(len) = resp.content_length()
-        && len as usize > MAX_IMAGE_BYTES {
-            return render_error(
-                &state, &user, &id,
-                &format!(
-                    "Image at the URL is too large ({} KB). Maximum allowed size is 1 MB.",
-                    len / 1024
-                ),
-            )
-            .await;
-        }
+        && len as usize > MAX_IMAGE_BYTES
+    {
+        return render_error(
+            &state,
+            &user,
+            &id,
+            &format!(
+                "Image at the URL is too large ({} KB). Maximum allowed size is 1 MB.",
+                len / 1024
+            ),
+        )
+        .await;
+    }
 
     // ── Stream the body with a size guard (don't trust Content-Length) ───
     let bytes = match resp.bytes().await {
         Ok(b) => b,
         Err(e) => {
             tracing::warn!(oauth2_id = %id, url = %parsed_url, error = ?e, "image url body read failed");
-            return render_error(&state, &user, &id, "Could not read the image body from the URL.").await;
+            return render_error(
+                &state,
+                &user,
+                &id,
+                "Could not read the image body from the URL.",
+            )
+            .await;
         }
     };
 
@@ -356,7 +390,9 @@ pub async fn upload_from_url(
     }
     if bytes.len() > MAX_IMAGE_BYTES {
         return render_error(
-            &state, &user, &id,
+            &state,
+            &user,
+            &id,
             &format!(
                 "Image at the URL is too large ({} KB). Maximum allowed size is 1 MB.",
                 bytes.len() / 1024
@@ -406,7 +442,13 @@ async fn render_error(
     let header = compute_header(state, &entry);
     let data = build_image_data(state, id, &entry, Some(msg.to_string()));
     // Upload is a non-HTMX plain POST, so always full page.
-    render_detail(false, user.clone(), header, "image", TabContent::Image(data))
+    render_detail(
+        false,
+        user.clone(),
+        header,
+        "image",
+        TabContent::Image(data),
+    )
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────

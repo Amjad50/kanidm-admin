@@ -3,14 +3,14 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::friendly_client_error;
 use crate::kanidm::entry::attr_all;
-use crate::views::dropdown::{render_actions_cell, DropdownItem};
-use crate::AppState;
+use crate::views::dropdown::{DropdownItem, render_actions_cell};
 
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── Data model ────────────────────────────────────────────────────────────────
 
@@ -35,10 +35,7 @@ pub struct GroupsTabData {
 fn parse_groups(entry: &kanidm_proto::v1::Entry) -> (Vec<String>, usize) {
     let direct: Vec<String> = attr_all(entry, "directmemberof");
     let transitive: Vec<String> = attr_all(entry, "memberof");
-    let indirect = transitive
-        .iter()
-        .filter(|g| !direct.contains(g))
-        .count();
+    let indirect = transitive.iter().filter(|g| !direct.contains(g)).count();
     (direct, indirect)
 }
 
@@ -60,15 +57,17 @@ fn build_group_row(spn: &str, person_id: &str) -> GroupRow {
     let encoded_person = encode_path_segment(person_id);
 
     let actions_html = render_actions_cell(
-        vec![DropdownItem::htmx_post(
-            "Remove from group",
-            format!("/admin/groups/{spn}/members/{encoded_person}/remove"),
-        )
-        .with_icon("x")
-        .with_target("#person-groups-tab")
-        .with_swap("outerHTML")
-        .with_confirm(format!("Remove this person from \"{name}\"?"))
-        .danger()],
+        vec![
+            DropdownItem::htmx_post(
+                "Remove from group",
+                format!("/admin/groups/{spn}/members/{encoded_person}/remove"),
+            )
+            .with_icon("x")
+            .with_target("#person-groups-tab")
+            .with_swap("outerHTML")
+            .with_confirm(format!("Remove this person from \"{name}\"?"))
+            .danger(),
+        ],
         format!("Remove from {name}"),
     );
 
@@ -179,7 +178,10 @@ pub async fn add(
             .for_token(&user.token)
             .await
             .map_err(|e| AppError::Kanidm(e.to_string()))?;
-        if let Err(e) = client.idm_group_add_members(&group_id, &[id.as_str()]).await {
+        if let Err(e) = client
+            .idm_group_add_members(&group_id, &[id.as_str()])
+            .await
+        {
             tracing::warn!(group = %group_id, person = %id, error = ?e, "add to group failed");
             error = Some(friendly_client_error("add to group", &e));
         }

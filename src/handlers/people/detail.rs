@@ -4,13 +4,15 @@ use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::{attr_all, attr_first, attr_present, spn_or_uuid};
-use crate::views::{initials, BaseFields};
-use crate::AppState;
+use crate::views::{BaseFields, initials};
 
-use super::common::{compute_status_at, parse_kanidm_datetime, summarize_credentials, CredentialSummary};
+use super::common::{
+    CredentialSummary, compute_status_at, parse_kanidm_datetime, summarize_credentials,
+};
 use super::credentials::CredentialsData;
 use super::groups_tab::GroupsTabData;
 use super::radius::RadiusData;
@@ -24,13 +26,34 @@ pub struct TabDef {
 }
 
 pub const TABS: &[TabDef] = &[
-    TabDef { slug: "overview",     label: "Overview"     },
-    TabDef { slug: "credentials",  label: "Credentials"  },
-    TabDef { slug: "ssh",          label: "SSH Keys"      },
-    TabDef { slug: "radius",       label: "RADIUS"        },
-    TabDef { slug: "sessions",     label: "Sessions"      },
-    TabDef { slug: "groups",       label: "Groups"        },
-    TabDef { slug: "validity",     label: "Validity"      },
+    TabDef {
+        slug: "overview",
+        label: "Overview",
+    },
+    TabDef {
+        slug: "credentials",
+        label: "Credentials",
+    },
+    TabDef {
+        slug: "ssh",
+        label: "SSH Keys",
+    },
+    TabDef {
+        slug: "radius",
+        label: "RADIUS",
+    },
+    TabDef {
+        slug: "sessions",
+        label: "Sessions",
+    },
+    TabDef {
+        slug: "groups",
+        label: "Groups",
+    },
+    TabDef {
+        slug: "validity",
+        label: "Validity",
+    },
 ];
 
 /// Header info shown on every detail tab.
@@ -152,8 +175,7 @@ pub(super) fn compute_header(entry: &kanidm_proto::v1::Entry) -> PersonHeader {
 fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
     let uuid = attr_first(entry, "uuid").unwrap_or_default();
     let name = attr_first(entry, "name").unwrap_or_default();
-    let displayname = attr_first(entry, "displayname")
-        .unwrap_or_else(|| name.clone());
+    let displayname = attr_first(entry, "displayname").unwrap_or_else(|| name.clone());
     let legalname = attr_first(entry, "legalname");
     let mails = attr_all(entry, "mail");
 
@@ -170,12 +192,15 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
         .take(5)
         .map(|spn| {
             let name = spn.split('@').next().unwrap_or(&spn).to_string();
-            GroupChip { name, spn_or_id: spn }
+            GroupChip {
+                name,
+                spn_or_id: spn,
+            }
         })
         .collect();
 
     let valid_from = format_validity_display(attr_first(entry, "account_valid_from"));
-    let expire_at  = format_validity_display(attr_first(entry, "account_expire"));
+    let expire_at = format_validity_display(attr_first(entry, "account_expire"));
 
     // Credential summary — derived from entry attrs only; no extra API call on the Overview tab.
     let credential_summary = summarize_credentials(entry, None);
@@ -211,7 +236,6 @@ pub async fn overview(
     let tab_content = TabContent::Overview(build_overview(&entry));
     render_detail(is_htmx, user, person, "overview", tab_content)
 }
-
 
 pub(super) async fn fetch_person(
     state: &AppState,

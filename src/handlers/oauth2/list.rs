@@ -1,19 +1,19 @@
 use askama::Template;
 use askama_web::WebTemplate;
+use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
-use axum::Json;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
+use crate::handlers::common::{PaletteItem, PaletteResponse, wants_json};
 use crate::kanidm::entry::{attr_all, attr_first, attr_present};
-use crate::views::{initials, BaseFields};
-use crate::AppState;
+use crate::views::{BaseFields, initials};
 
-use super::common::{detect_kind, OAuth2Kind};
+use super::common::{OAuth2Kind, detect_kind};
 
 // ── Row data ──────────────────────────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ pub struct OAuth2AppRow {
 }
 
 fn build_app_actions(name: &str, displayname: &str, kind: OAuth2Kind) -> String {
-    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+    use crate::views::dropdown::{DropdownItem, render_actions_cell};
     let mut items: Vec<DropdownItem> = Vec::new();
     if matches!(kind, OAuth2Kind::Basic) {
         items.push(
@@ -211,11 +211,8 @@ pub async fn list(
     };
 
     if is_htmx {
-        let cards_html = askama::Template::render(&OAuth2CardsFragment {
-            apps,
-            q: q.clone(),
-        })
-        .map_err(AppError::Template)?;
+        let cards_html = askama::Template::render(&OAuth2CardsFragment { apps, q: q.clone() })
+            .map_err(AppError::Template)?;
         let pagination_html = askama::Template::render(&PaginationOob {
             pagination: &pagination,
         })
@@ -224,10 +221,18 @@ pub async fn list(
     }
 
     let count_text = if q.is_empty() {
-        let noun = if total_count == 1 { "application" } else { "applications" };
+        let noun = if total_count == 1 {
+            "application"
+        } else {
+            "applications"
+        };
         format!("{} {}", total_count, noun)
     } else {
-        let noun = if total_count == 1 { "application" } else { "applications" };
+        let noun = if total_count == 1 {
+            "application"
+        } else {
+            "applications"
+        };
         format!("{} of {} {}", filtered_count, total_count, noun)
     };
 

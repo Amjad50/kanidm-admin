@@ -3,14 +3,14 @@ use axum::response::Response;
 use axum_extra::extract::Form;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::handlers::common::friendly_client_error;
 use crate::kanidm::entry::{attr_all, attr_first};
-use crate::AppState;
 
 use super::common::OAuth2Kind;
-use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_oauth2_entry, render_detail};
 
 // ── General tab data ──────────────────────────────────────────────────────────
 
@@ -71,10 +71,7 @@ fn build_general_data(
         .map(|(idx, url)| RedirectUrl { url, idx })
         .collect();
 
-    let is_public = matches!(
-        super::common::detect_kind(entry),
-        OAuth2Kind::Public
-    );
+    let is_public = matches!(super::common::detect_kind(entry), OAuth2Kind::Public);
 
     let pkce = pkce_required(entry);
     // Public clients always require PKCE; their toggle is read-only ON.
@@ -150,7 +147,13 @@ pub async fn tab(
     let entry = fetch_oauth2_entry(&state, &user, &id).await?;
     let header = compute_header(&state, &entry);
     let general_data = build_general_data(&id, &entry, None, None);
-    render_detail(is_htmx, user, header, "general", TabContent::General(general_data))
+    render_detail(
+        is_htmx,
+        user,
+        header,
+        "general",
+        TabContent::General(general_data),
+    )
 }
 
 /// POST /oauth2/{id}/general — catch-all toggle/field update handler
@@ -186,9 +189,13 @@ pub async fn update(
         }
         "localhost" => {
             if enabled {
-                client.idm_oauth2_rs_enable_public_localhost_redirect(&id).await
+                client
+                    .idm_oauth2_rs_enable_public_localhost_redirect(&id)
+                    .await
             } else {
-                client.idm_oauth2_rs_disable_public_localhost_redirect(&id).await
+                client
+                    .idm_oauth2_rs_disable_public_localhost_redirect(&id)
+                    .await
             }
         }
         "consent" => {
@@ -267,12 +274,8 @@ pub async fn update(
             tracing::warn!(field = %other, "unknown general update field");
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
-            let data = build_general_data(
-                &id,
-                &entry,
-                None,
-                Some(format!("Unknown field: {other}")),
-            );
+            let data =
+                build_general_data(&id, &entry, None, Some(format!("Unknown field: {other}")));
             return render_detail(is_htmx, user, header, "general", TabContent::General(data));
         }
     };
@@ -287,13 +290,7 @@ pub async fn update(
                 let entry = fetch_oauth2_entry(&state, &user, &new_name).await?;
                 let header = compute_header(&state, &entry);
                 let data = build_general_data(&new_name, &entry, None, None);
-                return render_detail(
-                    is_htmx,
-                    user,
-                    header,
-                    "general",
-                    TabContent::General(data),
-                );
+                return render_detail(is_htmx, user, header, "general", TabContent::General(data));
             }
             Err(e) => {
                 let msg = friendly_client_error("rename oauth2 client", &e);
@@ -337,12 +334,7 @@ pub async fn add_redirect(
         Err(e) => {
             let entry = fetch_oauth2_entry(&state, &user, &id).await?;
             let header = compute_header(&state, &entry);
-            let data = build_general_data(
-                &id,
-                &entry,
-                Some(format!("Invalid URL: {e}")),
-                None,
-            );
+            let data = build_general_data(&id, &entry, Some(format!("Invalid URL: {e}")), None);
             return render_detail(is_htmx, user, header, "general", TabContent::General(data));
         }
     };
@@ -395,9 +387,8 @@ pub async fn remove_redirect(
     };
 
     // URLs stored by kanidm are already valid; parse should not fail.
-    let parsed = url::Url::parse(&url_str).map_err(|e| {
-        AppError::Kanidm(format!("stored redirect URL is invalid: {e}"))
-    })?;
+    let parsed = url::Url::parse(&url_str)
+        .map_err(|e| AppError::Kanidm(format!("stored redirect URL is invalid: {e}")))?;
 
     let client = state
         .kanidm
@@ -423,15 +414,18 @@ pub async fn remove_redirect(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
     use kanidm_proto::v1::Entry;
+    use std::collections::BTreeMap;
 
     use super::pkce_required;
 
     fn make_entry(attrs: &[(&str, &[&str])]) -> Entry {
         let mut map = BTreeMap::new();
         for (key, vals) in attrs {
-            map.insert(key.to_string(), vals.iter().map(|v| v.to_string()).collect());
+            map.insert(
+                key.to_string(),
+                vals.iter().map(|v| v.to_string()).collect(),
+            );
         }
         Entry { attrs: map }
     }
@@ -440,24 +434,36 @@ mod tests {
     fn pkce_required_when_attr_is_true() {
         // oauth2_allow_insecure_client_disable_pkce = "true" means PKCE is disabled
         let entry = make_entry(&[("oauth2_allow_insecure_client_disable_pkce", &["true"])]);
-        assert!(!pkce_required(&entry), "PKCE should NOT be required when disable flag is 'true'");
+        assert!(
+            !pkce_required(&entry),
+            "PKCE should NOT be required when disable flag is 'true'"
+        );
     }
 
     #[test]
     fn pkce_required_when_attr_is_false() {
         let entry = make_entry(&[("oauth2_allow_insecure_client_disable_pkce", &["false"])]);
-        assert!(pkce_required(&entry), "PKCE should be required when disable flag is 'false'");
+        assert!(
+            pkce_required(&entry),
+            "PKCE should be required when disable flag is 'false'"
+        );
     }
 
     #[test]
     fn pkce_required_when_attr_absent() {
         let entry = make_entry(&[]);
-        assert!(pkce_required(&entry), "PKCE should be required when disable flag is absent");
+        assert!(
+            pkce_required(&entry),
+            "PKCE should be required when disable flag is absent"
+        );
     }
 
     #[test]
     fn pkce_required_when_attr_is_empty_string() {
         let entry = make_entry(&[("oauth2_allow_insecure_client_disable_pkce", &[""])]);
-        assert!(pkce_required(&entry), "PKCE should be required when disable flag has empty value");
+        assert!(
+            pkce_required(&entry),
+            "PKCE should be required when disable flag has empty value"
+        );
     }
 }

@@ -2,13 +2,13 @@ use askama::Template;
 use axum::extract::Path;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::{attr_first, attr_present};
-use crate::views::{initials, BaseFields};
-use crate::AppState;
+use crate::views::{BaseFields, initials};
 
-use super::common::{detect_kind, OAuth2Kind};
+use super::common::{OAuth2Kind, detect_kind};
 use super::general::GeneralData;
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
@@ -19,13 +19,34 @@ pub struct TabDef {
 }
 
 pub const TABS: &[TabDef] = &[
-    TabDef { slug: "overview",   label: "Overview"   },
-    TabDef { slug: "general",    label: "General"    },
-    TabDef { slug: "scope-maps", label: "Scope maps" },
-    TabDef { slug: "claim-maps", label: "Claim maps" },
-    TabDef { slug: "crypto",     label: "Crypto"     },
-    TabDef { slug: "image",      label: "Image"      },
-    TabDef { slug: "advanced",   label: "Advanced"   },
+    TabDef {
+        slug: "overview",
+        label: "Overview",
+    },
+    TabDef {
+        slug: "general",
+        label: "General",
+    },
+    TabDef {
+        slug: "scope-maps",
+        label: "Scope maps",
+    },
+    TabDef {
+        slug: "claim-maps",
+        label: "Claim maps",
+    },
+    TabDef {
+        slug: "crypto",
+        label: "Crypto",
+    },
+    TabDef {
+        slug: "image",
+        label: "Image",
+    },
+    TabDef {
+        slug: "advanced",
+        label: "Advanced",
+    },
 ];
 
 // ── Header ────────────────────────────────────────────────────────────────────

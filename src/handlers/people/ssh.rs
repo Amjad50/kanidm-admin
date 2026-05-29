@@ -2,17 +2,17 @@ use axum::extract::{Form, Path, State};
 use axum::response::Response;
 use axum_htmx::HxRequest;
 
+use crate::AppState;
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
 use crate::kanidm::entry::attr_all;
 use crate::kanidm::ssh::{
-    parse_ssh_publickey_line, validate_pubkey_shape, validate_tag, ParsedSshKey,
+    ParsedSshKey, parse_ssh_publickey_line, validate_pubkey_shape, validate_tag,
 };
-use crate::AppState;
 
 use super::common::friendly_client_error;
 use super::create::FormField;
-use super::detail::{compute_header, fetch_person, render_detail, TabContent};
+use super::detail::{TabContent, compute_header, fetch_person, render_detail};
 
 // ── SSH key model ─────────────────────────────────────────────────────────────
 
@@ -186,12 +186,16 @@ pub async fn add(
             let fresh_entry = fetch_person(&state, &user, &id).await?;
             let fresh_person = compute_header(&fresh_entry);
             let fresh_keys = parse_keys_from_entry(&fresh_entry);
-            let ssh_data =
-                build_ssh_data(&id, fresh_keys, AddSshForm::default(), None, None, None);
+            let ssh_data = build_ssh_data(&id, fresh_keys, AddSshForm::default(), None, None, None);
             let toast = crate::views::toast::Toast::success("SSH key added")
                 .with_desc(format!("Label: {tag}"));
-            let mut resp =
-                render_detail(is_htmx, user, fresh_person, "ssh", TabContent::Ssh(ssh_data))?;
+            let mut resp = render_detail(
+                is_htmx,
+                user,
+                fresh_person,
+                "ssh",
+                TabContent::Ssh(ssh_data),
+            )?;
             resp.headers_mut().insert("HX-Trigger", toast.hx_trigger());
             Ok(resp)
         }

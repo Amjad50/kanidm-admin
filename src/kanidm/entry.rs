@@ -10,19 +10,12 @@ pub fn attr_first(entry: &Entry, name: &str) -> Option<String> {
 /// All values of an attr on a kanidm `Entry`. Returns an empty vec if the attr
 /// is absent.
 pub fn attr_all(entry: &Entry, name: &str) -> Vec<String> {
-    entry
-        .attrs
-        .get(name)
-        .cloned()
-        .unwrap_or_default()
+    entry.attrs.get(name).cloned().unwrap_or_default()
 }
 
 /// True if the attr is present (non-empty) on the entry.
 pub fn attr_present(entry: &Entry, name: &str) -> bool {
-    entry
-        .attrs
-        .get(name)
-        .is_some_and(|v| !v.is_empty())
+    entry.attrs.get(name).is_some_and(|v| !v.is_empty())
 }
 
 /// Returns the SPN of the entry, or falls back to UUID when SPN is absent.

@@ -6,6 +6,7 @@ use askama::filters::Safe;
 /// Resolve a Lucide icon name to its raw SVG markup.
 /// Returns `Safe<&'static str>` so templates can write `{{ icon("name") }}`
 /// without a trailing `|safe` filter. Unknown names render as empty.
+#[rustfmt::skip]
 pub fn icon(name: &str) -> Safe<&'static str> {
     let svg = match name {
         "alert-circle" => r#"<svg class="lucide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></svg>"#,

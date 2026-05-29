@@ -52,17 +52,23 @@ impl IntoResponse for AppError {
             }
             AppError::Kanidm(msg) => {
                 tracing::error!(error = %msg, "kanidm client error");
-                let view = ServerErrorView { category: "Kanidm API error" };
+                let view = ServerErrorView {
+                    category: "Kanidm API error",
+                };
                 (StatusCode::BAD_GATEWAY, view.into_response()).into_response()
             }
             AppError::Template(err) => {
                 tracing::error!(error = %err, "template render error");
-                let view = ServerErrorView { category: "Template render error" };
+                let view = ServerErrorView {
+                    category: "Template render error",
+                };
                 (StatusCode::INTERNAL_SERVER_ERROR, view.into_response()).into_response()
             }
             AppError::Other(err) => {
                 tracing::error!(error = ?err, "unhandled error");
-                let view = ServerErrorView { category: "Server error" };
+                let view = ServerErrorView {
+                    category: "Server error",
+                };
                 (StatusCode::INTERNAL_SERVER_ERROR, view.into_response()).into_response()
             }
         }
