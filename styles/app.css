@@ -229,3 +229,18 @@
 @utility shadow-primary-ring {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 }
+
+/* Theme toggle tab: shows as "active" when the document's theme matches the
+ * tab's data-theme-set. Two scoped rules — one for each tab — avoid running
+ * JS to flip classes on click. */
+@layer components {
+  [data-theme-set] {
+    @apply flex-1 h-7 rounded-sm flex items-center justify-center cursor-pointer
+           border border-transparent bg-transparent text-muted-foreground
+           shadow-none hover:text-foreground transition-colors;
+  }
+  html:not(.dark) [data-theme-set="light"],
+  html.dark [data-theme-set="dark"] {
+    @apply border-border bg-popover text-foreground shadow-sm;
+  }
+}

@@ -77,16 +77,12 @@
       <!-- Bottom block -->
       <div class="mt-auto pt-3.5 border-t border-border flex flex-col gap-0.5">
 
-        <!-- Theme toggle -->
-        <div class="flex items-center gap-0.5 p-1 rounded bg-background border border-border my-2.5 mb-0.5" role="tablist" aria-label="Theme">
-          <button type="button" title="Light" aria-label="Light theme"
-                  data-theme-set="light"
-                  class="theme-tab flex-1 h-6.5 rounded-sm flex items-center justify-center gap-1.5 text-xs text-muted-foreground cursor-pointer border-0 bg-transparent font-sans transition-colors hover:text-foreground">
+        <!-- Theme toggle — active state derived purely from the .dark class on <html> (see app.css) -->
+        <div class="flex items-center gap-1 p-1 rounded-md bg-card border border-border my-2.5 mb-0.5" role="tablist" aria-label="Theme">
+          <button type="button" data-theme-set="light" title="Light" aria-label="Light theme">
             <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("sun") }}</span>
           </button>
-          <button type="button" title="Dark" aria-label="Dark theme"
-                  data-theme-set="dark"
-                  class="theme-tab flex-1 h-6.5 rounded-sm flex items-center justify-center gap-1.5 text-xs text-muted-foreground cursor-pointer border-0 bg-transparent font-sans transition-colors hover:text-foreground">
+          <button type="button" data-theme-set="dark" title="Dark" aria-label="Dark theme">
             <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("moon") }}</span>
           </button>
         </div>

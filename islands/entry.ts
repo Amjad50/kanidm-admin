@@ -30,24 +30,11 @@ document.body.addEventListener('kanidm-reauth', () => {
   window.htmx.ajax('GET', '/reauth', { target: '#overlay-slot', swap: 'innerHTML' });
 });
 
-// Theme toggle — persists to localStorage and reflects the current value on
-// the [data-theme-set] tab buttons. The `.dark` class on <html> is applied
-// by an inline script in base.html so the page paints in the right theme
-// without a flash. Default is dark (matching shadcn convention where :root
-// is light but this app's previous UX defaulted to dark).
+// Theme toggle — flips the .dark class on <html> and persists the choice.
+// The active-tab styling is derived from .dark in app.css (no class syncing
+// needed here). Initial .dark class is set by an inline script in base.html
+// so the page paints in the right theme without a flash.
 const THEME_KEY = 'kanidm-admin-ui:theme';
-
-function syncThemeTabs() {
-  const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-  document.querySelectorAll<HTMLElement>('[data-theme-set]').forEach((btn) => {
-    const active = btn.dataset.themeSet === current;
-    btn.classList.toggle('bg-card', active);
-    btn.classList.toggle('text-foreground', active);
-    btn.classList.toggle('text-muted-foreground', !active);
-  });
-}
-
-syncThemeTabs();
 
 document.addEventListener('click', (event) => {
   const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-theme-set]');
@@ -59,7 +46,6 @@ document.addEventListener('click', (event) => {
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {}
-  syncThemeTabs();
 });
 
 // Open the command palette when a [data-open-palette] trigger is clicked.
