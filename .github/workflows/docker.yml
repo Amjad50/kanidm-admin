@@ -1,0 +1,100 @@
+name: Docker
+
+# Triggered only after CI succeeds on master or on a v* tag. workflow_run
+# also fires on failure/cancel, so the build job guards on conclusion.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build + push image
+    runs-on: ubuntu-latest
+    # Skip if CI didn't succeed. workflow_dispatch and tag pushes have no
+    # workflow_run object — `conclusion` is null, so they fall through.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # workflow_run fires from the *default branch's* version of this file
+      # and defaults to checking out that branch's HEAD — not the SHA CI
+      # actually ran against. Resolve the right SHA up front and pin every
+      # subsequent step to it.
+      - name: Resolve build SHA
+        id: sha
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            FULL="${{ github.event.workflow_run.head_sha }}"
+          else
+            FULL="${{ github.sha }}"
+          fi
+          echo "value=$FULL" >> "$GITHUB_OUTPUT"
+          echo "short=${FULL:0:7}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.sha.outputs.value }}
+
+      # GHCR rejects uppercase characters in image names; lowercase the owner.
+      - name: Compute image name
+        id: image
+        run: echo "name=${REGISTRY}/${OWNER,,}/kanidm-admin-ui" >> "$GITHUB_OUTPUT"
+        env:
+          OWNER: ${{ github.repository_owner }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Tag scheme:
+      #   - CI passed on master  → `edge` + `master-<short-sha>`
+      #     (bleeding edge; never `latest`)
+      #   - push to vX.Y.Z tag   → `vX.Y.Z`, `vX.Y`, `vX`, `latest`
+      #     (`latest` only ever points at a real release)
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image.outputs.name }}
+          # `latest=false` disables metadata-action's default behavior of
+          # tagging the default branch as `latest`. We want `latest` to
+          # only follow semver tags.
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=edge,enable=${{ github.event_name == 'workflow_run' }}
+            type=raw,value=master-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'workflow_run' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

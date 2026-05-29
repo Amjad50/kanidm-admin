@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  build:
+    name: build + lint + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile
+
+      # Frontend bundles must exist before cargo runs — Askama embeds files
+      # from static/ at compile time, and scripts/build-icons.ts regenerates
+      # src/views/icons.rs.
+      - name: Build frontend bundles
+        run: bun run build
+
+      - name: Verify generated icons.rs is in sync
+        run: |
+          if ! git diff --quiet src/views/icons.rs; then
+            echo "::error::src/views/icons.rs is out of sync — run 'bun run build:icons' and commit."
+            git diff src/views/icons.rs
+            exit 1
+          fi
+
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        run: cargo clippy --all-targets --locked
+
+      - name: cargo test
+        run: cargo test --locked
