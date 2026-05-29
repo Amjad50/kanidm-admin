@@ -1,0 +1,70 @@
+{% if apps.is_empty() %}
+<div class="flex flex-col items-center text-center py-16 gap-4">
+  {% if !q.is_empty() %}
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary">
+    <circle cx="11" cy="11" r="7"/>
+    <path d="m21 21-4.35-4.35"/>
+  </svg>
+  <p class="text-secondary text-sm">No OAuth2 apps match your search.</p>
+  {% else %}
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary">
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+  </svg>
+  <h3 class="text-lg font-semibold">No OAuth2 applications yet</h3>
+  <p class="text-secondary text-sm max-w-xs">Register your first OAuth2 resource server to allow applications to authenticate with Kanidm.</p>
+  <a href="/oauth2/new"
+     class="bg-accent text-on-accent rounded h-9 px-4 inline-flex items-center gap-2 text-sm font-medium hover:bg-accent-hover no-underline transition-colors mt-2">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    <span>Create your first app</span>
+  </a>
+  {% endif %}
+</div>
+{% else %}
+<div class="grid grid-cols-3 gap-4">
+  {% for app in apps %}
+  <a href="{{ app.detail_href }}"
+     class="relative bg-surface border border-subtle rounded-md p-5 flex flex-col gap-3.5 no-underline transition-all hover:border-strong hover:shadow-elevated shadow-card cursor-pointer">
+
+    <div class="absolute top-2.5 right-2.5">
+      {{ app.actions_html|safe }}
+    </div>
+
+    <!-- App icon: image or initials fallback -->
+    {% match app.image_url %}
+    {% when Some with (url) %}
+    <img src="{{ url }}" alt="{{ app.displayname }}"
+         class="w-14 h-14 rounded-md border border-subtle object-contain bg-elevated" />
+    {% when None %}
+    <div class="w-14 h-14 rounded-md bg-elevated border border-subtle flex items-center justify-center font-semibold text-secondary text-lg shrink-0">
+      {{ app.initials }}
+    </div>
+    {% endmatch %}
+
+    <!-- Name + system name -->
+    <div>
+      <div class="font-semibold text-primary text-sm leading-5 pr-8">{{ app.displayname }}</div>
+      <div class="font-mono text-xs text-tertiary mt-0.5">{{ app.name }}</div>
+    </div>
+
+    <!-- Type badge -->
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 h-5 px-2.5 rounded-pill text-xs font-medium {{ app.kind.badge_classes() }}">
+        <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>
+        {{ app.kind.as_str_label() }}
+      </span>
+    </div>
+
+    <!-- Landing URL -->
+    {% match app.landing_url %}
+    {% when Some with (url) %}
+    <div class="font-mono text-xs text-tertiary truncate" title="{{ url }}">{{ url }}</div>
+    {% when None %}
+    <div class="font-mono text-xs text-tertiary">—</div>
+    {% endmatch %}
+
+  </a>
+  {% endfor %}
+</div>
+{% endif %}

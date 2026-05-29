@@ -1,0 +1,45 @@
+<form id="claim-join-form"
+      hx-post="/oauth2/{{ oauth2_id }}/claim-map/{{ claim_name }}/join"
+      hx-target="#overlay-slot"
+      hx-swap="innerHTML">
+
+{% if let Some(err) = error %}
+<div class="bg-danger-soft border border-danger rounded px-3 py-2.5 text-sm text-danger">{{ err }}</div>
+{% endif %}
+
+<div>
+  <div class="text-xs font-medium text-secondary mb-2">
+    Strategy for <span class="font-mono text-primary">{{ claim_name }}</span>
+  </div>
+  <div class="flex flex-col gap-2 bg-canvas border border-subtle rounded p-3">
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="csv"
+             {% if current_join_label == "csv" %}checked{% endif %}
+             class="accent-accent cursor-pointer" />
+      <span class="text-xs">
+        <span class="font-mono font-medium">csv</span>
+        <span class="text-tertiary"> — "value1,value2"</span>
+      </span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="ssv"
+             {% if current_join_label == "ssv" %}checked{% endif %}
+             class="accent-accent cursor-pointer" />
+      <span class="text-xs">
+        <span class="font-mono font-medium">ssv</span>
+        <span class="text-tertiary"> — "value1 value2"</span>
+      </span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="array"
+             {% if current_join_label == "array" %}checked{% endif %}
+             class="accent-accent cursor-pointer" />
+      <span class="text-xs">
+        <span class="font-mono font-medium">array</span>
+        <span class="text-tertiary"> — ["value1","value2"]</span>
+      </span>
+    </label>
+  </div>
+</div>
+
+</form>

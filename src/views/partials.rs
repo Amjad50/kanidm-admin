@@ -87,4 +87,21 @@ pub struct DeleteFooter {
     /// Must match the `input_id` used in `DestructiveConfirm` so the JS wiring
     /// connects the input to the right submit button.
     pub input_id: String,
+    /// Serialized JSON for `hx-vals`, e.g. `r#"{"key_id":"abc123"}"#`. Emitted
+    /// verbatim inside a single-quoted attribute. Construct via `with_hx_vals`
+    /// — do NOT hand-build the string or pass user-controlled data here; the
+    /// builder serializes a `serde_json::Value` and escapes any apostrophes
+    /// so values cannot break out of the surrounding `hx-vals='...'`.
+    pub hx_vals_json: Option<String>,
+}
+
+impl DeleteFooter {
+    /// Set `hx-vals` from a typed JSON value. Apostrophes in values are
+    /// escaped so they cannot terminate the surrounding single-quoted
+    /// attribute.
+    pub fn with_hx_vals(mut self, vals: serde_json::Value) -> Self {
+        let raw = serde_json::to_string(&vals).unwrap_or_else(|_| "{}".to_string());
+        self.hx_vals_json = Some(raw.replace('\'', "\\u0027"));
+        self
+    }
 }

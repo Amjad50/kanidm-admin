@@ -1,0 +1,81 @@
+<form id="claim-new-form"
+      hx-post="/oauth2/{{ oauth2_id }}/claim-map"
+      hx-target="#overlay-slot"
+      hx-swap="innerHTML">
+
+{% if let Some(err) = error %}
+<div class="bg-danger-soft border border-danger rounded px-3 py-2.5 text-sm text-danger">{{ err }}</div>
+{% endif %}
+
+{# Claim name #}
+<div>
+  <label class="block text-xs font-medium text-secondary mb-1" for="cn-claim">Claim name <span class="text-danger">*</span></label>
+  <input type="text"
+         id="cn-claim"
+         name="claim"
+         placeholder="nextcloud_quota"
+         autocomplete="off"
+         spellcheck="false"
+         required
+         pattern="[a-z][a-z0-9_]*"
+         class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+  <div class="text-xs text-tertiary mt-1">Lowercase letters, digits, and underscores. Used as the JWT claim key.</div>
+</div>
+
+{# Join strategy #}
+<div>
+  <div class="text-xs font-medium text-secondary mb-2">Join strategy <span class="text-danger">*</span></div>
+  <div class="flex flex-col gap-2 bg-canvas border border-subtle rounded p-3">
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="csv" checked class="accent-accent cursor-pointer" />
+      <span class="text-xs"><span class="font-mono font-medium">csv</span> <span class="text-tertiary">— "value1,value2"</span></span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="ssv" class="accent-accent cursor-pointer" />
+      <span class="text-xs"><span class="font-mono font-medium">ssv</span> <span class="text-tertiary">— "value1 value2"</span></span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-pointer">
+      <input type="radio" name="join" value="array" class="accent-accent cursor-pointer" />
+      <span class="text-xs"><span class="font-mono font-medium">array</span> <span class="text-tertiary">— ["value1","value2"]</span></span>
+    </label>
+  </div>
+</div>
+
+{# First group entry #}
+<div class="border-t border-subtle pt-3">
+  <div class="text-xs font-semibold text-secondary mb-2">First entry</div>
+
+  <div class="flex flex-col gap-2">
+    <div>
+      <label class="block text-xs font-medium text-secondary mb-1" for="cn-group">Group SPN <span class="text-danger">*</span></label>
+      <input type="text"
+             id="cn-group"
+             name="group"
+             placeholder="my-group@domain.example"
+             list="claim-new-groups"
+             autocomplete="off"
+             spellcheck="false"
+             required
+             class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+      <datalist id="claim-new-groups">
+        {% for spn in all_groups %}
+        <option value="{{ spn }}"></option>
+        {% endfor %}
+      </datalist>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-secondary mb-1" for="cn-values">Values <span class="text-danger">*</span></label>
+      <input type="text"
+             id="cn-values"
+             name="values"
+             placeholder="admin, editor"
+             autocomplete="off"
+             required
+             class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+      <div class="text-xs text-tertiary mt-1">Comma-separated claim values for this group.</div>
+    </div>
+  </div>
+</div>
+
+</form>

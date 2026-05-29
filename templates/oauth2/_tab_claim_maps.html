@@ -1,0 +1,147 @@
+<div class="flex flex-col gap-4">
+
+  {# ── Info callout ── #}
+  <div class="flex items-start gap-3 px-4 py-3 bg-info-soft border border-info rounded text-sm">
+    <svg class="shrink-0 mt-0.5 text-info" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+    <div>
+      <div class="font-medium text-primary">Custom claims in the ID token</div>
+      <div class="text-secondary mt-0.5">Mapped from group membership. Each claim has a join strategy controlling how multiple values combine.</div>
+    </div>
+  </div>
+
+  {# ── Error banner ── #}
+  {% if let Some(err) = data.error %}
+  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  {% endif %}
+
+  {# ── Per-claim cards ── #}
+  {% if data.claims.is_empty() %}
+  <div class="bg-surface border border-subtle rounded-md shadow-card px-5 py-10 text-center text-tertiary text-sm">
+    No claim maps configured.
+  </div>
+  {% else %}
+  {% for group in data.claims %}
+  <section class="bg-surface border border-subtle rounded-md shadow-card overflow-hidden">
+
+    {# Card header: claim name + join badge (clickable) #}
+    <div class="px-5 py-4 border-b border-subtle flex items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h3 class="font-mono text-sm font-semibold text-primary">{{ group.claim_name }}</h3>
+          <button type="button"
+                  class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-pill text-xs text-accent font-medium hover:bg-accent hover:text-on-accent transition-colors cursor-pointer"
+                  hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/join-modal"
+                  hx-target="#overlay-slot"
+                  hx-swap="innerHTML"
+                  title="Change join strategy">
+            Join: {{ group.current_join_label }}
+          </button>
+        </div>
+        <div class="text-xs text-tertiary mt-1">{{ group.current_join_desc }}</div>
+      </div>
+    </div>
+
+    {# Rows table #}
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="bg-canvas">
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default w-48">Group</th>
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default">Values</th>
+          <th class="border-b border-default" style="width:96px"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-subtle">
+        {% for row in group.rows %}
+        <tr class="hover:bg-hover transition-colors">
+          <td class="px-5 py-3 align-middle">
+            <span class="font-mono text-xs text-primary truncate max-w-44 block" title="{{ row.group_spn }}">{{ row.group_name }}</span>
+            <span class="font-mono text-xs text-tertiary truncate block" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
+          </td>
+          <td class="px-5 py-3 align-middle">
+            <div class="flex flex-wrap gap-1.5">
+              {% for val in row.values %}
+              <span class="inline-flex items-center h-5 px-2 bg-elevated border border-subtle rounded-sm font-mono text-xs text-secondary">{{ val }}</span>
+              {% endfor %}
+            </div>
+          </td>
+          <td class="px-3 py-3 align-middle">
+            <div class="flex items-center justify-end gap-1">
+              {# Edit button #}
+              <button type="button"
+                      class="text-secondary hover:text-accent transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-accent-soft border border-transparent hover:border-accent"
+                      hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/edit"
+                      hx-target="#overlay-slot"
+                      hx-swap="innerHTML"
+                      aria-label="Edit claim map for {{ row.group_spn }}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+              </button>
+              {# Delete row button #}
+              <form hx-post="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/delete"
+                    hx-target="#tab-content"
+                    hx-swap="innerHTML"
+                    hx-confirm="Remove claim map for &quot;{{ row.group_spn }}&quot; under claim &quot;{{ group.claim_name }}&quot;?">
+                <button type="submit"
+                        class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                        aria-label="Delete claim map for {{ row.group_spn }}">
+                  {% include "icons/_x.html" %}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {# Card footer: add group + delete claim #}
+    <div class="px-5 py-3 border-t border-subtle bg-canvas flex items-center justify-between gap-3 flex-wrap">
+      <button type="button"
+              class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-8 px-3 transition-colors cursor-pointer"
+              hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/add-group"
+              hx-target="#overlay-slot"
+              hx-swap="innerHTML">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Add group to {{ group.claim_name }}
+      </button>
+
+      <form hx-post="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/delete-all"
+            hx-target="#tab-content"
+            hx-swap="innerHTML"
+            hx-confirm="Delete all group entries for claim &quot;{{ group.claim_name }}&quot;? This removes the entire claim.">
+        <button type="submit"
+                class="inline-flex items-center gap-1.5 text-xs text-danger hover:text-danger border border-danger/30 hover:border-danger bg-danger-soft rounded h-7 px-2.5 transition-colors cursor-pointer">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Delete claim
+        </button>
+      </form>
+    </div>
+
+  </section>
+  {% endfor %}
+  {% endif %}
+
+  {# ── Add new claim button ── #}
+  <div class="flex">
+    <button type="button"
+            class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-9 px-4 transition-colors cursor-pointer"
+            hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/new"
+            hx-target="#overlay-slot"
+            hx-swap="innerHTML">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Add new claim
+    </button>
+  </div>
+
+</div>

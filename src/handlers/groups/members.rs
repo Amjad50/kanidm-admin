@@ -393,6 +393,7 @@ fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> Strin
         action_url: format!("/groups/{id}/members/purge"),
         confirm_label: "Purge all members".to_string(),
         input_id,
+        hx_vals_json: None,
     }
     .render()
     .unwrap_or_default();

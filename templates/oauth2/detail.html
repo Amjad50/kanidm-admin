@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ header.displayname }} · OAuth2 · Kanidm Admin{% endblock %}
+
+{% block crumb %}
+<a href="/oauth2" class="hover:text-secondary transition-colors no-underline">OAuth2</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<span class="text-primary font-medium font-mono truncate">{{ header.name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-8 py-6">
+
+  {# ── Header card ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-6 flex items-start gap-5 mb-5">
+
+    {# Avatar: image or initials fallback #}
+    {% match header.image_url %}
+    {% when Some with (url) %}
+    <img src="{{ url }}" alt="{{ header.displayname }}"
+         class="w-16 h-16 rounded-md object-cover shrink-0 border border-subtle" />
+    {% when None %}
+    <span class="w-16 h-16 rounded-md bg-accent-soft text-accent border border-accent-soft inline-flex items-center justify-center text-xl font-bold shrink-0 font-sans select-none">
+      {{ header.initials }}
+    </span>
+    {% endmatch %}
+
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-2xl font-semibold tracking-tight">{{ header.displayname }}</h1>
+        <span class="inline-flex items-center {{ header.kind_badge_classes }} rounded-pill text-xs font-medium px-2 h-5">
+          {{ header.kind_label }}
+        </span>
+      </div>
+      <div class="font-mono text-xs text-tertiary mt-1">{{ header.name }}</div>
+
+      <div class="flex items-center gap-3 mt-3 flex-wrap">
+        {# UUID chip #}
+        <div class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded px-2 h-6 text-xs text-tertiary font-mono">
+          <span class="text-tertiary opacity-60">uuid</span>
+          <span class="text-secondary truncate max-w-24" title="{{ header.uuid }}">{{ header.uuid }}</span>
+          <button type="button"
+                  class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                  title="Copy UUID"
+                  data-copy="{{ header.uuid }}">
+            {% include "icons/_copy.html" %}
+          </button>
+        </div>
+        {# SPN chip #}
+        <div class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded px-2 h-6 text-xs text-tertiary font-mono">
+          <span class="text-tertiary opacity-60">spn</span>
+          <span class="text-secondary">{{ header.spn }}</span>
+          <button type="button"
+                  class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                  title="Copy SPN"
+                  data-copy="{{ header.spn }}">
+            {% include "icons/_copy.html" %}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      {% match header.kind %}
+      {% when crate::handlers::oauth2::common::OAuth2Kind::Basic %}
+      <button type="button"
+              class="bg-surface border border-default text-secondary h-8 px-3 rounded text-sm hover:bg-hover hover:border-strong inline-flex items-center gap-2 transition-colors cursor-pointer"
+              hx-get="/oauth2/{{ header.name }}/secret"
+              hx-target="#overlay-slot"
+              hx-swap="innerHTML">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="7.5" cy="15.5" r="5.5"/>
+          <path d="m21 2-9.6 9.6"/>
+          <path d="m15.5 7.5 3 3L22 7l-3-3"/>
+        </svg>
+        <span>View secret</span>
+      </button>
+      {% when crate::handlers::oauth2::common::OAuth2Kind::Public %}
+      {% endmatch %}
+      <button type="button"
+              class="bg-transparent border border-default text-secondary h-8 px-3 rounded text-sm hover:border-danger hover:text-danger inline-flex items-center gap-2 transition-colors cursor-pointer"
+              hx-get="/oauth2/{{ header.name }}/delete"
+              hx-target="#overlay-slot"
+              hx-swap="innerHTML">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span>Delete</span>
+      </button>
+    </div>
+
+  </section>
+
+  {% include "oauth2/_tabs_nav.html" %}
+
+  <section id="tab-content">
+    {% match tab_content %}
+    {% when crate::handlers::oauth2::detail::TabContent::Overview with (data) %}
+    {% include "oauth2/_tab_overview.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::General with (g) %}
+    {% include "oauth2/_tab_general.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::ScopeMaps with (data) %}
+    {% include "oauth2/_tab_scope_maps.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::ClaimMaps with (data) %}
+    {% include "oauth2/_tab_claim_maps.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::Crypto with (data) %}
+    {% include "oauth2/_tab_crypto.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::Image with (data) %}
+    {% include "oauth2/_tab_image.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::Advanced with (data) %}
+    {% include "oauth2/_tab_advanced.html" %}
+    {% when crate::handlers::oauth2::detail::TabContent::Placeholder with (p) %}
+    {% include "oauth2/_tab_placeholder.html" %}
+    {% endmatch %}
+  </section>
+
+</div>
+{% endblock %}

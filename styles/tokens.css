@@ -90,3 +90,7 @@
 
 @source "../templates/**/*.html";
 @source "../islands/**/*.{ts,tsx}";
+
+@utility accent-accent {
+  accent-color: var(--color-accent);
+}

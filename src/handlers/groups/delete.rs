@@ -5,6 +5,7 @@ use axum::response::{Html, IntoResponse, Response};
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::common::safe_id;
 use crate::kanidm::entry::attr_first;
 use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
 use crate::AppState;
@@ -12,12 +13,6 @@ use crate::AppState;
 use super::common::friendly_error;
 
 const SHIELD_WARNING_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>"#;
-
-fn safe_id(s: &str) -> String {
-    s.chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
-        .collect()
-}
 
 async fn build_modal(
     state: &AppState,
@@ -76,6 +71,7 @@ async fn build_modal(
         action_url: format!("/groups/{id}/delete"),
         confirm_label: "Delete group".to_string(),
         input_id,
+        hx_vals_json: None,
     }
     .render()
     .map_err(AppError::Template)?;

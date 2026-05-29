@@ -1,0 +1,18 @@
+{% match tab_content %}
+{% when crate::handlers::oauth2::detail::TabContent::Overview with (data) %}
+{% include "oauth2/_tab_overview.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::General with (g) %}
+{% include "oauth2/_tab_general.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::ScopeMaps with (data) %}
+{% include "oauth2/_tab_scope_maps.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::ClaimMaps with (data) %}
+{% include "oauth2/_tab_claim_maps.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::Crypto with (data) %}
+{% include "oauth2/_tab_crypto.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::Image with (data) %}
+{% include "oauth2/_tab_image.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::Advanced with (data) %}
+{% include "oauth2/_tab_advanced.html" %}
+{% when crate::handlers::oauth2::detail::TabContent::Placeholder with (p) %}
+{% include "oauth2/_tab_placeholder.html" %}
+{% endmatch %}

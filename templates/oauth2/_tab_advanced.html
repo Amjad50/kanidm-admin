@@ -1,0 +1,89 @@
+<div class="flex flex-col gap-4">
+
+  {# ── Error banner ── #}
+  {% if let Some(err) = data.error %}
+  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  {% endif %}
+
+  {# ── Refresh token expiry ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <div class="px-5 py-4 border-b border-subtle">
+      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Refresh token expiry</div>
+      <div class="text-xs text-tertiary mt-0.5">How long a refresh token remains valid. Leave blank to use the server default.</div>
+    </div>
+    <div class="px-5 py-4">
+      <form hx-post="/oauth2/{{ data.oauth2_id }}/advanced"
+            hx-target="#tab-content"
+            hx-swap="innerHTML"
+            class="flex items-center gap-2">
+        <input type="hidden" name="field" value="refresh_expiry" />
+        <input type="number"
+               name="value"
+               min="0"
+               placeholder="Blank for default"
+               {% if let Some(s) = data.refresh_expiry_seconds %}value="{{ s }}"{% endif %}
+               class="bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors w-48" />
+        <span class="text-sm text-tertiary shrink-0">seconds</span>
+        <button type="submit"
+                class="bg-surface border border-default rounded h-9 px-3 text-sm text-primary hover:bg-hover hover:border-strong transition-colors cursor-pointer shrink-0">
+          Save
+        </button>
+      </form>
+      <div class="text-xs text-tertiary mt-2">In seconds. Leave blank to use the server default. Typical: 7–30 days (604800–2592000).</div>
+    </div>
+  </section>
+
+  {# ── Device authorization flow ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <div class="px-5 py-4 border-b border-subtle">
+      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Device authorization flow</div>
+      <div class="text-xs text-tertiary mt-0.5">Less common settings for OAuth2 client behaviour.</div>
+    </div>
+    <div class="divide-y divide-subtle">
+
+      {# Device flow toggle #}
+      <div class="px-5 py-4 flex items-center justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium text-primary">Device flow</div>
+          <div class="text-xs text-tertiary mt-0.5">Enable OAuth2 device authorization grant (RFC 8628) for this client. Useful for devices without a browser, e.g. CLI tools.</div>
+        </div>
+        <form hx-post="/oauth2/{{ data.oauth2_id }}/advanced"
+              hx-target="#tab-content"
+              hx-swap="innerHTML"
+              hx-trigger="change"
+              class="shrink-0">
+          <input type="hidden" name="field" value="device_flow" />
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox"
+                   name="enabled"
+                   value="on"
+                   {% if data.device_flow_enabled %}checked{% endif %}
+                   class="sr-only peer" />
+            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+          </label>
+        </form>
+      </div>
+
+    </div>
+
+    {# Feature-gate notice #}
+    <div class="px-5 py-4 border-t border-subtle">
+      <div class="flex gap-3 px-4 py-3 bg-warning-soft border border-warning rounded text-sm items-start">
+        <span class="text-warning inline-flex shrink-0 mt-0.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
+          </svg>
+        </span>
+        <div>
+          <div class="font-semibold text-primary">Server feature gate</div>
+          <div class="text-secondary mt-0.5 leading-relaxed">Device flow is feature-gated on the server. Enabling here requires the kanidm server to be built with the <span class="font-mono">dev-oauth2-device-flow</span> feature.</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</div>

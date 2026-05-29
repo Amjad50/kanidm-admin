@@ -2,6 +2,16 @@ use kanidm_client::{ClientError, StatusCode};
 use kanidm_proto::attribute::Attribute;
 use kanidm_proto::internal::{OperationError, PluginError};
 
+// ── Shared handler-tier helpers ───────────────────────────────────────────────
+
+/// Sanitise a kanidm entry ID for safe use in HTML `id` attributes.
+/// Any character that isn't ASCII alphanumeric, `-`, or `_` is replaced with `-`.
+pub(crate) fn safe_id(s: &str) -> String {
+    s.chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
+        .collect()
+}
+
 // ── Shared handler-tier types ─────────────────────────────────────────────────
 
 /// A single row in a multi-email input list.
@@ -203,9 +213,46 @@ fn context_specific_conflict_message(context: &str) -> String {
         "rename group" | "update entry managed by" => {
             "That name is already taken by another group.".to_string()
         }
+        "create oauth2 client" => {
+            "That OAuth2 client name is already taken. Pick another.".to_string()
+        }
+        "rename oauth2 client" => "That OAuth2 client name is already taken.".to_string(),
+        "update oauth2 client" => {
+            "Could not update the OAuth2 client (server reported a conflict).".to_string()
+        }
+        "add redirect URL" => {
+            "That redirect URL is already configured on this client.".to_string()
+        }
+        "reset oauth2 secret" => {
+            "Could not reset the secret (server reported a conflict).".to_string()
+        }
         "add SSH key" => "An SSH key with that label already exists on this account.".to_string(),
         "add members" => {
             "One of the members you tried to add already belongs to this group, or doesn't exist."
+                .to_string()
+        }
+        "add scope map" => {
+            "Could not add scope map (conflict or invalid input).".to_string()
+        }
+        "delete scope map" => {
+            "Could not delete scope map (not found or already gone).".to_string()
+        }
+        "add claim map" => {
+            "Could not add claim map (conflict or invalid input).".to_string()
+        }
+        "delete claim map" => "Could not delete claim map.".to_string(),
+        "set claim map join" => {
+            "Could not change the claim's join strategy.".to_string()
+        }
+        "rotate keys" => "Could not schedule key rotation.".to_string(),
+        "revoke key" => "Could not revoke key (not found or already revoked).".to_string(),
+        "upload image" => {
+            "Could not upload image (the file may be too large or invalid).".to_string()
+        }
+        "delete image" => "Could not delete image.".to_string(),
+        "update advanced settings" => "Could not update advanced settings.".to_string(),
+        "delete oauth2 client" => {
+            "Could not delete the OAuth2 client (it may be referenced elsewhere or already gone)."
                 .to_string()
         }
         _ => format!("Could not {context}: a value already in use by another entry."),

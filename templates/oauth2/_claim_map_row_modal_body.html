@@ -1,0 +1,88 @@
+<form id="claim-row-form"
+      hx-post="/oauth2/{{ oauth2_id }}/claim-map"
+      hx-target="#overlay-slot"
+      hx-swap="innerHTML">
+
+{% if let Some(err) = error %}
+<div class="bg-danger-soft border border-danger rounded px-3 py-2.5 text-sm text-danger">{{ err }}</div>
+{% endif %}
+
+{# Claim name — always read-only here (set on existing claim, or passed from add-group) #}
+<div>
+  <label class="block text-xs font-medium text-secondary mb-1">Claim name</label>
+  <div class="w-full bg-elevated border border-subtle rounded h-9 px-3 text-sm text-secondary font-mono flex items-center">{{ claim_name }}</div>
+  <input type="hidden" name="claim" value="{{ claim_name }}" />
+</div>
+
+{# Group SPN — read-only when editing, editable when adding group #}
+<div>
+  <label class="block text-xs font-medium text-secondary mb-1" for="cr-group">
+    Group SPN{% if !is_edit %} <span class="text-danger">*</span>{% endif %}
+  </label>
+  {% if is_edit %}
+  <div class="w-full bg-elevated border border-subtle rounded h-9 px-3 text-sm text-secondary font-mono flex items-center">{{ group_spn }}</div>
+  <input type="hidden" name="group" value="{{ group_spn }}" />
+  {% else %}
+  <input type="text"
+         id="cr-group"
+         name="group"
+         value="{{ group_spn }}"
+         placeholder="my-group@domain.example"
+         list="claim-row-groups"
+         autocomplete="off"
+         spellcheck="false"
+         required
+         class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+  <datalist id="claim-row-groups">
+    {% for spn in all_groups %}
+    <option value="{{ spn }}"></option>
+    {% endfor %}
+  </datalist>
+  {% endif %}
+</div>
+
+{# Values #}
+<div>
+  <label class="block text-xs font-medium text-secondary mb-1" for="cr-values">Values <span class="text-danger">*</span></label>
+  <input type="text"
+         id="cr-values"
+         name="values"
+         value="{{ values_prefill }}"
+         placeholder="admin, editor"
+         autocomplete="off"
+         required
+         class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+  <div class="text-xs text-tertiary mt-1">Comma-separated claim values for this group.</div>
+</div>
+
+{# Join strategy — shown for reference, always disabled here #}
+<div>
+  <div class="text-xs font-medium text-secondary mb-2">Join strategy <span class="text-tertiary">(change via card badge)</span></div>
+  <div class="flex flex-col gap-2 bg-canvas border border-subtle rounded p-3 opacity-60">
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-not-allowed">
+      <input type="radio" name="join" value="csv"
+             {% if join_label == "csv" %}checked{% endif %}
+             disabled
+             class="accent-accent cursor-not-allowed" />
+      <span class="text-xs"><span class="font-mono font-medium">csv</span> <span class="text-tertiary">— "value1,value2"</span></span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-not-allowed">
+      <input type="radio" name="join" value="ssv"
+             {% if join_label == "ssv" %}checked{% endif %}
+             disabled
+             class="accent-accent cursor-not-allowed" />
+      <span class="text-xs"><span class="font-mono font-medium">ssv</span> <span class="text-tertiary">— "value1 value2"</span></span>
+    </label>
+    <label class="inline-flex items-center gap-2.5 text-sm text-primary cursor-not-allowed">
+      <input type="radio" name="join" value="array"
+             {% if join_label == "array" %}checked{% endif %}
+             disabled
+             class="accent-accent cursor-not-allowed" />
+      <span class="text-xs"><span class="font-mono font-medium">array</span> <span class="text-tertiary">— ["value1","value2"]</span></span>
+    </label>
+  </div>
+  {# Hidden join field so the form can still submit (handler requires it) #}
+  <input type="hidden" name="join" value="{{ join_label }}" />
+</div>
+
+</form>

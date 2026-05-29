@@ -1,0 +1,323 @@
+<div class="flex flex-col gap-4">
+
+  {# ── Configuration summary card ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <h2 class="text-base font-semibold text-primary">Configuration summary</h2>
+        <div class="text-xs text-tertiary mt-0.5">Read-only snapshot of the General tab.</div>
+      </div>
+      <a href="/oauth2/{{ data.oauth2_id }}/general"
+         class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
+        Configure on General tab
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    {# Key-value grid #}
+    <div class="grid gap-x-6 gap-y-3 mb-6" style="grid-template-columns:180px 1fr">
+
+      <div class="text-sm text-secondary self-center">Display name</div>
+      <div class="text-sm text-primary">{{ data.displayname }}</div>
+
+      <div class="text-sm text-secondary self-center">System name</div>
+      <div class="inline-flex items-center gap-1.5">
+        <span class="font-mono text-xs text-primary">{{ data.name }}</span>
+        <button type="button"
+                class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                title="Copy system name"
+                data-copy="{{ data.name }}">
+          {% include "icons/_copy.html" %}
+        </button>
+      </div>
+
+      <div class="text-sm text-secondary self-center">UUID</div>
+      <div class="inline-flex items-center gap-1.5">
+        <span class="font-mono text-xs text-primary">{{ data.uuid }}</span>
+        <button type="button"
+                class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                title="Copy UUID"
+                data-copy="{{ data.uuid }}">
+          {% include "icons/_copy.html" %}
+        </button>
+      </div>
+
+      <div class="text-sm text-secondary self-center">Type</div>
+      <div>
+        <span class="inline-flex items-center {{ data.kind_badge_classes }} rounded-pill text-xs font-medium px-2 h-5">
+          {{ data.kind_label }}
+        </span>
+      </div>
+
+      <div class="text-sm text-secondary self-center">Landing URL</div>
+      <div class="inline-flex items-center gap-1.5 min-w-0">
+        <span class="font-mono text-xs text-primary truncate">{{ data.landing_url }}</span>
+        <button type="button"
+                class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0 shrink-0"
+                title="Copy landing URL"
+                data-copy="{{ data.landing_url }}">
+          {% include "icons/_copy.html" %}
+        </button>
+      </div>
+
+      <div class="text-sm text-secondary self-start pt-0.5">Supplementary<br/>redirect URLs</div>
+      <div class="flex flex-col gap-1 min-w-0">
+        {% if data.supplementary_redirects.is_empty() %}
+        <span class="text-sm text-tertiary">None configured</span>
+        {% else %}
+        {# Show first URL #}
+        <div class="inline-flex items-center gap-1.5 min-w-0">
+          <span class="font-mono text-xs text-primary truncate">{{ data.supplementary_redirects[0] }}</span>
+          <button type="button"
+                  class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0 shrink-0"
+                  title="Copy URL"
+                  data-copy="{{ data.supplementary_redirects[0] }}">
+            {% include "icons/_copy.html" %}
+          </button>
+        </div>
+        {# +N more indicator #}
+        {% let extra = data.supplementary_redirects.len().saturating_sub(1) %}
+        {% if extra > 0 %}
+        <span class="text-xs text-tertiary">+{{ extra }} more</span>
+        {% else %}
+        <span class="text-xs text-tertiary">1 URL configured</span>
+        {% endif %}
+        {% endif %}
+      </div>
+
+    </div>
+
+    {# Toggle indicators #}
+    <div class="text-xs font-semibold uppercase tracking-wider text-tertiary mb-3">Toggles</div>
+    <div class="divide-y divide-subtle">
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">PKCE</div>
+          <div class="text-xs text-tertiary mt-0.5">Require Proof Key for Code Exchange on the auth code flow.</div>
+        </div>
+        {% if data.toggles.pkce_required %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-accent shadow-accent-ring shrink-0" title="On"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0" title="Off"></span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">Strict redirect URL</div>
+          <div class="text-xs text-tertiary mt-0.5">Reject any redirect that does not exactly match a configured URL.</div>
+        </div>
+        {% if data.toggles.strict_redirect %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0"></span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">Localhost redirects</div>
+          <div class="text-xs text-tertiary mt-0.5">Allow http://localhost redirects (development only).</div>
+        </div>
+        {% if data.toggles.localhost_redirects %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0"></span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">Consent prompt</div>
+          <div class="text-xs text-tertiary mt-0.5">Always show the consent screen on each authorization.</div>
+        </div>
+        {% if data.toggles.consent_prompt %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0"></span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">Prefer short username</div>
+          <div class="text-xs text-tertiary mt-0.5">Emit short usernames instead of full SPNs.</div>
+        </div>
+        {% if data.toggles.prefer_short_username %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0"></span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-between gap-4 py-2.5">
+        <div>
+          <div class="text-sm font-medium text-primary">Legacy crypto (HS256)</div>
+          <div class="text-xs text-tertiary mt-0.5">Use HS256 signing — only enable for older clients that require it.</div>
+        </div>
+        {% if data.toggles.legacy_crypto %}
+        <span class="w-3.5 h-3.5 rounded-pill bg-warning shrink-0" title="On (legacy — not recommended)"></span>
+        {% else %}
+        <span class="w-3.5 h-3.5 rounded-pill border border-strong bg-transparent shrink-0"></span>
+        {% endif %}
+      </div>
+
+    </div>
+  </section>
+
+  {# ── Scope maps summary card ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <h2 class="text-base font-semibold text-primary">Scope maps</h2>
+        <div class="text-xs text-tertiary mt-0.5">Which groups receive which OAuth2 scopes.</div>
+      </div>
+      <a href="/oauth2/{{ data.oauth2_id }}/scope-maps"
+         class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
+        Manage
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    {% let total_maps = data.standard_scope_maps.len() + data.supplementary_scope_maps.len() %}
+    {% if total_maps == 0 %}
+    <div class="py-6 text-center text-tertiary text-sm">
+      No scope maps configured.
+      <a href="/oauth2/{{ data.oauth2_id }}/scope-maps" class="text-link ml-1 no-underline hover:underline">Add maps on Scope maps tab →</a>
+    </div>
+    {% else %}
+
+    {# Standard scope maps #}
+    <div class="text-xs font-semibold uppercase tracking-wider text-tertiary mb-3">Standard scope maps</div>
+    {% if data.standard_scope_maps.is_empty() %}
+    <div class="text-sm text-tertiary mb-4">None configured.</div>
+    {% else %}
+    <div class="divide-y divide-subtle mb-5">
+      {% for (i, map) in data.standard_scope_maps.iter().enumerate() %}
+      {% if i < 5 %}
+      <div class="grid gap-4 py-3" style="grid-template-columns:160px 1fr">
+        <span class="font-mono text-xs text-primary self-center">{{ map.group_name }}</span>
+        <div class="flex flex-wrap gap-1.5">
+          {% for scope in &map.scopes %}
+          <span class="inline-flex items-center h-5 px-2 bg-elevated border border-subtle rounded-sm font-mono text-xs text-secondary">{{ scope }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% let std_extra = data.standard_scope_maps.len().saturating_sub(5) %}
+      {% if std_extra > 0 %}
+      <div class="py-2 text-xs text-tertiary">+{{ std_extra }} more</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {# Supplementary scope maps #}
+    <div class="text-xs font-semibold uppercase tracking-wider text-tertiary mb-3">Supplementary scope maps</div>
+    {% if data.supplementary_scope_maps.is_empty() %}
+    <div class="text-sm text-tertiary">None configured.</div>
+    {% else %}
+    <div class="divide-y divide-subtle">
+      {% for (i, map) in data.supplementary_scope_maps.iter().enumerate() %}
+      {% if i < 5 %}
+      <div class="grid gap-4 py-3" style="grid-template-columns:160px 1fr">
+        <span class="font-mono text-xs text-primary self-center">{{ map.group_name }}</span>
+        <div class="flex flex-wrap gap-1.5">
+          {% for scope in &map.scopes %}
+          <span class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-sm font-mono text-xs text-accent">{{ scope }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% let sup_extra = data.supplementary_scope_maps.len().saturating_sub(5) %}
+      {% if sup_extra > 0 %}
+      <div class="py-2 text-xs text-tertiary">+{{ sup_extra }} more</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% endif %}
+  </section>
+
+  {# ── Claim maps summary card ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <h2 class="text-base font-semibold text-primary">Claim maps</h2>
+        <div class="text-xs text-tertiary mt-0.5">Custom claims emitted in the ID token.</div>
+      </div>
+      <a href="/oauth2/{{ data.oauth2_id }}/claim-maps"
+         class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
+        Manage
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    {% if data.claim_map_summaries.is_empty() %}
+    <div class="py-6 text-center border border-subtle rounded bg-canvas text-sm text-tertiary">
+      No claim maps configured.
+    </div>
+    {% else %}
+    <div class="divide-y divide-subtle">
+      {% for (i, claim) in data.claim_map_summaries.iter().enumerate() %}
+      {% if i < 5 %}
+      <div class="flex items-center gap-4 py-3 min-w-0">
+        <span class="font-mono text-xs text-primary shrink-0">{{ claim.claim_name }}</span>
+        <span class="text-xs text-tertiary shrink-0">{{ claim.group_name }}</span>
+        <span class="text-xs text-secondary truncate ml-auto">{{ claim.values_csv }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% let claim_extra = data.claim_map_summaries.len().saturating_sub(5) %}
+      {% if claim_extra > 0 %}
+      <div class="py-2 text-xs text-tertiary">+{{ claim_extra }} more</div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  {# ── Signing keys summary card ── #}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+    <div class="flex items-start justify-between gap-4 mb-5">
+      <div>
+        <h2 class="text-base font-semibold text-primary">Signing keys</h2>
+        <div class="text-xs text-tertiary mt-0.5">JWT signing keys used to issue tokens for this application.</div>
+      </div>
+      <a href="/oauth2/{{ data.oauth2_id }}/crypto"
+         class="text-xs text-link inline-flex items-center gap-1 shrink-0 no-underline hover:underline">
+        Manage
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    {% if data.keys.is_empty() %}
+    <div class="py-6 text-center text-tertiary text-sm">No keys found.</div>
+    {% else %}
+    <div class="divide-y divide-subtle">
+      {% for key in &data.keys %}
+      <div class="flex items-center justify-between gap-4 py-3">
+        <span class="font-mono text-xs text-primary">{{ key.id }}</span>
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs text-tertiary">{{ key.algorithm }}</span>
+          <span class="inline-flex items-center gap-1.5 rounded-pill text-xs font-medium px-2 h-5 {{ key.status_badge_classes }}">
+            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>
+            {{ key.status_label }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+</div>
