@@ -65,7 +65,30 @@
 {% endmacro %}
 
 {#
-  Red error banner used at the top of forms and modal bodies.
+  Alert banner — colored callout for inline page messages.
+
+  kind    : "destructive" | "warning" | "success" | "info"
+            Drives bg-*-soft / border-* / text-* tokens together.
+  message : the message text
+  icon    : lucide icon name (passed to crate::views::icons::icon()).
+            Default "alert-circle". Pass icon="" to omit the icon column.
+#}
+{% macro alert_banner(kind, message, icon="alert-circle") %}
+{%- set bg = "bg-destructive-soft" -%}{%- set border = "border-destructive" -%}{%- set txt = "text-destructive" -%}
+{%- if kind == "warning" %}{% set bg = "bg-warning-soft" %}{% set border = "border-warning" %}{% set txt = "text-warning" %}{% endif -%}
+{%- if kind == "success" %}{% set bg = "bg-success-soft" %}{% set border = "border-success" %}{% set txt = "text-success" %}{% endif -%}
+{%- if kind == "info" %}{% set bg = "bg-info-soft" %}{% set border = "border-info" %}{% set txt = "text-info" %}{% endif -%}
+<div class="flex gap-3 p-3 rounded-md border {{ border }}/30 {{ bg }} text-sm">
+  {% if icon != "" %}<div class="{{ txt }} shrink-0 mt-0.5"><span class="w-4 h-4 inline-flex">{{ crate::views::icons::icon(icon) }}</span></div>{% endif %}
+  <div class="flex-1 text-foreground">{{ message }}</div>
+</div>
+{% endmacro %}
+
+{#
+  Red error banner — boxy, no icon, no border-on-alpha. Kept verbatim
+  because Askama 0.16 does not support macro-within-macro reliably (same
+  caveat as modal_footer below). New code that wants the icon-ful, soft
+  inline-message look should call alert_banner directly.
 #}
 {% macro form_error_banner(message) %}
 <div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3">{{ message }}</div>
@@ -175,4 +198,56 @@
 </button>
 {%- endif -%}
 {% endif %}
+{% endmacro %}
+
+{#
+  Inline copy-to-clipboard icon button. Pairs with the data-copy behavior
+  in islands/behaviors/copy.ts — that behavior reads the value verbatim
+  from data-copy and writes it to the clipboard on click.
+
+  value      : the literal string to copy (will be HTML-attribute-escaped
+               automatically; do NOT pre-escape with |safe).
+  aria_label : the accessible label, e.g. "Copy fingerprint". Default "Copy".
+#}
+{% macro copy_button(value, aria_label="Copy") %}
+<button type="button"
+        class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
+        data-copy="{{ value }}"
+        aria-label="{{ aria_label }}">
+  {% include "icons/_copy.html" %}
+</button>
+{% endmacro %}
+
+{#
+  Icon-only destructive action button. Two call shapes:
+
+  (a) Standalone HTMX trigger — pass hx_post + hx_target + hx_swap +
+      hx_confirm + aria_label. Renders <button type="button"> with hx-*
+      attrs.
+  (b) Submit button inside a <form hx-post=...> — pass type_attr="submit"
+      and omit hx_post (the parent form carries the HTMX attrs and
+      hx-confirm). Caller wraps in <form>.
+
+  aria_label  : accessible label (required for a11y)
+  hx_post     : URL for hx-post; "" → no hx-post emitted (form-submit case)
+  hx_target   : hx-target selector; "" → no hx-target emitted
+  hx_swap     : hx-swap value; "" → no hx-swap emitted
+  hx_confirm  : hx-confirm message; "" → no hx-confirm emitted.
+                Escape any literal double quotes in the caller as &quot;
+                (same as today's inline call sites). The macro emits the
+                value via |safe so the &quot; entities pass through.
+  type_attr   : "button" (default) | "submit"
+  icon        : lucide icon name; default "trash-2". Use "x" for "remove"
+                in tables (sessions, scope-maps, claim-maps, redirect URLs).
+#}
+{% macro icon_button_delete(aria_label, hx_post="", hx_target="", hx_swap="", hx_confirm="", type_attr="button", icon="trash-2") %}
+<button type="{{ type_attr }}"
+        class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
+        {%- if hx_post != "" %} hx-post="{{ hx_post }}"{% endif -%}
+        {%- if hx_target != "" %} hx-target="{{ hx_target }}"{% endif -%}
+        {%- if hx_swap != "" %} hx-swap="{{ hx_swap }}"{% endif -%}
+        {%- if hx_confirm != "" %} hx-confirm="{{ hx_confirm|safe }}"{% endif %}
+        aria-label="{{ aria_label }}">
+  <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon(icon) }}</span>
+</button>
 {% endmacro %}

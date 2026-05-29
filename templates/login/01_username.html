@@ -1,25 +1,16 @@
 {% extends "login/base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}Sign in · Kanidm Admin{% endblock %}
 {% block login_title %}Sign in{% endblock %}
 
 {% block login_body %}
   {% if expired %}
-    <div class="flex gap-3 p-3 rounded-md border border-warning/30 bg-warning-soft text-sm">
-      <div class="text-warning shrink-0 mt-0.5">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-      </div>
-      <div class="flex-1">Your sign-in took too long. Try again.</div>
-    </div>
+    {{ ui::alert_banner(kind="warning", message="Your sign-in took too long. Try again.") }}
   {% endif %}
 
   {% if let Some(msg) = error %}
-    <div class="flex gap-3 p-3 rounded-md border border-destructive/30 bg-destructive-soft text-sm">
-      <div class="text-destructive shrink-0 mt-0.5">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
-      </div>
-      <div class="flex-1">{{ msg }}</div>
-    </div>
+    {{ ui::alert_banner(kind="destructive", message=msg) }}
   {% endif %}
 
   <form method="post" action="/login" class="flex flex-col gap-4">

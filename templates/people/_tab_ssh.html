@@ -46,35 +46,26 @@
           <td class="px-5 py-3">
             <div class="flex items-center gap-2">
               <span class="font-mono text-xs text-muted-foreground" title="{{ key.fingerprint }}">{{ key.fingerprint_truncated }}</span>
-              <button type="button"
-                      class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
-                      data-copy="{{ key.fingerprint }}"
-                      aria-label="Copy fingerprint">
-                {% include "icons/_copy.html" %}
-              </button>
+              {{ ui::copy_button(value=key.fingerprint, aria_label="Copy fingerprint") }}
             </div>
           </td>
           <td class="px-5 py-3">
             <div class="flex items-center gap-2">
               <span class="font-mono text-xs text-muted-foreground truncate max-w-xs" title="{{ key.openssh_line }}">{{ key.openssh_line_preview }}</span>
-              <button type="button"
-                      class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
-                      data-copy="{{ key.openssh_line }}"
-                      aria-label="Copy public key">
-                {% include "icons/_copy.html" %}
-              </button>
+              {{ ui::copy_button(value=key.openssh_line, aria_label="Copy public key") }}
             </div>
           </td>
           <td class="px-5 py-3 text-right">
-            <button type="button"
-                    class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
-                    hx-post="/people/{{ s.person_id }}/ssh/{{ key.tag }}/delete"
-                    hx-target="#tab-content"
-                    hx-swap="innerHTML"
-                    hx-confirm="Delete SSH key &quot;{{ key.tag }}&quot;? This cannot be undone."
-                    aria-label="Delete key {{ key.tag }}">
-              <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
-            </button>
+            {% let url = format!("/people/{}/ssh/{}/delete", s.person_id, key.tag) %}
+            {% let confirm = format!("Delete SSH key &quot;{}&quot;? This cannot be undone.", key.tag) %}
+            {% let aria = format!("Delete key {}", key.tag) %}
+            {{ ui::icon_button_delete(
+              aria_label=aria,
+              hx_post=url,
+              hx_target="#tab-content",
+              hx_swap="innerHTML",
+              hx_confirm=confirm
+            ) }}
           </td>
         </tr>
         {% endfor %}

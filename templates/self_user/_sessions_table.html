@@ -43,12 +43,7 @@
               this session
             </span>
             {% endif %}
-            <button type="button"
-                    class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
-                    data-copy="{{ row.session_id_full }}"
-                    aria-label="Copy session ID">
-              {% include "icons/_copy.html" %}
-            </button>
+            {{ ui::copy_button(value=row.session_id_full, aria_label="Copy session ID") }}
           </div>
         </td>
         <td class="px-5 py-3">
@@ -99,15 +94,15 @@
         </td>
         <td class="px-5 py-3 text-right">
           {% if !is_current %}
-          <button type="button"
-                  class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
-                  hx-post="/me/sessions/{{ row.session_id_full }}/destroy"
-                  hx-target="#sessions-table"
-                  hx-swap="innerHTML"
-                  hx-confirm="Destroy this session? The device using it will be signed out."
-                  aria-label="Destroy session">
-            <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
-          </button>
+          {% let url = format!("/me/sessions/{}/destroy", row.session_id_full) %}
+          {{ ui::icon_button_delete(
+            aria_label="Destroy session",
+            hx_post=url,
+            hx_target="#sessions-table",
+            hx_swap="innerHTML",
+            hx_confirm="Destroy this session? The device using it will be signed out.",
+            icon="x"
+          ) }}
           {% endif %}
         </td>
       </tr>

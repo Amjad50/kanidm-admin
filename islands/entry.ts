@@ -24,6 +24,8 @@ import "./behaviors/reveal-secret";
 import "./behaviors/password-reveal";
 import "./behaviors/warn-duplicate";
 import "./behaviors/webauthn-login";
+import "./behaviors/focus-after-swap";
+import "./behaviors/scroll-pin";
 
 mountBehaviors();
 mountDropdowns();

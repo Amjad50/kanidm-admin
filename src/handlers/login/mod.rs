@@ -107,6 +107,7 @@ struct PasskeyView {
     displayname: Option<String>,
     initials: String,
     challenge: String,
+    show_back: bool,
     error: Option<String>,
 }
 
@@ -118,6 +119,7 @@ struct SecurityKeyView {
     displayname: Option<String>,
     initials: String,
     challenge: String,
+    show_back: bool,
     error: Option<String>,
 }
 
@@ -677,6 +679,7 @@ async fn get_passkey(
             displayname: None,
             initials: initials_of(&p.ident),
             challenge: ch.to_string(),
+            show_back: p.available.len() > 1,
             error: q.err.clone(),
         })
     }) else {
@@ -746,6 +749,7 @@ async fn get_security_key(
             displayname: None,
             initials: initials_of(&p.ident),
             challenge: ch.to_string(),
+            show_back: p.available.len() > 1,
             error: q.err.clone(),
         })
     }) else {

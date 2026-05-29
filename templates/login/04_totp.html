@@ -1,4 +1,5 @@
 {% extends "login/base.html" %}
+{% import "macros/ui.html" as ui %}
 
 {% block title %}One-time code · Kanidm Admin{% endblock %}
 {% block login_title %}One-time code{% endblock %}
@@ -7,9 +8,7 @@
   {% include "login/_identity.html" %}
 
   {% if let Some(msg) = error %}
-    <div class="flex gap-3 p-3 rounded-md border border-destructive/30 bg-destructive-soft text-sm">
-      <div class="flex-1 text-foreground">{{ msg }}</div>
-    </div>
+    {{ ui::alert_banner(kind="destructive", message=msg, icon="") }}
   {% endif %}
 
   <p class="text-sm text-muted-foreground text-center leading-relaxed -mt-1">Enter the 6-digit code from your authenticator app.</p>

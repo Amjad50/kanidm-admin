@@ -97,11 +97,12 @@
               hx-swap="innerHTML"
               hx-confirm="Remove redirect URL &quot;{{ row.url }}&quot;?"
               class="shrink-0">
-          <button type="submit"
-                  class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
-                  aria-label="Remove {{ row.url }}">
-            {% include "icons/_x.html" %}
-          </button>
+          {% let aria = format!("Remove {}", row.url) %}
+          {{ ui::icon_button_delete(
+            type_attr="submit",
+            aria_label=aria,
+            icon="x"
+          ) }}
         </form>
       </li>
       {% endfor %}

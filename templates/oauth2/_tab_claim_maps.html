@@ -82,11 +82,12 @@
                     hx-target="#tab-content"
                     hx-swap="innerHTML"
                     hx-confirm="Remove claim map for &quot;{{ row.group_spn }}&quot; under claim &quot;{{ group.claim_name }}&quot;?">
-                <button type="submit"
-                        class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
-                        aria-label="Delete claim map for {{ row.group_spn }}">
-                  {% include "icons/_x.html" %}
-                </button>
+                {% let aria = format!("Delete claim map for {}", row.group_spn) %}
+                {{ ui::icon_button_delete(
+                  type_attr="submit",
+                  aria_label=aria,
+                  icon="x"
+                ) }}
               </form>
             </div>
           </td>

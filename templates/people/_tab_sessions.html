@@ -51,12 +51,7 @@
           <td class="px-5 py-3">
             <div class="flex items-center gap-2">
               <span class="font-mono text-xs text-foreground">{{ row.session_id_short }}…</span>
-              <button type="button"
-                      class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
-                      data-copy="{{ row.session_id_full }}"
-                      aria-label="Copy session ID">
-                {% include "icons/_copy.html" %}
-              </button>
+              {{ ui::copy_button(value=row.session_id_full, aria_label="Copy session ID") }}
             </div>
           </td>
           <td class="px-5 py-3">
@@ -106,15 +101,15 @@
             </div>
           </td>
           <td class="px-5 py-3 text-right">
-            <button type="button"
-                    class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
-                    hx-post="/people/{{ sess.person_id }}/sessions/{{ row.session_id_full }}/destroy"
-                    hx-target="#tab-content"
-                    hx-swap="innerHTML"
-                    hx-confirm="Destroy this session? The person will be signed out on that device."
-                    aria-label="Destroy session">
-              <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
-            </button>
+            {% let url = format!("/people/{}/sessions/{}/destroy", sess.person_id, row.session_id_full) %}
+            {{ ui::icon_button_delete(
+              aria_label="Destroy session",
+              hx_post=url,
+              hx_target="#tab-content",
+              hx_swap="innerHTML",
+              hx_confirm="Destroy this session? The person will be signed out on that device.",
+              icon="x"
+            ) }}
           </td>
         </tr>
         {% endfor %}
