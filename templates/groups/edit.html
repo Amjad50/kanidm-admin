@@ -4,13 +4,9 @@
 
 {% block crumb %}
 <a href="/groups" class="hover:text-secondary transition-colors no-underline">Groups</a>
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
-  <path d="m9 18 6-6-6-6"/>
-</svg>
+<span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <a href="/groups/{{ group_id }}/overview" class="hover:text-secondary transition-colors no-underline font-mono truncate">{{ group_name }}</a>
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
-  <path d="m9 18 6-6-6-6"/>
-</svg>
+<span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-primary font-medium">Edit</span>
 {% endblock %}
 
@@ -45,9 +41,7 @@
           {% for row in emails %}
           <div class="flex items-center gap-2">
             <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if row.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if row.is_primary %}Primary{% else %}Set as primary{% endif %}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if row.is_primary %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
+              <span class="w-3.5 h-3.5 inline-flex shrink-0 {% if row.is_primary %}[&_svg]:fill-current{% endif %}">{{ crate::views::icons::icon("star") }}</span>
             </button>
             <input type="email" name="email" value="{{ row.value }}" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" />
             <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
@@ -57,9 +51,7 @@
           {% endfor %}
         </div>
         <button type="button" data-add-email data-target="group-edit-mail-rows" class="mt-1 text-sm text-secondary hover:text-primary inline-flex items-center gap-1.5 cursor-pointer border-0 bg-transparent transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
+          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
           Add mail
         </button>
         <div class="text-tertiary text-xs mt-1.5">First address is primary. Leave empty to remove all mail.</div>
@@ -86,13 +78,11 @@
 <template id="group-edit-mail-rows-tpl">
   <div class="flex items-center gap-2">
     <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
+      <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("star") }}</span>
     </button>
     <input type="email" name="email" value="" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" />
     <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
     </button>
   </div>
 </template>

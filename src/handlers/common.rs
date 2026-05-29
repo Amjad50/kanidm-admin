@@ -2,6 +2,44 @@ use kanidm_client::{ClientError, StatusCode};
 use kanidm_proto::attribute::Attribute;
 use kanidm_proto::internal::{OperationError, PluginError};
 
+// ── Cmd+K palette: JSON shape and Accept parsing ─────────────────────────────
+
+/// A single result row returned to the Cmd+K palette by the list endpoints'
+/// JSON branch.
+#[derive(serde::Serialize)]
+pub struct PaletteItem {
+    pub kind: &'static str,
+    pub label: String,
+    pub subtitle: String,
+    pub href: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct PaletteResponse {
+    pub items: Vec<PaletteItem>,
+}
+
+/// True if the client explicitly asked for JSON via `Accept`.
+///
+/// HTMX defaults to `Accept: text/html, */*` so this won't trip on normal HTMX
+/// swaps — only the palette island, which sets `Accept: application/json`
+/// explicitly, gets the JSON branch.
+///
+/// We parse the header by splitting on `,`, stripping any `;q=...` qvalue
+/// suffix, trimming, and then comparing the cleaned token exactly to
+/// `application/json`. This avoids false positives on `application/json-seq`
+/// or other media types that merely contain the substring.
+pub fn wants_json(headers: &axum::http::HeaderMap) -> bool {
+    headers
+        .get(axum::http::header::ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|s| {
+            s.split(',').any(|part| {
+                part.split(';').next().map(str::trim) == Some("application/json")
+            })
+        })
+}
+
 // ── Shared handler-tier helpers ───────────────────────────────────────────────
 
 /// Sanitise a kanidm entry ID for safe use in HTML `id` attributes.

@@ -4,23 +4,26 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build:icons": "bun scripts/build-icons.ts",
     "build:css": "tailwindcss -i ./styles/app.css -o ./static/app.css --minify",
     "watch:css": "tailwindcss -i ./styles/app.css -o ./static/app.css --watch",
     "build:js": "bun build islands/entry.ts --outfile=static/app.js --minify --target=browser",
     "watch:js": "bun build islands/entry.ts --outfile=static/app.js --watch --target=browser --sourcemap=external",
-    "build": "bun run build:css && bun run build:js",
+    "build": "bun run build:icons && bun run build:css && bun run build:js",
     "dev": "bun run watch:css & bun run watch:js"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
     "@types/bun": "latest",
     "htmx.org": "^2.0.10",
+    "lucide-static": "^1.16.0",
     "tailwindcss": "^4.3.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "lucide-preact": "^1.16.0",
     "preact": "^10.29.1"
   }
 }

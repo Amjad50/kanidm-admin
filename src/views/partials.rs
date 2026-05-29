@@ -6,8 +6,8 @@ use askama::Template;
 #[template(path = "partials/_modal.html")]
 pub struct Modal {
     pub title: String,
-    /// Pre-rendered SVG markup; `None` = no icon.
-    pub icon_svg: Option<&'static str>,
+    /// Lucide icon name (e.g. `"shield-alert"`); `None` = no icon.
+    pub icon_name: Option<&'static str>,
     /// Tailwind class for the icon colour, e.g. `"text-danger"`.
     /// Use `"text-tertiary"` when no specific colour is desired.
     pub icon_color_class: &'static str,

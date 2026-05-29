@@ -8,22 +8,11 @@
     <span class="shrink-0 mt-0.5 inline-flex">
       {% match v.status %}
       {% when crate::handlers::people::common::PersonStatus::Active %}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="m9 12 2 2 4-4"/>
-      </svg>
+<span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("circle-check") }}</span>
       {% when crate::handlers::people::common::PersonStatus::NotYetActive %}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
+<span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("alert-circle") }}</span>
       {% when crate::handlers::people::common::PersonStatus::Expired %}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="15" y1="9" x2="9" y2="15"/>
-        <line x1="9" y1="9" x2="15" y2="15"/>
-      </svg>
+<span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("circle-x") }}</span>
       {% endmatch %}
     </span>
     <div>

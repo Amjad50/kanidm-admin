@@ -149,7 +149,7 @@ pub async fn reset_modal(Path(id): Path<String>, _user: AdminUser) -> AppResult<
 
     let html = Modal {
         title: "Generate reset link".to_string(),
-        icon_svg: Some(KEY_SVG),
+        icon_name: Some("key"),
         icon_color_class: "text-accent",
         body_html,
         footer_html,
@@ -161,7 +161,6 @@ pub async fn reset_modal(Path(id): Path<String>, _user: AdminUser) -> AppResult<
     Ok(Html(html).into_response())
 }
 
-const KEY_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>"#;
 
 #[derive(Template)]
 #[template(path = "people/_credentials_reset_modal.html")]
@@ -224,7 +223,7 @@ pub async fn submit_reset(
 
             let modal_html = Modal {
                 title: "Reset link ready".to_string(),
-                icon_svg: Some(CHECK_SVG),
+                icon_name: Some("circle-check"),
                 icon_color_class: "text-success",
                 body_html,
                 footer_html,
@@ -249,7 +248,7 @@ pub async fn submit_reset(
 
             let modal_html = Modal {
                 title: "Reset link failed".to_string(),
-                icon_svg: Some(X_CIRCLE_SVG),
+                icon_name: Some("circle-x"),
                 icon_color_class: "text-danger",
                 body_html,
                 footer_html,
@@ -263,9 +262,7 @@ pub async fn submit_reset(
     }
 }
 
-const CHECK_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>"#;
 
-const X_CIRCLE_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>"#;
 
 #[derive(Template)]
 #[template(path = "people/_credentials_reset_result_footer.html")]

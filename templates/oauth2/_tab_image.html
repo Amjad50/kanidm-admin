@@ -31,10 +31,7 @@
                   hx-target="#tab-content"
                   hx-swap="innerHTML"
                   hx-confirm="Remove the current image? This cannot be undone.">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18"/>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
+            <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
             Remove image
           </button>
         </div>
@@ -45,11 +42,7 @@
     {# No image placeholder #}
     <div class="flex items-center gap-4 py-4">
       <div class="bg-canvas border border-subtle border-dashed rounded-md w-24 h-24 shrink-0 inline-flex items-center justify-center text-tertiary">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <path d="m21 15-5-5L5 21"/>
-        </svg>
+        <span class="w-7 h-7 inline-flex shrink-0">{{ crate::views::icons::icon("image") }}</span>
       </div>
       <p class="text-sm text-secondary">No image set. Upload one below to display it on the app listing and consent screens.</p>
     </div>
@@ -91,11 +84,7 @@
       <div class="flex justify-start">
         <button type="submit"
                 class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
+          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("upload") }}</span>
           Upload
         </button>
       </div>
@@ -130,10 +119,7 @@
       <div class="flex justify-start">
         <button type="submit"
                 class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-          </svg>
+          <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("link") }}</span>
           Fetch and upload
         </button>
       </div>

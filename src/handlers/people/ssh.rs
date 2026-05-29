@@ -188,7 +188,12 @@ pub async fn add(
             let fresh_keys = parse_keys_from_entry(&fresh_entry);
             let ssh_data =
                 build_ssh_data(&id, fresh_keys, AddSshForm::default(), None, None, None);
-            render_detail(is_htmx, user, fresh_person, "ssh", TabContent::Ssh(ssh_data))
+            let toast = crate::views::toast::Toast::success("SSH key added")
+                .with_desc(format!("Label: {tag}"));
+            let mut resp =
+                render_detail(is_htmx, user, fresh_person, "ssh", TabContent::Ssh(ssh_data))?;
+            resp.headers_mut().insert("HX-Trigger", toast.hx_trigger());
+            Ok(resp)
         }
         Err(e) => {
             tracing::warn!(person = %id, error = ?e, "ssh key add failed");

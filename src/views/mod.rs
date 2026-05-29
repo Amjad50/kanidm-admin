@@ -1,14 +1,18 @@
 pub mod dropdown;
+pub mod icons;
 pub mod pagination;
 pub mod partials;
 pub mod time;
+pub mod toast;
 
 use askama::Template;
 use askama_web::WebTemplate;
 
 use crate::auth::AdminUser;
 
-pub use time::{format_absolute, format_relative_future, format_relative_past, format_relative_remaining};
+pub use time::{
+    format_absolute, format_relative_future, format_relative_past, format_relative_remaining,
+};
 
 // ── Placeholder ──────────────────────────────────────────────────────────────
 
@@ -53,6 +57,9 @@ pub struct BaseFields {
     pub user_spn: String,
     pub user_initials: String,
     pub privileged: bool,
+    /// Pre-rendered JSON for the topbar user-menu dropdown, safe to embed
+    /// inside `data-dropdown='...'`.
+    pub user_menu_json: String,
 }
 
 impl BaseFields {
@@ -63,8 +70,24 @@ impl BaseFields {
             user_spn: user.spn.clone(),
             user_initials: initials(&user.displayname),
             privileged: user.privileged,
+            user_menu_json: user_menu_json(),
         }
     }
+}
+
+fn user_menu_json() -> String {
+    use crate::views::dropdown::{DropdownConfig, DropdownItem};
+    let items = vec![
+        DropdownItem::link("My profile", "/me").with_icon("user"),
+        DropdownItem::link("My sessions", "/me/sessions").with_icon("users"),
+        DropdownItem::Divider,
+        DropdownItem::htmx_post("Log out", "/logout")
+            .with_icon("log-out")
+            .danger(),
+    ];
+    let mut cfg = DropdownConfig::new(items);
+    cfg.align = Some("right");
+    cfg.to_attr_value()
 }
 
 pub(crate) fn initials(name: &str) -> String {

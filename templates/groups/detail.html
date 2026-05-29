@@ -4,9 +4,7 @@
 
 {% block crumb %}
 <a href="/groups" class="hover:text-secondary transition-colors no-underline">Groups</a>
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
-  <path d="m9 18 6-6-6-6"/>
-</svg>
+<span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-primary font-medium font-mono truncate">{{ group.spn }}</span>
 {% endblock %}
 
@@ -16,12 +14,7 @@
   <section class="bg-surface border border-subtle rounded-md shadow-card p-6 flex items-start gap-5 mb-5">
 
     <span class="w-16 h-16 rounded-pill bg-elevated border border-subtle inline-flex items-center justify-center shrink-0">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
+      <span class="w-7 h-7 inline-flex shrink-0 text-secondary">{{ crate::views::icons::icon("users") }}</span>
     </span>
 
     <div class="flex-1 min-w-0">
@@ -46,9 +39,7 @@
       {% if !group.is_builtin %}
       <a href="/groups/{{ group.spn_or_uuid }}/edit"
          class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 no-underline transition-colors">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("pencil") }}</span>
         <span>Edit</span>
       </a>
       <button type="button"
@@ -56,10 +47,7 @@
               hx-get="/groups/{{ group.spn_or_uuid }}/delete"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
         <span>Delete</span>
       </button>
       {% endif %}

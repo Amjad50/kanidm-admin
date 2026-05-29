@@ -17,7 +17,6 @@ use crate::AppState;
 use super::detail::{compute_header, fetch_oauth2_entry, render_detail, TabContent};
 
 // SVG icon for claim map modals (tag/label icon fits "claims")
-const CLAIM_TAG_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>"#;
 
 // ── Data structs ──────────────────────────────────────────────────────────────
 
@@ -540,7 +539,7 @@ pub async fn new_claim_modal(
 
     let html = Modal {
         title: "Add new claim".to_string(),
-        icon_svg: Some(CLAIM_TAG_SVG),
+        icon_name: Some("tag"),
         icon_color_class: "text-accent",
         body_html,
         footer_html,
@@ -595,7 +594,7 @@ pub async fn edit_row_modal(
 
     let html = Modal {
         title: format!("Edit claim map — {claim} ({group})"),
-        icon_svg: Some(CLAIM_TAG_SVG),
+        icon_name: Some("tag"),
         icon_color_class: "text-accent",
         body_html,
         footer_html,
@@ -642,7 +641,7 @@ pub async fn add_group_modal(
 
     let html = Modal {
         title: format!("Add group to {claim}"),
-        icon_svg: Some(CLAIM_TAG_SVG),
+        icon_name: Some("tag"),
         icon_color_class: "text-accent",
         body_html,
         footer_html,
@@ -685,7 +684,7 @@ pub async fn join_strategy_modal(
 
     let html = Modal {
         title: format!("Join strategy for {claim}"),
-        icon_svg: Some(CLAIM_TAG_SVG),
+        icon_name: Some("tag"),
         icon_color_class: "text-accent",
         body_html,
         footer_html,

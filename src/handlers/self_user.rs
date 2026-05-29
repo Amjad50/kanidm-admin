@@ -205,21 +205,12 @@ async fn fetch_my_sessions(
     }
 }
 
-fn current_session_id_from_token(token: &str) -> Option<String> {
-    use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-    use base64::Engine;
-    let payload = token.split('.').nth(1)?;
-    let bytes = URL_SAFE_NO_PAD.decode(payload).ok()?;
-    let v: serde_json::Value = serde_json::from_slice(&bytes).ok()?;
-    v.get("session_id").and_then(|s| s.as_str()).map(|s| s.to_string())
-}
-
 pub async fn sessions_tab(
     State(state): State<AppState>,
     user: AdminUser,
 ) -> AppResult<Response> {
     let (sessions, error) = fetch_my_sessions(&state, &user).await;
-    let current_session_id = current_session_id_from_token(&user.token);
+    let current_session_id = user.session_id.clone();
 
     Ok(SessionsView {
         base: BaseFields::new(&user, "me"),
@@ -238,7 +229,7 @@ pub async fn destroy_session(
     axum::extract::Path(session_id): axum::extract::Path<Uuid>,
     user: AdminUser,
 ) -> AppResult<Response> {
-    let current_session_id = current_session_id_from_token(&user.token);
+    let current_session_id = user.session_id.clone();
 
     // Don't let the user destroy their own active session — they'd be logged out
     // immediately. They can use Logout for that.

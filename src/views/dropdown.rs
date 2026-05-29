@@ -167,7 +167,7 @@ struct ActionsKebab {
 struct ActionsSingleLink {
     label: String,
     href: String,
-    icon_paths: &'static str,
+    icon_name: &'static str,
     color_classes: &'static str,
 }
 
@@ -175,7 +175,7 @@ struct ActionsSingleLink {
 #[template(path = "partials/_actions_single_htmx.html")]
 struct ActionsSingleHtmx {
     label: String,
-    icon_paths: &'static str,
+    icon_name: &'static str,
     color_classes: &'static str,
     hx_get: Option<String>,
     hx_post: Option<String>,
@@ -230,7 +230,7 @@ fn render_single(item: &DropdownItem) -> String {
         } => ActionsSingleLink {
             label: label.clone(),
             href: href.clone(),
-            icon_paths: icon.map(icon_paths_for).unwrap_or(GENERIC_DOT),
+            icon_name: icon.unwrap_or("circle-dot"),
             color_classes: color_classes(*danger),
         }
         .render()
@@ -246,7 +246,7 @@ fn render_single(item: &DropdownItem) -> String {
             danger,
         } => ActionsSingleHtmx {
             label: label.clone(),
-            icon_paths: icon.map(icon_paths_for).unwrap_or(GENERIC_DOT),
+            icon_name: icon.unwrap_or("circle-dot"),
             color_classes: color_classes(*danger),
             hx_get: hx_get.clone(),
             hx_post: hx_post.clone(),
@@ -268,29 +268,3 @@ fn color_classes(danger: bool) -> &'static str {
     }
 }
 
-// ── Icon registry (mirrors the JS map in islands/dropdown.tsx) ────────────────
-
-const GENERIC_DOT: &str = r#"<circle cx="12" cy="12" r="3"/>"#;
-
-fn icon_paths_for(name: &str) -> &'static str {
-    match name {
-        "edit" => r#"<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>"#,
-        "delete" => {
-            r#"<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>"#
-        }
-        "reset" | "key" => {
-            r#"<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>"#
-        }
-        "user" => {
-            r#"<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>"#
-        }
-        "members" => {
-            r#"<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>"#
-        }
-        "external" => {
-            r#"<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>"#
-        }
-        "x" => r#"<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>"#,
-        _ => GENERIC_DOT,
-    }
-}

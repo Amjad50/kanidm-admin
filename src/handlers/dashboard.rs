@@ -52,13 +52,16 @@ pub async fn dashboard(
 
     let (domain_name, domain_display_name, domain_level, ldap_basedn, domain_uuid) = match domain {
         Ok(entry) => (
-            attr_first(&entry, "name"),
+            attr_first(&entry, "domain_name").or_else(|| attr_first(&entry, "name")),
             attr_first(&entry, "domain_display_name").or_else(|| attr_first(&entry, "displayname")),
             attr_first(&entry, "domain_level"),
-            attr_first(&entry, "ldap_basedn"),
+            attr_first(&entry, "domain_ldap_basedn").or_else(|| attr_first(&entry, "ldap_basedn")),
             attr_first(&entry, "domain_uuid").or_else(|| attr_first(&entry, "uuid")),
         ),
-        Err(_) => (None, None, None, None, None),
+        Err(e) => {
+            tracing::warn!(error = ?e, "idm_domain_get failed; instance card will show placeholders");
+            (None, None, None, None, None)
+        }
     };
 
     let signed_in_relative = user.signed_in_at.map(format_relative_past);

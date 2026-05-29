@@ -7,12 +7,7 @@
   <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
     <div class="flex items-start gap-4">
       <div class="w-12 h-12 rounded-md {% if r.secret.is_some() %}bg-success-soft text-success{% else %}bg-elevated text-tertiary{% endif %} inline-flex items-center justify-center shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-          <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-          <line x1="12" y1="20" x2="12.01" y2="20"/>
-        </svg>
+        <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("wifi") }}</span>
       </div>
       <div class="flex-1 min-w-0">
         {% if let Some(secret_val) = &r.secret %}
@@ -34,10 +29,7 @@
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-confirm="Regenerate the RADIUS secret? The current one will stop working immediately.">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-          <path d="M21 3v5h-5"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("refresh-cw") }}</span>
         <span>Regenerate secret</span>
       </button>
       <button type="button"
@@ -46,10 +38,7 @@
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-confirm="Delete the RADIUS secret? You can regenerate one later.">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
         <span>Delete secret</span>
       </button>
       {% else %}
@@ -58,9 +47,7 @@
               hx-post="/people/{{ r.person_id }}/radius/regenerate"
               hx-target="#tab-content"
               hx-swap="innerHTML">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
         <span>Generate secret</span>
       </button>
       {% endif %}

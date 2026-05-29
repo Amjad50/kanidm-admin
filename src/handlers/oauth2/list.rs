@@ -1,11 +1,14 @@
 use askama::Template;
 use askama_web::WebTemplate;
 use axum::extract::{Query, State};
+use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
+use axum::Json;
 use axum_htmx::HxRequest;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
 use crate::kanidm::entry::{attr_all, attr_first, attr_present};
 use crate::views::{initials, BaseFields};
 use crate::AppState;
@@ -37,12 +40,12 @@ fn build_app_actions(name: &str, displayname: &str, kind: OAuth2Kind) -> String 
     }
     items.push(
         DropdownItem::link("Scope maps", format!("/oauth2/{name}/scope-maps"))
-            .with_icon("members"),
+            .with_icon("users"),
     );
     items.push(DropdownItem::Divider);
     items.push(
         DropdownItem::htmx_get("Delete", format!("/oauth2/{name}/delete"))
-            .with_icon("delete")
+            .with_icon("trash-2")
             .danger(),
     );
     render_actions_cell(items, format!("Actions for {displayname}"))
@@ -131,6 +134,7 @@ fn entry_to_row(entry: &kanidm_proto::v1::Entry, _kanidm_url: &str) -> OAuth2App
 pub async fn list(
     State(state): State<AppState>,
     HxRequest(is_htmx): HxRequest,
+    headers: HeaderMap,
     Query(params): Query<ListParams>,
     user: AdminUser,
 ) -> AppResult<Response> {
@@ -147,6 +151,33 @@ pub async fn list(
 
     let total_count = entries.len();
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
+
+    if wants_json(&headers) {
+        let mut items: Vec<PaletteItem> = entries
+            .iter()
+            .filter_map(|entry| {
+                if !q.is_empty() && !matches_query(entry, &q) {
+                    return None;
+                }
+                let name = attr_first(entry, "name").unwrap_or_default();
+                if name.is_empty() {
+                    return None;
+                }
+                let label = attr_first(entry, "displayname").unwrap_or_else(|| name.clone());
+                let subtitle = attr_first(entry, "oauth2_rs_origin_landing").unwrap_or_default();
+                Some(PaletteItem {
+                    kind: "oauth2",
+                    label,
+                    subtitle,
+                    href: format!("/oauth2/{name}"),
+                })
+            })
+            .collect();
+        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.truncate(50);
+        return Ok(Json(PaletteResponse { items }).into_response());
+    }
+
     let per = params.per.unwrap_or(24).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);
 

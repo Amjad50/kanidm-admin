@@ -1,7 +1,9 @@
 use askama::Template;
 use askama_web::WebTemplate;
 use axum::extract::{Query, State};
+use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
+use axum::Json;
 use axum_htmx::HxRequest;
 use time::OffsetDateTime;
 
@@ -12,6 +14,7 @@ use crate::views::{initials, BaseFields};
 use crate::AppState;
 
 use super::common::{compute_status_at, PersonStatus};
+use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
 
 #[derive(serde::Deserialize, Default)]
 pub struct ListParams {
@@ -61,15 +64,15 @@ fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
     use crate::views::dropdown::{render_actions_cell, DropdownItem};
     render_actions_cell(
         vec![
-            DropdownItem::link("Edit", format!("/people/{spn_or_uuid}/edit")).with_icon("edit"),
+            DropdownItem::link("Edit", format!("/people/{spn_or_uuid}/edit")).with_icon("pencil"),
             DropdownItem::htmx_get(
                 "Generate reset link",
                 format!("/people/{spn_or_uuid}/credentials/reset"),
             )
-            .with_icon("reset"),
+            .with_icon("refresh-cw"),
             DropdownItem::Divider,
             DropdownItem::htmx_get("Delete", format!("/people/{spn_or_uuid}/delete"))
-                .with_icon("delete")
+                .with_icon("trash-2")
                 .danger(),
         ],
         format!("Actions for {displayname}"),
@@ -121,6 +124,7 @@ fn matches_query(entry: &kanidm_proto::v1::Entry, q: &str) -> bool {
 pub async fn list(
     State(state): State<AppState>,
     HxRequest(is_htmx): HxRequest,
+    headers: HeaderMap,
     Query(params): Query<ListParams>,
     user: AdminUser,
 ) -> AppResult<Response> {
@@ -138,6 +142,37 @@ pub async fn list(
     let total_count = entries.len();
 
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
+
+    // Checked before HTMX so explicit `Accept: application/json` wins.
+    // Sort by displayname, cap at 50.
+    if wants_json(&headers) {
+        let mut items: Vec<PaletteItem> = entries
+            .iter()
+            .filter_map(|entry| {
+                if !q.is_empty() && !matches_query(entry, &q) {
+                    return None;
+                }
+                let label = attr_first(entry, "displayname")
+                    .or_else(|| attr_first(entry, "name"))
+                    .unwrap_or_default();
+                if label.is_empty() {
+                    return None;
+                }
+                let subtitle = attr_first(entry, "spn").unwrap_or_default();
+                let id = spn_or_uuid(entry);
+                Some(PaletteItem {
+                    kind: "person",
+                    label,
+                    subtitle,
+                    href: format!("/people/{id}"),
+                })
+            })
+            .collect();
+        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.truncate(50);
+        return Ok(Json(PaletteResponse { items }).into_response());
+    }
+
     let status_filter = params.status;
     let per = params.per.unwrap_or(15).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);

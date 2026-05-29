@@ -52,11 +52,7 @@
           {% for (i, mail) in d.mails.iter().enumerate() %}
           <div class="flex items-center gap-2">
             {% if i == 0 %}
-            <span class="text-accent shrink-0" title="Primary">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            </span>
+            <span class="text-accent shrink-0 w-3.5 h-3.5 inline-flex [&_svg]:fill-current" title="Primary">{{ crate::views::icons::icon("star") }}</span>
             <span class="font-mono text-xs text-primary">{{ mail }}</span>
             <span class="text-tertiary text-xs">primary</span>
             {% else %}
@@ -82,9 +78,7 @@
          hx-push-url="true"
          class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
         Manage on Members tab
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m9 18 6-6-6-6"/>
-        </svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </a>
     </div>
     {% if d.members_preview.is_empty() %}
@@ -117,9 +111,7 @@
          hx-push-url="true"
          class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
         Manage on Policy tab
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m9 18 6-6-6-6"/>
-        </svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </a>
     </div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:220px 1fr">

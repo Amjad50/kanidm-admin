@@ -1,4 +1,4 @@
-use axum::http::StatusCode;
+use axum::http::{HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 
 use crate::views::{ForbiddenView, NotFoundView, ServerErrorView, UnauthenticatedView};
@@ -7,7 +7,12 @@ use crate::views::{ForbiddenView, NotFoundView, ServerErrorView, Unauthenticated
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
     #[error("not authenticated")]
-    Unauthenticated { kanidm_url: String },
+    Unauthenticated {
+        kanidm_url: String,
+        /// Set when the request came from HTMX. Triggers the reauth modal
+        /// via an HX-Trigger header instead of replacing the page with 401.
+        is_htmx: bool,
+    },
 
     #[error("forbidden: not a member of the admin group")]
     Forbidden { admin_group: String },
@@ -28,7 +33,15 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
-            AppError::Unauthenticated { kanidm_url } => {
+            AppError::Unauthenticated { kanidm_url, is_htmx } => {
+                if is_htmx {
+                    let mut resp = StatusCode::OK.into_response();
+                    resp.headers_mut().insert(
+                        "HX-Trigger",
+                        HeaderValue::from_static(r#"{"kanidm-reauth":null}"#),
+                    );
+                    return resp;
+                }
                 let view = UnauthenticatedView { kanidm_url };
                 (StatusCode::UNAUTHORIZED, view.into_response()).into_response()
             }

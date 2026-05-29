@@ -1,11 +1,14 @@
 use askama::Template;
 use askama_web::WebTemplate;
 use axum::extract::{Query, State};
+use axum::http::HeaderMap;
 use axum::response::{Html, IntoResponse, Response};
+use axum::Json;
 use axum_htmx::HxRequest;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
+use crate::handlers::common::{wants_json, PaletteItem, PaletteResponse};
 use crate::kanidm::entry::{attr_all, attr_first, spn_or_uuid};
 use crate::views::BaseFields;
 use crate::AppState;
@@ -39,16 +42,16 @@ fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> Strin
         "Members",
         format!("/groups/{spn_or_uuid}/members"),
     )
-    .with_icon("members")];
+    .with_icon("users")];
 
     if !is_builtin {
         items.push(
-            DropdownItem::link("Edit", format!("/groups/{spn_or_uuid}/edit")).with_icon("edit"),
+            DropdownItem::link("Edit", format!("/groups/{spn_or_uuid}/edit")).with_icon("pencil"),
         );
         items.push(DropdownItem::Divider);
         items.push(
             DropdownItem::htmx_get("Delete", format!("/groups/{spn_or_uuid}/delete"))
-                .with_icon("delete")
+                .with_icon("trash-2")
                 .danger(),
         );
     }
@@ -129,6 +132,7 @@ fn entry_to_row(entry: &kanidm_proto::v1::Entry) -> GroupRow {
 pub async fn list(
     State(state): State<AppState>,
     HxRequest(is_htmx): HxRequest,
+    headers: HeaderMap,
     Query(params): Query<ListParams>,
     user: AdminUser,
 ) -> AppResult<Response> {
@@ -145,6 +149,33 @@ pub async fn list(
 
     let total_count = entries.len();
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
+
+    if wants_json(&headers) {
+        let mut items: Vec<PaletteItem> = entries
+            .iter()
+            .filter_map(|entry| {
+                if !q.is_empty() && !matches_query(entry, &q) {
+                    return None;
+                }
+                let label = attr_first(entry, "name").unwrap_or_default();
+                if label.is_empty() {
+                    return None;
+                }
+                let subtitle = attr_first(entry, "description").unwrap_or_default();
+                let id = spn_or_uuid(entry);
+                Some(PaletteItem {
+                    kind: "group",
+                    label,
+                    subtitle,
+                    href: format!("/groups/{id}"),
+                })
+            })
+            .collect();
+        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.truncate(50);
+        return Ok(Json(PaletteResponse { items }).into_response());
+    }
+
     let per = params.per.unwrap_or(15).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);
 

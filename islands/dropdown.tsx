@@ -27,7 +27,7 @@ type LinkItem = {
   label: string;
   href: string;
   danger?: boolean;
-  icon?: IconKey;
+  icon?: string;
 };
 
 type HtmxItem = {
@@ -39,7 +39,7 @@ type HtmxItem = {
   hxSwap?: string;
   hxConfirm?: string;
   danger?: boolean;
-  icon?: IconKey;
+  icon?: string;
 };
 
 type DividerItem = { kind: "divider" };
@@ -51,14 +51,35 @@ type DropdownConfig = {
   align?: Align;
 };
 
-type IconKey =
-  | "edit"
-  | "delete"
-  | "reset"
-  | "key"
-  | "user"
-  | "members"
-  | "external";
+import {
+  CircleHelp,
+  ExternalLink,
+  Key,
+  LogOut,
+  Pencil,
+  RefreshCw,
+  Trash2,
+  User,
+  Users,
+  X as XIcon,
+  type LucideProps,
+} from "lucide-preact";
+import type { ComponentType } from "preact";
+
+// Lucide icon name → component. Names match what the Rust side passes in
+// DropdownItem::with_icon("..."). Add a new entry here when a handler starts
+// passing a new icon name.
+const ICON_COMPONENTS: Record<string, ComponentType<LucideProps>> = {
+  pencil: Pencil,
+  "trash-2": Trash2,
+  "refresh-cw": RefreshCw,
+  key: Key,
+  user: User,
+  users: Users,
+  "external-link": ExternalLink,
+  "log-out": LogOut,
+  x: XIcon,
+};
 
 // Minimal HTMX type — we use a single method.
 type HtmxApi = {
@@ -75,31 +96,9 @@ declare global {
   }
 }
 
-const ICONS: Record<IconKey, string> = {
-  edit: `<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>`,
-  delete: `<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`,
-  reset: `<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>`,
-  key: `<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>`,
-  user: `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
-  members: `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
-  external: `<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`,
-};
-
-function Icon({ name }: { name: IconKey }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="shrink-0"
-      dangerouslySetInnerHTML={{ __html: ICONS[name] }}
-    />
-  );
+function Icon({ name }: { name: string }) {
+  const Component = ICON_COMPONENTS[name] ?? CircleHelp;
+  return <Component size={14} class="shrink-0" />;
 }
 
 type MenuState = {

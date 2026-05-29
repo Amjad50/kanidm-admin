@@ -6,6 +6,7 @@ import { h, render } from "preact";
 import { CommandPalette } from "./command_palette";
 import { mountDropdowns } from "./dropdown";
 import { mountPagination } from "./pagination";
+import { mountToasts } from "./toast";
 
 // Mount the Cmd+K palette if the host element exists on this page.
 const paletteHost = document.getElementById("cmd-palette-island");
@@ -18,6 +19,24 @@ mountDropdowns();
 
 // Mount any [data-pagination] containers found on this page.
 mountPagination();
+
+// Mount the toast stack — listens for HX-Trigger "toast" events.
+mountToasts();
+
+// Surface the reauth modal instead of letting an expired session boot the
+// user to a full 401 page mid-flow.
+document.body.addEventListener('kanidm-reauth', () => {
+  // @ts-expect-error htmx global is loaded by base.html
+  window.htmx.ajax('GET', '/reauth', { target: '#overlay-slot', swap: 'innerHTML' });
+});
+
+// Open the command palette when a [data-open-palette] trigger is clicked.
+document.addEventListener('click', (event) => {
+  const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-open-palette]');
+  if (!target) return;
+  event.preventDefault();
+  document.dispatchEvent(new CustomEvent('open-palette'));
+});
 
 // Clipboard handler — binds to [data-copy] elements anywhere in the document.
 // Click → writes data-copy value to clipboard, briefly shows a checkmark.
@@ -124,14 +143,11 @@ document.addEventListener('click', (event) => {
 });
 
 function showCopiedFeedback(button: HTMLElement) {
-  const svg = button.querySelector('svg');
-  if (!svg) return;
-  const w = svg.getAttribute('width') || '12';
-  const h = svg.getAttribute('height') || '12';
-  const original = svg.outerHTML;
-  svg.outerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M20 6 9 17l-5-5"/></svg>`;
+  const original = button.innerHTML;
+  button.classList.add('text-success');
+  button.innerHTML = `<span class="w-3.5 h-3.5 inline-flex shrink-0"><svg class="lucide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>`;
   setTimeout(() => {
-    const newSvg = button.querySelector('svg');
-    if (newSvg) newSvg.outerHTML = original;
+    button.classList.remove('text-success');
+    button.innerHTML = original;
   }, 1200);
 }

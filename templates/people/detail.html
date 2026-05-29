@@ -4,9 +4,7 @@
 
 {% block crumb %}
 <a href="/people" class="hover:text-secondary transition-colors no-underline">People</a>
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
-  <path d="m9 18 6-6-6-6"/>
-</svg>
+<span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
 <span class="text-primary font-medium font-mono truncate">{{ person.spn }}</span>
 {% endblock %}
 
@@ -30,12 +28,7 @@
       <div class="font-mono text-xs text-tertiary mt-1">{{ person.spn }}</div>
       {% if !person.primary_mail.is_empty() %}
       <div class="text-sm text-secondary mt-2 flex items-center gap-2">
-        <span class="text-tertiary inline-flex shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2"/>
-            <path d="m22 7-10 5L2 7"/>
-          </svg>
-        </span>
+        <span class="text-tertiary inline-flex shrink-0 w-3.5 h-3.5">{{ crate::views::icons::icon("mail") }}</span>
         <span class="font-mono text-xs">{{ person.primary_mail }}</span>
       </div>
       {% endif %}
@@ -44,9 +37,7 @@
     <div class="flex items-center gap-2 shrink-0">
       <a href="/people/{{ person.spn_or_uuid }}/edit"
          class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 no-underline transition-colors">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("pencil") }}</span>
         <span>Edit</span>
       </a>
       <button type="button"
@@ -54,11 +45,7 @@
               hx-get="/people/{{ person.spn_or_uuid }}/credentials/reset"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="7.5" cy="15.5" r="5.5"/>
-          <path d="m21 2-9.6 9.6"/>
-          <path d="m15.5 7.5 3 3L22 7l-3-3"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("key") }}</span>
         <span>Generate reset link</span>
       </button>
       <button type="button"
@@ -66,10 +53,7 @@
               hx-get="/people/{{ person.spn_or_uuid }}/delete"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
         <span>Delete</span>
       </button>
     </div>

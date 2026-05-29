@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum_extra::extract::CookieJar;
+use axum_htmx::HxRequest;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use kanidm_client::{KanidmClient, KanidmClientBuilder};
@@ -71,6 +72,10 @@ pub struct AdminUser {
     pub spn: String,
     pub displayname: String,
     pub uuid: String,
+    /// UAT session_id — the UUID kanidm assigned to this auth token.
+    /// Decoded from the JWS payload; used to destroy the current session on
+    /// logout and to flag "this is you" rows in the sessions list.
+    pub session_id: Option<String>,
     pub signed_in_at: Option<OffsetDateTime>,
     pub session_expires_at: Option<OffsetDateTime>,
     /// True when the session has active ReadWrite privileges (not expired).
@@ -87,12 +92,16 @@ impl FromRequestParts<AppState> for AdminUser {
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         let jar = CookieJar::from_headers(&parts.headers);
+        let HxRequest(is_htmx) = HxRequest::from_request_parts(parts, state)
+            .await
+            .unwrap_or(HxRequest(false));
         let cookie_name = &state.config.kanidm_session_cookie;
         let token = jar
             .get(cookie_name)
             .map(|c| c.value().to_string())
             .ok_or_else(|| AppError::Unauthenticated {
                 kanidm_url: state.config.kanidm_url.clone(),
+                is_htmx,
             })?;
 
         let client = state
@@ -101,11 +110,16 @@ impl FromRequestParts<AppState> for AdminUser {
             .await
             .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
-        // Validate the token; kanidm checks signature, expiry, revocation.
-        client
-            .auth_valid()
-            .await
-            .map_err(|e| AppError::Kanidm(format!("token validation failed: {e:?}")))?;
+        // auth_valid returning Err means the session is no longer accepted by
+        // kanidm — surface it as Unauthenticated so HTMX requests get the
+        // reauth modal trigger instead of a generic 502.
+        if let Err(e) = client.auth_valid().await {
+            tracing::debug!(error = ?e, "auth_valid rejected; treating as unauthenticated");
+            return Err(AppError::Unauthenticated {
+                kanidm_url: state.config.kanidm_url.clone(),
+                is_htmx,
+            });
+        }
 
         // Pull the caller's full entry, including memberof, via whoami.
         let entry = client
@@ -126,7 +140,7 @@ impl FromRequestParts<AppState> for AdminUser {
         let displayname = attr_first(&entry, "displayname").unwrap_or_else(|| spn.clone());
         let uuid = attr_first(&entry, "uuid").unwrap_or_default();
 
-        let (signed_in_at, session_expires_at, privileged, privileged_until) =
+        let (session_id, signed_in_at, session_expires_at, privileged, privileged_until) =
             match parse_uat_payload(&token) {
                 Some(uat) => {
                     let now = OffsetDateTime::now_utc();
@@ -136,11 +150,17 @@ impl FromRequestParts<AppState> for AdminUser {
                         }
                         _ => (false, None),
                     };
-                    (Some(uat.issued_at), uat.expiry, privileged, privileged_until)
+                    (
+                        Some(uat.session_id.to_string()),
+                        Some(uat.issued_at),
+                        uat.expiry,
+                        privileged,
+                        privileged_until,
+                    )
                 }
                 None => {
                     tracing::warn!(spn = ?spn, "could not decode UAT payload from session cookie");
-                    (None, None, false, None)
+                    (None, None, None, false, None)
                 }
             };
 
@@ -149,6 +169,7 @@ impl FromRequestParts<AppState> for AdminUser {
             spn,
             displayname,
             uuid,
+            session_id,
             signed_in_at,
             session_expires_at,
             privileged,

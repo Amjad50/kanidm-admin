@@ -15,12 +15,7 @@
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <a href="/" class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 no-underline transition-colors">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-          <path d="M21 3v5h-5"/>
-          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-          <path d="M3 21v-5h5"/>
-        </svg>
+        <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("refresh-cw") }}</span>
         <span>Refresh</span>
       </a>
     </div>
@@ -32,12 +27,7 @@
     <!-- People -->
     <a href="/people" class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-3 hover:border-strong transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-accent-soft text-accent inline-flex items-center justify-center shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+        <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("users") }}</span>
       </span>
       <div>
         <div class="text-3xl font-semibold tracking-tight tabular-nums">
@@ -50,18 +40,14 @@
       </div>
       <span class="text-accent text-xs mt-1 inline-flex items-center gap-1">
         View people
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </span>
     </a>
 
     <!-- Groups -->
     <a href="/groups" class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-3 hover:border-strong transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-accent-soft text-accent inline-flex items-center justify-center shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 21a8 8 0 0 0-16 0"/>
-          <circle cx="10" cy="8" r="5"/>
-          <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-        </svg>
+        <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("users-round") }}</span>
       </span>
       <div>
         <div class="text-3xl font-semibold tracking-tight tabular-nums">
@@ -74,16 +60,14 @@
       </div>
       <span class="text-accent text-xs mt-1 inline-flex items-center gap-1">
         View groups
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </span>
     </a>
 
     <!-- OAuth2 Apps -->
     <a href="/oauth2" class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-3 hover:border-strong transition-colors no-underline">
       <span class="w-10 h-10 rounded bg-accent-soft text-accent inline-flex items-center justify-center shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-        </svg>
+        <span class="w-[22px] h-[22px] inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
       </span>
       <div>
         <div class="text-3xl font-semibold tracking-tight tabular-nums">
@@ -96,7 +80,7 @@
       </div>
       <span class="text-accent text-xs mt-1 inline-flex items-center gap-1">
         View applications
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </span>
     </a>
 
@@ -194,7 +178,7 @@
 
       <a href="/me/sessions" class="text-link text-sm inline-flex items-center gap-1 mt-4 no-underline hover:underline">
         My sessions
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
       </a>
     </section>
 
@@ -208,12 +192,7 @@
       <!-- Create person -->
       <a href="/people/new" class="bg-surface border border-subtle rounded-md p-4 flex items-center gap-3 hover:border-accent hover:bg-hover transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-elevated border border-subtle text-accent inline-flex items-center justify-center shrink-0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <line x1="19" y1="8" x2="19" y2="14"/>
-            <line x1="22" y1="11" x2="16" y2="11"/>
-          </svg>
+          <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("user-plus") }}</span>
         </span>
         <div>
           <div class="text-sm font-medium text-primary">Create person</div>
@@ -224,11 +203,7 @@
       <!-- Create group -->
       <a href="/groups/new" class="bg-surface border border-subtle rounded-md p-4 flex items-center gap-3 hover:border-accent hover:bg-hover transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-elevated border border-subtle text-accent inline-flex items-center justify-center shrink-0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 21a8 8 0 0 0-16 0"/>
-            <circle cx="10" cy="8" r="5"/>
-            <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-          </svg>
+          <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("users-round") }}</span>
         </span>
         <div>
           <div class="text-sm font-medium text-primary">Create group</div>
@@ -239,9 +214,7 @@
       <!-- Create OAuth2 application -->
       <a href="/oauth2/new" class="bg-surface border border-subtle rounded-md p-4 flex items-center gap-3 hover:border-accent hover:bg-hover transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-elevated border border-subtle text-accent inline-flex items-center justify-center shrink-0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-          </svg>
+          <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
         </span>
         <div>
           <div class="text-sm font-medium text-primary">Create OAuth2 application</div>
@@ -249,17 +222,14 @@
         </div>
       </a>
 
-      <!-- Generate reset link -->
-      <a href="/me" class="bg-surface border border-subtle rounded-md p-4 flex items-center gap-3 hover:border-accent hover:bg-hover transition-colors no-underline">
+      <!-- Reset a password — picks a person, then issues an intent-token URL -->
+      <a href="/people" class="bg-surface border border-subtle rounded-md p-4 flex items-center gap-3 hover:border-accent hover:bg-hover transition-colors no-underline">
         <span class="w-9 h-9 rounded bg-elevated border border-subtle text-accent inline-flex items-center justify-center shrink-0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 18a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v0M22 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-            <path d="M19 13v9M22 16h-6"/>
-          </svg>
+          <span class="w-[18px] h-[18px] inline-flex shrink-0">{{ crate::views::icons::icon("key") }}</span>
         </span>
         <div>
-          <div class="text-sm font-medium text-primary">Generate reset link</div>
-          <div class="text-xs text-tertiary mt-0.5">Issue an intent-token URL</div>
+          <div class="text-sm font-medium text-primary">Reset a password</div>
+          <div class="text-xs text-tertiary mt-0.5">Pick a person, issue an intent-token URL</div>
         </div>
       </a>
 

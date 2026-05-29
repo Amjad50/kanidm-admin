@@ -5,6 +5,7 @@ mod groups;
 mod health;
 mod oauth2;
 mod people;
+mod reauth;
 mod self_user;
 mod session;
 
@@ -19,6 +20,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/healthz", get(health::healthz))
         .route("/empty", get(empty::empty))
+        .route("/reauth", get(reauth::reauth))
         .route("/", get(dashboard::dashboard))
         .merge(people::router())
         .merge(groups::router())

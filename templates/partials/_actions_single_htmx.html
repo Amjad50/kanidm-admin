@@ -7,7 +7,5 @@
         hx-target="{{ hx_target }}"
         hx-swap="{{ hx_swap }}"
         {% if let Some(c) = hx_confirm %}hx-confirm="{{ c }}"{% endif %}>
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    {{ icon_paths|safe }}
-  </svg>
+  <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon(icon_name) }}</span>
 </button>
