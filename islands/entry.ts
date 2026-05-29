@@ -27,6 +27,24 @@ document.addEventListener('click', async (event) => {
   }
 });
 
+// Set-to-now handler — binds to [data-set-now] elements anywhere in the document.
+// Click → sets nearest date + time inputs to current UTC date/time and selects the datetime radio.
+document.addEventListener('click', (event) => {
+  const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-set-now]');
+  if (!target) return;
+  event.preventDefault();
+  const card = target.closest<HTMLElement>('[data-validity-card]');
+  if (!card) return;
+  const dateInput = card.querySelector<HTMLInputElement>('input[type=date]');
+  const timeInput = card.querySelector<HTMLInputElement>('input[type=time]');
+  const radioDatetime = card.querySelector<HTMLInputElement>('input[type=radio][value=datetime]');
+  if (!dateInput || !timeInput) return;
+  const now = new Date();
+  dateInput.value = now.toISOString().slice(0, 10);
+  timeInput.value = now.toISOString().slice(11, 16);
+  if (radioDatetime) radioDatetime.checked = true;
+});
+
 function showCopiedFeedback(button: HTMLElement) {
   const svg = button.querySelector('svg');
   if (!svg) return;

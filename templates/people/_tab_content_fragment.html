@@ -7,6 +7,8 @@
 {% include "people/_tab_ssh.html" %}
 {% when crate::handlers::people::detail::TabContent::Radius with (r) %}
 {% include "people/_tab_radius.html" %}
-{% when crate::handlers::people::detail::TabContent::Placeholder { message } %}
-<div class="p-12 text-center text-tertiary text-sm">{{ message }}</div>
+{% when crate::handlers::people::detail::TabContent::Sessions with (sess) %}
+{% include "people/_tab_sessions.html" %}
+{% when crate::handlers::people::detail::TabContent::Validity(v) %}
+{% include "people/_tab_validity.html" %}
 {% endmatch %}

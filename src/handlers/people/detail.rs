@@ -2,7 +2,6 @@ use askama::Template;
 use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_htmx::HxRequest;
-use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 
 use crate::auth::AdminUser;
@@ -11,10 +10,12 @@ use crate::kanidm::entry::{attr_all, attr_first, attr_present, spn_or_uuid};
 use crate::views::{initials, BaseFields};
 use crate::AppState;
 
-use super::common::{compute_status_at, summarize_credentials, CredentialSummary};
+use super::common::{compute_status_at, parse_kanidm_datetime, summarize_credentials, CredentialSummary};
 use super::credentials::CredentialsData;
 use super::radius::RadiusData;
+use super::sessions::SessionsData;
 use super::ssh::SshData;
+use super::validity::ValidityData;
 
 pub struct TabDef {
     pub slug: &'static str,
@@ -65,7 +66,8 @@ pub enum TabContent {
     Credentials(CredentialsData),
     Ssh(SshData),
     Radius(RadiusData),
-    Placeholder { message: &'static str },
+    Sessions(SessionsData),
+    Validity(ValidityData),
 }
 
 /// Full-page detail view (non-HTMX requests).
@@ -111,13 +113,9 @@ pub struct TabsNavFragment<'a> {
     pub oob: bool,
 }
 
-fn parse_dt(s: &str) -> Option<OffsetDateTime> {
-    OffsetDateTime::parse(s, &Rfc3339).ok()
-}
-
 fn format_validity_display(val: Option<String>) -> Option<String> {
     let s = val?;
-    let dt = parse_dt(&s)?;
+    let dt = parse_kanidm_datetime(&s)?;
     let now = OffsetDateTime::now_utc();
     if dt <= now {
         Some(crate::views::format_relative_past(dt))
@@ -210,29 +208,6 @@ pub async fn overview(
 }
 
 
-/// GET /people/{id}/sessions
-pub async fn sessions_tab(
-    State(state): State<AppState>,
-    HxRequest(is_htmx): HxRequest,
-    Path(id): Path<String>,
-    user: AdminUser,
-) -> AppResult<Response> {
-    render_placeholder_tab(state, is_htmx, id, user, "sessions",
-        "Sessions — coming in Task 2I").await
-}
-
-/// GET /people/{id}/validity
-pub async fn validity_tab(
-    State(state): State<AppState>,
-    HxRequest(is_htmx): HxRequest,
-    Path(id): Path<String>,
-    user: AdminUser,
-) -> AppResult<Response> {
-    render_placeholder_tab(state, is_htmx, id, user, "validity",
-        "Validity — coming in Task 2J").await
-}
-
-
 pub(super) async fn fetch_person(
     state: &AppState,
     user: &AdminUser,
@@ -249,19 +224,6 @@ pub(super) async fn fetch_person(
         .await
         .map_err(|e| AppError::Kanidm(format!("person get failed: {e:?}")))?
         .ok_or(AppError::NotFound)
-}
-
-async fn render_placeholder_tab(
-    state: AppState,
-    is_htmx: bool,
-    id: String,
-    user: AdminUser,
-    active_tab: &'static str,
-    message: &'static str,
-) -> AppResult<Response> {
-    let entry = fetch_person(&state, &user, &id).await?;
-    let person = compute_header(&entry);
-    render_detail(is_htmx, user, person, active_tab, TabContent::Placeholder { message })
 }
 
 pub(super) fn render_detail(

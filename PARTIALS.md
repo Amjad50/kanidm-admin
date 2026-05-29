@@ -62,7 +62,8 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 | 1 | Clipboard copy handler (binds to `[data-copy]` selector, calls `navigator.clipboard.writeText`, shows brief "copied" hint) | extracted | `islands/entry.ts` global behavior, no island root needed | Click on any `data-copy` element across the app |
 | 2 | Modal-close shortcut (Esc key clears `#overlay-slot`) | proposed | `islands/entry.ts` | Esc key while overlay-slot non-empty |
 | 3 | Toast renderer | proposed | `islands/toast.tsx` (Preact island bound to `#toast-stack`) | `htmx:trigger` event `toast` payload |
-| 4 | Datetime picker with keyword shortcuts (now / never / clear) | proposed | `islands/datetime_keyword.tsx` (mounted by data-attr) | 2J validity form |
+| 4 | Datetime picker with keyword shortcuts (now / never / clear) | proposed | `islands/datetime_keyword.tsx` (mounted by data-attr — v1 skipped: 2J uses native date/time inputs + global [data-set-now] handler in row 5 instead; Preact island deferred) | 2J validity form |
+| 5 | `[data-set-now]` click handler (sets nearest date+time inputs to UTC now, selects datetime radio) | extracted | `islands/entry.ts` global delegated listener | Click on any `[data-set-now]` element — used in validity cards |
 
 ---
 

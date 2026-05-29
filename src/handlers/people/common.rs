@@ -126,7 +126,6 @@ pub struct CredentialSummary {
     pub attested_passkey_names: Vec<String>,
     pub ssh_key_count: usize,
     pub backup_codes_remaining: Option<usize>,
-    pub backup_codes_generated: bool,
     pub totp_labels: Vec<String>,
     pub radius_configured: bool,
 }
@@ -144,12 +143,11 @@ pub fn summarize_credentials(
     let ssh_key_count = attr_all(entry, "ssh_publickey").len();
     let radius_configured = attr_present(entry, "radius_secret");
 
-    let (primary, totp_labels, backup_codes_remaining, backup_codes_generated) =
+    let (primary, totp_labels, backup_codes_remaining) =
         if let Some(st) = status {
             let mut primary = PrimaryCred::None;
             let mut totp_labels: Vec<String> = vec![];
             let mut backup_codes_remaining: Option<usize> = None;
-            let mut backup_codes_generated = false;
 
             for cred in &st.creds {
                 match &cred.type_ {
@@ -170,21 +168,20 @@ pub fn summarize_credentials(
                         }
                         if *count > 0 {
                             backup_codes_remaining = Some(*count);
-                            backup_codes_generated = true;
                         }
                     }
                     CredentialDetailType::Passkey(_) => {}
                 }
             }
 
-            (primary, totp_labels, backup_codes_remaining, backup_codes_generated)
+            (primary, totp_labels, backup_codes_remaining)
         } else {
             let primary = if attr_present(entry, "primary_credential") {
                 PrimaryCred::Password
             } else {
                 PrimaryCred::None
             };
-            (primary, vec![], None, false)
+            (primary, vec![], None)
         };
 
     CredentialSummary {
@@ -195,7 +192,6 @@ pub fn summarize_credentials(
         attested_passkey_names,
         ssh_key_count,
         backup_codes_remaining,
-        backup_codes_generated,
         totp_labels,
         radius_configured,
     }

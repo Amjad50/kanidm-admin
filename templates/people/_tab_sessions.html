@@ -1,0 +1,131 @@
+<div class="flex flex-col gap-4">
+
+  {% if let Some(err) = &sess.error %}
+  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  {% endif %}
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <div class="px-5 py-4 border-b border-subtle flex items-center justify-between">
+      <div>
+        <div class="text-sm font-semibold text-primary">
+          {% if sess.sessions.is_empty() %}
+          No active sessions
+          {% else if sess.sessions.len() == 1 %}
+          1 active session
+          {% else %}
+          {{ sess.sessions.len() }} active sessions
+          {% endif %}
+        </div>
+        <div class="text-xs text-tertiary mt-0.5">Where this person is currently signed in.</div>
+      </div>
+      {% if sess.sessions.len() >= 2 %}
+      <button type="button"
+              class="bg-transparent border border-danger text-danger h-8 px-3 rounded text-sm hover:bg-danger-soft inline-flex items-center gap-2 transition-colors cursor-pointer"
+              hx-post="/people/{{ sess.person_id }}/sessions/destroy_all"
+              hx-target="#tab-content"
+              hx-swap="innerHTML"
+              hx-confirm="Destroy all sessions for this person? They will be signed out everywhere.">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        <span>Destroy all</span>
+      </button>
+      {% endif %}
+    </div>
+
+    {% if sess.sessions.is_empty() %}
+    <div class="px-5 py-10 text-center text-tertiary text-sm">No active sessions.</div>
+    {% else %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-subtle">
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Session</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Issued</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Expires</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Purpose</th>
+          <th class="px-5 py-2.5 w-16"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in sess.sessions %}
+        <tr class="border-b border-subtle last:border-0 hover:bg-hover transition-colors">
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-primary">{{ row.session_id_short }}…</span>
+              <button type="button"
+                      class="text-tertiary hover:text-primary border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
+                      data-copy="{{ row.session_id_full }}"
+                      aria-label="Copy session ID">
+                {% include "icons/_copy.html" %}
+              </button>
+            </div>
+          </td>
+          <td class="px-5 py-3">
+            <span class="font-mono text-xs text-secondary" title="{{ row.issued_at_absolute }}">{{ row.issued_at_relative }}</span>
+          </td>
+          <td class="px-5 py-3">
+            {% match row.expiry_state %}
+            {% when crate::handlers::people::sessions::ExpiryDisplay::Never %}
+            <span class="font-mono text-xs text-tertiary">Never</span>
+            {% when crate::handlers::people::sessions::ExpiryDisplay::Revoked %}
+            <span class="inline-flex items-center gap-1.5 bg-danger-soft text-danger rounded-pill text-xs font-medium px-2 py-0.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-danger"></span>
+              revoked
+            </span>
+            {% when crate::handlers::people::sessions::ExpiryDisplay::ExpiresAt { relative, absolute } %}
+            <span class="font-mono text-xs text-secondary" title="{{ absolute }}">{{ relative }}</span>
+            {% when crate::handlers::people::sessions::ExpiryDisplay::Expired { absolute } %}
+            <span class="inline-flex items-center gap-1.5 bg-danger-soft text-danger rounded-pill text-xs font-medium px-2 py-0.5" title="{{ absolute }}">
+              <span class="w-1.5 h-1.5 rounded-pill bg-danger"></span>
+              expired
+            </span>
+            {% endmatch %}
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              {% match row.purpose %}
+              {% when crate::handlers::people::sessions::PurposeDisplay::ReadOnly %}
+              <span class="inline-flex items-center gap-1 bg-elevated text-tertiary rounded-pill text-xs font-medium px-2 py-0.5">
+                <span class="w-1.5 h-1.5 rounded-pill bg-tertiary"></span>
+                read-only
+              </span>
+              {% when crate::handlers::people::sessions::PurposeDisplay::ReadWrite %}
+              <span class="inline-flex items-center gap-1 bg-accent-soft text-accent rounded-pill text-xs font-medium px-2 py-0.5">
+                <span class="w-1.5 h-1.5 rounded-pill bg-accent"></span>
+                read-write
+              </span>
+              {% when crate::handlers::people::sessions::PurposeDisplay::Privileged %}
+              <span class="inline-flex items-center gap-1 bg-accent-soft text-accent rounded-pill text-xs font-medium px-2 py-0.5">
+                <span class="w-1.5 h-1.5 rounded-pill bg-accent"></span>
+                read-write
+              </span>
+              <span class="inline-flex items-center gap-1 bg-warning-soft text-warning rounded-pill text-xs font-medium px-2 py-0.5">
+                <span class="w-1.5 h-1.5 rounded-pill bg-warning"></span>
+                privilege-capable
+              </span>
+              {% endmatch %}
+            </div>
+          </td>
+          <td class="px-5 py-3 text-right">
+            <button type="button"
+                    class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                    hx-post="/people/{{ sess.person_id }}/sessions/{{ row.session_id_full }}/destroy"
+                    hx-target="#tab-content"
+                    hx-swap="innerHTML"
+                    hx-confirm="Destroy this session? The person will be signed out on that device."
+                    aria-label="Destroy session">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+
+</div>
