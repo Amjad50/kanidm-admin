@@ -4,16 +4,12 @@
 
 import { h, render } from "preact";
 import { CommandPalette } from "./command_palette";
-import { mountDropdowns } from "./dropdown";
 
 // Mount the Cmd+K palette if the host element exists on this page.
 const paletteHost = document.getElementById("cmd-palette-island");
 if (paletteHost) {
   render(h(CommandPalette, {}), paletteHost);
 }
-
-// Mount the global dropdown root — binds to every [data-dropdown] trigger.
-mountDropdowns();
 
 // Clipboard handler — binds to [data-copy] elements anywhere in the document.
 // Click → writes data-copy value to clipboard, briefly shows a checkmark.

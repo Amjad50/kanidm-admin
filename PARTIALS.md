@@ -76,7 +76,13 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 
 ## Newly discovered (this task)
 
-*(Subagents append rows here during a task. Controller moves them into the main table at task-merge time.)*
+| # | Partial | Status | Strategy | Path | Used by | Owner |
+|---|---|---|---|---|---|---|
+| 25 | OAuth2 card grid (`_cards.html`) | rejected (scope too narrow) | n/a | `templates/oauth2/_cards.html` | 4A only | 4A |
+| 26 | Toggle switch (CSS-only checkbox styled as pill toggle, peer-checked pattern) | candidate | `{% include %}` with caller providing `field` name, `enabled` bool, `disabled` bool | `templates/partials/_toggle.html` (proposed) | 4C general tab (6 toggles), 4D advanced tab — extract when second call-site lands | 4C |
+| 27 | Inline field-save form row (label + text input + Save button, posts to same URL with `field`+`value`) | candidate | `{% include %}` with caller providing field name, current value, and label | (proposed) | 4C general tab (name/displayname/landing fields); may recur in 4H | 4C |
+
+Decision: the card-grid layout is unique to OAuth2 list and won't be reused by any other screen, so it stays local. The kebab button (partial #9 candidate) is also used here but just as a placeholder inline button — no wire-up yet; extraction deferred to when kebab menus are wired in a later task.
 
 ---
 

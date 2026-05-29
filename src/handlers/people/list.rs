@@ -53,27 +53,6 @@ pub struct PersonRow {
     pub mail: String,
     pub status: PersonStatus,
     pub spn_or_uuid: String,
-    /// Pre-rendered actions cell HTML (kebab + dropdown, or single icon).
-    pub actions_html: String,
-}
-
-fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
-    use crate::views::dropdown::{render_actions_cell, DropdownItem};
-    render_actions_cell(
-        vec![
-            DropdownItem::link("Edit", format!("/people/{spn_or_uuid}/edit")).with_icon("edit"),
-            DropdownItem::htmx_get(
-                "Generate reset link",
-                format!("/people/{spn_or_uuid}/credentials/reset"),
-            )
-            .with_icon("reset"),
-            DropdownItem::Divider,
-            DropdownItem::htmx_get("Delete", format!("/people/{spn_or_uuid}/delete"))
-                .with_icon("delete")
-                .danger(),
-        ],
-        format!("Actions for {displayname}"),
-    )
 }
 
 #[derive(Template, WebTemplate)]
@@ -162,16 +141,13 @@ pub async fn list(
                 .unwrap_or_default();
             let spn = attr_first(entry, "spn").unwrap_or_default();
             let mail = attr_first(entry, "mail").unwrap_or_default();
-            let id = spn_or_uuid(entry);
-            let actions_html = build_person_actions(&id, &displayname);
             Some(PersonRow {
                 initials: initials(&displayname),
                 displayname,
                 spn,
                 mail,
                 status,
-                spn_or_uuid: id,
-                actions_html,
+                spn_or_uuid: spn_or_uuid(entry),
             })
         })
         .collect();

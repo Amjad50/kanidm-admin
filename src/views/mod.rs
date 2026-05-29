@@ -1,4 +1,3 @@
-pub mod dropdown;
 pub mod partials;
 pub mod time;
 

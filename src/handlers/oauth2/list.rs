@@ -6,9 +6,23 @@ use axum_htmx::HxRequest;
 
 use crate::auth::AdminUser;
 use crate::error::{AppError, AppResult};
-use crate::kanidm::entry::{attr_all, attr_first, spn_or_uuid};
-use crate::views::BaseFields;
+use crate::kanidm::entry::{attr_all, attr_first, attr_present};
+use crate::views::{initials, BaseFields};
 use crate::AppState;
+
+use super::common::{detect_kind, OAuth2Kind};
+
+// ── Row data ──────────────────────────────────────────────────────────────────
+
+pub struct OAuth2AppRow {
+    pub name: String,
+    pub displayname: String,
+    pub initials: String,
+    pub image_url: Option<String>,
+    pub kind: OAuth2Kind,
+    pub landing_url: Option<String>,
+    pub detail_href: String,
+}
 
 // ── Query params ─────────────────────────────────────────────────────────────
 
@@ -19,25 +33,13 @@ pub struct ListParams {
     pub per: Option<usize>,
 }
 
-// ── Row data ──────────────────────────────────────────────────────────────────
-
-pub struct GroupRow {
-    pub name: String,
-    pub spn_or_uuid: String,
-    pub description: Option<String>,
-    pub member_count: usize,
-    pub has_policy: bool,
-    pub is_builtin: bool,
-    pub is_dynamic: bool,
-}
-
 // ── View structs ──────────────────────────────────────────────────────────────
 
 #[derive(Template, WebTemplate)]
-#[template(path = "groups/list.html")]
-pub struct GroupsListView {
+#[template(path = "oauth2/list.html")]
+pub struct OAuth2ListView {
     pub base: BaseFields,
-    pub groups: Vec<GroupRow>,
+    pub apps: Vec<OAuth2AppRow>,
     pub total_count: usize,
     pub filtered_count: usize,
     pub q: String,
@@ -49,9 +51,9 @@ pub struct GroupsListView {
 }
 
 #[derive(Template)]
-#[template(path = "groups/_rows.html")]
-pub struct GroupRowsFragment {
-    pub groups: Vec<GroupRow>,
+#[template(path = "oauth2/_cards.html")]
+pub struct OAuth2CardsFragment {
+    pub apps: Vec<OAuth2AppRow>,
     pub q: String,
 }
 
@@ -59,7 +61,7 @@ pub struct GroupRowsFragment {
 
 fn matches_query(entry: &kanidm_proto::v1::Entry, q: &str) -> bool {
     let q_lower = q.to_lowercase();
-    for field in ["name", "spn", "description"] {
+    for field in ["name", "displayname", "spn"] {
         for v in attr_all(entry, field) {
             if v.to_lowercase().contains(&q_lower) {
                 return true;
@@ -69,26 +71,29 @@ fn matches_query(entry: &kanidm_proto::v1::Entry, q: &str) -> bool {
     false
 }
 
-fn entry_to_row(entry: &kanidm_proto::v1::Entry) -> GroupRow {
-    let classes = attr_all(entry, "class");
-    let is_dynamic = classes.iter().any(|c| c == "dyngroup");
-    let has_policy = classes.iter().any(|c| c == "account_policy");
-    let is_builtin = classes.iter().any(|c| c == "builtin");
+fn entry_to_row(entry: &kanidm_proto::v1::Entry, kanidm_url: &str) -> OAuth2AppRow {
+    let name = attr_first(entry, "name").unwrap_or_default();
+    let displayname = attr_first(entry, "displayname")
+        .or_else(|| attr_first(entry, "name"))
+        .unwrap_or_default();
 
-    let member_count = if is_dynamic {
-        attr_all(entry, "dynmember").len()
+    let image_url = if attr_present(entry, "image") {
+        let base = kanidm_url.trim_end_matches('/');
+        Some(format!("{}/ui/images/oauth2/{}", base, name))
     } else {
-        attr_all(entry, "member").len()
+        None
     };
 
-    GroupRow {
-        name: attr_first(entry, "name").unwrap_or_default(),
-        spn_or_uuid: spn_or_uuid(entry),
-        description: attr_first(entry, "description"),
-        member_count,
-        has_policy,
-        is_builtin,
-        is_dynamic,
+    let detail_href = format!("/oauth2/{}", name);
+
+    OAuth2AppRow {
+        initials: initials(&displayname),
+        name,
+        displayname,
+        image_url,
+        kind: detect_kind(entry),
+        landing_url: attr_first(entry, "oauth2_rs_origin_landing"),
+        detail_href,
     }
 }
 
@@ -107,26 +112,28 @@ pub async fn list(
         .map_err(|e| AppError::Kanidm(e.to_string()))?;
 
     let entries = client
-        .idm_group_list()
+        .idm_oauth2_rs_list()
         .await
-        .map_err(|e| AppError::Kanidm(format!("group list failed: {e:?}")))?;
+        .map_err(|e| AppError::Kanidm(format!("oauth2 list failed: {e:?}")))?;
 
     let total_count = entries.len();
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
     let per = params.per.unwrap_or(50).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);
 
-    let mut filtered: Vec<GroupRow> = entries
+    let kanidm_url = state.config.kanidm_url.clone();
+
+    let mut filtered: Vec<OAuth2AppRow> = entries
         .iter()
         .filter_map(|entry| {
             if !q.is_empty() && !matches_query(entry, &q) {
                 return None;
             }
-            Some(entry_to_row(entry))
+            Some(entry_to_row(entry, &kanidm_url))
         })
         .collect();
 
-    filtered.sort_by_key(|a| a.name.to_lowercase());
+    filtered.sort_by_key(|a| a.displayname.to_lowercase());
 
     let filtered_count = filtered.len();
     let total_pages = filtered_count.div_ceil(per);
@@ -135,17 +142,20 @@ pub async fn list(
     let start = (page - 1) * per;
     let page_start = if filtered_count == 0 { 0 } else { start + 1 };
     let page_end = (start + per).min(filtered_count);
-    let groups: Vec<GroupRow> = filtered.into_iter().skip(start).take(per).collect();
+    let apps: Vec<OAuth2AppRow> = filtered.into_iter().skip(start).take(per).collect();
 
     if is_htmx {
-        let fragment = GroupRowsFragment { groups, q: q.clone() };
+        let fragment = OAuth2CardsFragment {
+            apps,
+            q: q.clone(),
+        };
         let html = askama::Template::render(&fragment).map_err(AppError::Template)?;
         return Ok(Html(html).into_response());
     }
 
-    Ok(GroupsListView {
-        base: BaseFields::new(&user, "groups"),
-        groups,
+    Ok(OAuth2ListView {
+        base: BaseFields::new(&user, "oauth2"),
+        apps,
         total_count,
         filtered_count,
         q,

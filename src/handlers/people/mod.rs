@@ -4,7 +4,6 @@ pub mod credentials;
 pub mod delete;
 pub mod detail;
 pub mod edit;
-pub mod groups_tab;
 pub mod list;
 pub mod radius;
 pub mod sessions;
@@ -35,8 +34,6 @@ pub fn router() -> Router<AppState> {
         // destroy_all is a static segment so axum prioritizes it over the dynamic {session_id}/destroy.
         .route("/people/{id}/sessions/{session_id}/destroy", axum::routing::post(sessions::destroy_one))
         .route("/people/{id}/sessions/destroy_all", axum::routing::post(sessions::destroy_all))
-        .route("/people/{id}/groups", get(groups_tab::tab))
-        .route("/people/{id}/groups/add", axum::routing::post(groups_tab::add))
         .route("/people/{id}/validity", get(validity::tab))
         .route("/people/{id}/validity/valid_from", axum::routing::post(validity::set_valid_from))
         .route("/people/{id}/validity/expire", axum::routing::post(validity::set_expire))

@@ -1,6 +1,6 @@
 {% if data.members.is_empty() %}
 <tr>
-  <td colspan="4" class="px-3 py-12 text-center text-tertiary">
+  <td colspan="3" class="px-5 py-10 text-center text-tertiary text-sm">
     {% if data.is_dynamic %}
     No members matched the dynamic filter.
     {% else %}
@@ -10,43 +10,31 @@
 </tr>
 {% else %}
 {% for member in data.members %}
-<tr
-  class="border-b border-subtle last:border-0 hover:bg-hover cursor-pointer transition-colors"
-  onclick="if(event.ctrlKey||event.metaKey||event.button===1||event.target.closest('button,a')){return}window.location='/people/{{ member.spn }}/overview'"
->
-  <td class="px-3 py-3">
+<tr class="border-b border-subtle last:border-b-0 hover:bg-hover transition-colors">
+  <td class="px-5 py-3">
     <div class="flex items-center gap-3">
-      <span class="w-9 h-9 rounded-pill bg-accent-soft text-accent border border-accent-soft inline-flex items-center justify-center text-xs font-semibold shrink-0 font-sans">
+      <span class="w-8 h-8 rounded-pill bg-accent-soft text-accent text-xs font-semibold inline-flex items-center justify-center shrink-0">
         {{ member.initials }}
       </span>
       <div class="min-w-0">
-        <a href="/people/{{ member.spn }}/overview"
-           class="font-medium text-primary text-sm no-underline hover:underline"
-           aria-label="View {{ member.displayname }}">{{ member.displayname }}</a>
-        <div class="font-mono text-xs text-tertiary mt-0.5">{{ member.spn }}</div>
+        <div class="font-mono text-sm text-primary font-medium truncate">{{ member.name }}</div>
+        <div class="font-mono text-xs text-tertiary truncate">{{ member.spn }}</div>
       </div>
     </div>
   </td>
-  <td class="px-3 py-3">
-    {% if !member.mail.is_empty() %}
-    <span class="font-mono text-sm text-secondary">{{ member.mail }}</span>
-    {% else %}
-    <span class="text-tertiary text-sm">—</span>
-    {% endif %}
-  </td>
-  <td class="px-3 py-3">
-    {% if let Some(s) = member.status %}
-    <span class="inline-flex items-center gap-1.5 {{ s.badge_classes() }} rounded-pill text-xs font-medium px-2 py-0.5">
-      <span class="w-1.5 h-1.5 rounded-pill {{ s.dot_classes() }}"></span>
-      {{ s.label() }}
-    </span>
-    {% else %}
-    <span class="text-tertiary text-sm">—</span>
-    {% endif %}
-  </td>
-  <td class="px-3 py-3 text-right">
+  <td class="px-5 py-3 text-right">
     {% if !data.is_dynamic %}
-    {{ member.actions_html|safe }}
+    <button type="button"
+            class="text-tertiary hover:text-danger transition-colors inline-flex items-center gap-1 text-xs"
+            hx-post="/groups/{{ group.spn_or_uuid }}/members/{{ member.encoded_id }}/remove"
+            hx-target="#members-table-body"
+            hx-swap="innerHTML">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Remove
+    </button>
     {% endif %}
   </td>
 </tr>
