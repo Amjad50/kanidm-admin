@@ -1,0 +1,7 @@
+@import "./tokens.css";
+
+@layer base {
+  html, body {
+    @apply bg-canvas text-primary font-sans antialiased;
+  }
+}

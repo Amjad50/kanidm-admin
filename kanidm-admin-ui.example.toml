@@ -1,0 +1,24 @@
+# Copy this file to `kanidm-admin-ui.toml` and edit for your environment.
+# All values can also be overridden via env vars with the prefix KANIDM_ADMIN_,
+# e.g. KANIDM_ADMIN_BIND_ADDR=0.0.0.0:3000
+
+bind_addr = "127.0.0.1:3000"
+
+# URL of the kanidm server.
+kanidm_url = "https://idm.example.com"
+
+# Path to CA cert if kanidm uses a self-signed cert.
+# kanidm_ca_path = "/path/to/ca.pem"
+
+# Dev only — never use in production.
+# kanidm_accept_invalid_certs = false
+
+# Name of the cookie kanidm sets after login. Default is "bearer" (matches
+# kanidm_proto::internal::COOKIE_BEARER_TOKEN). Override only if kanidm changes
+# this in a future release.
+# kanidm_session_cookie = "bearer"
+
+# Group SPN/name that grants access. Members of this group can use the admin panel.
+admin_group = "idm_admins"
+
+static_dir = "static"

@@ -1,0 +1,269 @@
+/*
+ * Kanidm Design System — Cloudflare Variant
+ * Self-contained color + type tokens. Dark mode is default; light-mode tokens
+ * live in the [data-theme="light"] block.
+ *
+ * Inspired by the Cloudflare dashboard: warm dark background, signature orange
+ * accent, generous whitespace, friendly-but-technical voice.
+ */
+
+/* ─────────────────────────────────────────────────────────
+   FONTS
+   ───────────────────────────────────────────────────────── */
+
+/* Inter (primary UI) + JetBrains Mono (monospace) loaded from Google Fonts.
+   See fonts/README.md if you want to self-host. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  /* ─────────────────────────────────────────────────────
+     COLOR — DARK MODE (default)
+     ───────────────────────────────────────────────────── */
+
+  /* Surface */
+  --bg-canvas:        #0f0f12;   /* page background, warm-tinted */
+  --bg-surface:       #1a1a1f;   /* cards, panels, sidebar */
+  --bg-elevated:      #232328;   /* modals, popovers, dropdowns */
+  --bg-hover:         #2a2a30;   /* row hover */
+  --bg-active:        #34343c;   /* selected row, pressed button */
+
+  /* Borders */
+  --border-subtle:    #2d2d33;   /* table dividers */
+  --border-default:   #3a3a42;   /* input borders */
+  --border-strong:    #4d4d57;   /* focused borders, weighted dividers */
+
+  /* Text */
+  --text-primary:     #f4f4f7;
+  --text-secondary:   #b8b8c3;   /* labels, metadata */
+  --text-tertiary:    #8a8a98;   /* captions, timestamps */
+  --text-disabled:    #54545d;
+
+  /* Accent — Cloudflare orange */
+  --accent-default:   #f6821f;
+  --accent-hover:     #fb9438;
+  --accent-pressed:   #d96e15;
+  --accent-soft:      rgba(246, 130, 31, 0.12);
+  --accent-text:      #1a1a1f;   /* dark text on orange */
+
+  /* Secondary — sky blue (links, info) */
+  --link-default:     #5fa9ff;
+  --link-hover:       #82bcff;
+  --link-soft:        rgba(95, 169, 255, 0.12);
+
+  /* Semantic */
+  --success:          #4ec97a;
+  --success-soft:     rgba(78, 201, 122, 0.14);
+  --warning:          #f4b740;
+  --warning-soft:     rgba(244, 183, 64, 0.14);
+  --danger:           #ec5b59;
+  --danger-soft:      rgba(236, 91, 89, 0.14);
+  --info:             #5fa9ff;
+  --info-soft:        rgba(95, 169, 255, 0.14);
+
+  /* Special */
+  --code-bg:          #232328;
+  --token-bg:         #15151a;
+
+  /* Shadow system */
+  --shadow-sm:        0 1px 2px rgba(0,0,0,0.25);
+  --shadow-card:      0 1px 3px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.18);
+  --shadow-elevated: 0 8px 24px rgba(0,0,0,0.40), 0 2px 6px rgba(0,0,0,0.25);
+  --shadow-modal:    0 20px 40px rgba(0,0,0,0.55), 0 8px 16px rgba(0,0,0,0.35);
+  --ring-accent:     0 0 0 3px rgba(246, 130, 31, 0.35);
+  --ring-danger:     0 0 0 3px rgba(236, 91, 89, 0.30);
+
+  /* ─────────────────────────────────────────────────────
+     TYPE
+     ───────────────────────────────────────────────────── */
+  --font-sans:        "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+                      Roboto, sans-serif;
+  --font-mono:        "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --font-xs:          12px;   --lh-xs:  16px;   /* captions */
+  --font-sm:          13px;   --lh-sm:  18px;   /* secondary text */
+  --font-base:        14px;   --lh-base:20px;   /* body, inputs, buttons */
+  --font-md:          15px;   --lh-md:  22px;   /* section headers */
+  --font-lg:          18px;   --lh-lg:  26px;   /* page subtitles */
+  --font-xl:          24px;   --lh-xl:  32px;   /* page titles */
+  --font-2xl:         32px;   --lh-2xl: 40px;   /* hero numbers */
+
+  --fw-regular:       400;
+  --fw-medium:        500;
+  --fw-semibold:      600;
+  --fw-bold:          700;
+
+  --tracking-tight:   -0.01em;
+  --tracking-normal:  0;
+  --tracking-caps:    0.06em;
+
+  /* ─────────────────────────────────────────────────────
+     SPACING (8px-base, generous)
+     ───────────────────────────────────────────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─────────────────────────────────────────────────────
+     RADII
+     ───────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius:    6px;   /* default — buttons, inputs */
+  --radius-md: 8px;   /* cards */
+  --radius-lg: 10px;  /* modals */
+  --radius-pill: 999px;
+
+  /* ─────────────────────────────────────────────────────
+     LAYOUT
+     ───────────────────────────────────────────────────── */
+  --sidebar-w:          240px;
+  --sidebar-w-collapsed: 64px;
+  --topbar-h:            56px;
+  --row-h:               44px;
+  --input-h:             36px;
+
+  /* ─────────────────────────────────────────────────────
+     MOTION
+     ───────────────────────────────────────────────────── */
+  --motion-fast:    150ms;
+  --motion-default: 200ms;
+  --motion-slow:    240ms;
+  --motion-toast:   280ms;
+  --ease-out:       cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out:    cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+/* ─────────────────────────────────────────────────────
+   LIGHT MODE
+   ───────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-canvas:      #f7f7fa;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #ffffff;
+  --bg-hover:       #f0f0f4;
+  --bg-active:      #e6e6ec;
+
+  --border-subtle:  #e5e5ea;
+  --border-default: #d4d4dc;
+  --border-strong:  #b0b0bb;
+
+  --text-primary:   #1a1a1f;
+  --text-secondary: #525260;
+  --text-tertiary:  #7a7a86;
+  --text-disabled:  #bcbcc4;
+
+  --accent-soft:    rgba(246, 130, 31, 0.10);
+  --link-soft:      rgba(45, 130, 220, 0.10);
+  --success-soft:   rgba(35, 160, 90, 0.12);
+  --warning-soft:   rgba(220, 150, 30, 0.14);
+  --danger-soft:    rgba(210, 70, 70, 0.10);
+  --info-soft:      rgba(45, 130, 220, 0.10);
+
+  --code-bg:        #f0f0f4;
+  --token-bg:       #f7f7fa;
+
+  --shadow-card:    0 1px 3px rgba(15,15,30,0.08), 0 1px 2px rgba(15,15,30,0.04);
+  --shadow-elevated:0 8px 24px rgba(15,15,30,0.10), 0 2px 6px rgba(15,15,30,0.06);
+  --shadow-modal:   0 20px 40px rgba(15,15,30,0.18), 0 8px 16px rgba(15,15,30,0.10);
+}
+
+/* ─────────────────────────────────────────────────────
+   SEMANTIC ELEMENTS — apply tokens to bare HTML
+   so untyped markup looks right out of the box.
+   ───────────────────────────────────────────────────── */
+html, body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-base);
+  line-height: var(--lh-base);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-normal);
+  margin: 0;
+  text-wrap: balance;
+}
+h1 { font-size: var(--font-2xl); line-height: var(--lh-2xl); }
+h2 { font-size: var(--font-xl);  line-height: var(--lh-xl); }
+h3 { font-size: var(--font-lg);  line-height: var(--lh-lg); }
+h4 { font-size: var(--font-md);  line-height: var(--lh-md); }
+h5 { font-size: var(--font-base); line-height: var(--lh-base); font-weight: var(--fw-medium); }
+h6 {
+  font-size: var(--font-xs); line-height: var(--lh-xs);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--text-tertiary); font-weight: var(--fw-semibold);
+}
+
+p {
+  margin: 0;
+  color: var(--text-primary);
+  text-wrap: pretty;
+}
+
+small { font-size: var(--font-sm); line-height: var(--lh-sm); color: var(--text-tertiary); }
+
+a {
+  color: var(--link-default);
+  text-decoration: none;
+  transition: color var(--motion-default) var(--ease-out);
+}
+a:hover { color: var(--link-hover); text-decoration: underline; }
+
+code, kbd, samp, pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+}
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  color: var(--text-primary);
+}
+pre {
+  background: var(--code-bg);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: var(--lh-md);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  margin: var(--space-6) 0;
+}
+
+::selection { background: var(--accent-soft); color: var(--text-primary); }
+
+/* Numerics tabular in tables */
+table { font-variant-numeric: tabular-nums; }
+
+/* Focus ring */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-accent);
+  border-color: var(--border-strong);
+}
+
+/* Scrollbars (webkit) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }

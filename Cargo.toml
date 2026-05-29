@@ -1,0 +1,25 @@
+[package]
+name = "kanidm-admin-ui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+askama = "0.16.0"
+askama_web = { version = "0.16.0", features = ["axum-0.8"] }
+axum = { version = "0.8.9", features = ["macros"] }
+axum-extra = { version = "0.12.6", features = ["cookie"] }
+figment = { version = "0.10.19", features = ["env", "toml"] }
+kanidm_client = "1.10.0"
+kanidm_proto = "1.10.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+thiserror = "2.0.18"
+time = { version = "0.3.47", features = ["serde", "macros", "formatting", "parsing"] }
+tokio = { version = "1.52.3", features = ["full"] }
+tower = "0.5.3"
+tower-http = { version = "0.6.10", features = ["fs", "trace", "compression-gzip", "set-header"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+url = "2.5.8"
+uuid = { version = "1.23.1", features = ["v4", "serde"] }

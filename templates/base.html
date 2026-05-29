@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kanidm Admin{% endblock %}</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <script src="https://unpkg.com/htmx.org@2.0.9" defer></script>
+    <script type="module" src="/static/app.js" defer></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased">
+
+<div class="min-h-screen grid grid-cols-[220px_1fr]">
+
+    <aside class="border-r border-zinc-900 bg-zinc-950">
+        <div class="px-4 py-4 text-lg font-semibold tracking-tight">Kanidm</div>
+        <nav class="px-2 space-y-1 text-sm">
+            <a href="/" class="block rounded-md px-3 py-2 hover:bg-zinc-900">Dashboard</a>
+            <a href="/people" class="block rounded-md px-3 py-2 hover:bg-zinc-900 text-zinc-400">People</a>
+            <a href="/groups" class="block rounded-md px-3 py-2 hover:bg-zinc-900 text-zinc-400">Groups</a>
+            <a href="/oauth2" class="block rounded-md px-3 py-2 hover:bg-zinc-900 text-zinc-400">OAuth2 Apps</a>
+        </nav>
+    </aside>
+
+    <main class="px-8 py-6">
+        <div class="max-w-6xl mx-auto">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- Cmd+K command palette mount point (Preact island). -->
+<div id="cmd-palette-island"></div>
+
+</body>
+</html>

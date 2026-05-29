@@ -1,0 +1,8 @@
+/target
+/node_modules
+/static/app.css
+/static/app.js
+/static/app.js.map
+/kanidm-admin-ui.toml
+/.env
+
