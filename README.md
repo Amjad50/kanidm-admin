@@ -1,18 +1,18 @@
 # kanidm-admin-ui
 
-Self-hosted admin panel for [kanidm](https://github.com/kanidm/kanidm). Server-rendered (Axum + Askama), Tailwind v4 styling, HTMX for interactivity, Preact islands for the few genuinely client-side bits (Cmd+K palette, etc.).
+Self-hosted admin panel for [kanidm](https://github.com/kanidm/kanidm). Server-rendered (Axum + Askama), Tailwind v4 styling, HTMX for interactivity, Preact islands for the few genuinely client-side bits (Cmd+K palette, dropdowns, toasts).
 
 ## Status
 
-Phase 1 scaffold: dashboard renders against a real kanidm instance, auth via existing kanidm session cookie.
+Operator panel is feature-complete: people, groups, OAuth2 clients, account policy, self profile + sessions, and a homegrown login flow (password / TOTP / passkey / security key). Ships as a Docker image; the [`deploy/`](deploy/) directory has a docker-compose stack with Caddy in front of both kanidm and the admin UI.
 
 ## Stack
 
 - **Backend:** Axum 0.8 + Askama 0.16 + tower-http
-- **Auth:** reuses kanidm session cookie; admin-group gate
+- **Auth:** homegrown login (talks to kanidm `/v1/auth`); admin-group gate on `/admin/*`
 - **API:** [`kanidm_client`](https://docs.rs/kanidm_client) crate (no manual REST)
-- **Styling:** Tailwind v4 (CSS-first config)
-- **Interactivity:** HTMX 2 + Preact 10 islands
+- **Styling:** Tailwind v4 (CSS-first config, shadcn/tweakcn-shaped tokens)
+- **Interactivity:** HTMX 2 + Preact 10 islands + a tiny `data-behavior` registry
 - **Bundler:** Bun
 
 ## Prerequisites
@@ -27,6 +27,7 @@ Phase 1 scaffold: dashboard renders against a real kanidm instance, auth via exi
 cp kanidm-admin-ui.example.toml kanidm-admin-ui.toml
 # edit kanidm-admin-ui.toml to point at your kanidm instance
 bun install
+bun run build   # builds CSS + JS bundles into static/
 ```
 
 ## Dev loop
@@ -43,59 +44,73 @@ Two terminals:
    cargo watch -x run
    ```
 
-Browser: http://localhost:3000
+Browser: http://localhost:3000 (login page) → http://localhost:3000/admin (dashboard).
 
-You'll get an auth error if no kanidm session cookie is present. The simplest way to get one in dev: sign in to your kanidm web UI in the same browser, then come back. (For real deploys, run behind Traefik on the same domain — see deployment notes below.)
+## Routes
+
+- `/login`, `/login/*` — homegrown login flow
+- `/logout`
+- `/me`, `/me/sessions` — self profile + session management
+- `/admin` — dashboard
+- `/admin/people`, `/admin/people/:id/*` — list, detail (overview / credentials / SSH / RADIUS / sessions / groups / validity), create, edit, delete
+- `/admin/groups`, `/admin/groups/:id/*` — list, detail (overview / members / account policy), create, edit, delete
+- `/admin/oauth2`, `/admin/oauth2/:id/*` — list, detail (overview / secret / scope maps / claim maps / crypto / image / advanced), create, delete
+- `/healthz` — liveness probe
 
 ## Directory layout
 
 ```
-src/                    Rust source
-├── main.rs             entry + Axum router
-├── config.rs           config (TOML + env)
-├── auth.rs             KanidmClientFactory + AdminUser extractor
-├── error.rs            AppError → HTTP response
-└── handlers/           one file per route group
-    ├── mod.rs          router composition
-    ├── health.rs       /healthz
-    └── dashboard.rs    / (dashboard)
+src/                       Rust source
+├── main.rs                Axum entry + router composition
+├── config.rs              TOML + env config (figment)
+├── error.rs               AppError → HTTP response
+├── auth/                  KanidmClientFactory, AdminUser extractor, pending-auth stash
+├── kanidm/                kanidm-specific helpers (entry, ssh, policy, scope/claim map, key state)
+├── handlers/              one module per route group
+│   ├── mod.rs             router composition
+│   ├── common.rs          shared error/lookup helpers
+│   ├── dashboard.rs       /admin
+│   ├── login/             /login, /login/password, /login/totp, /login/passkey, /login/securitykey
+│   ├── session.rs         /logout
+│   ├── self_user/         /me, /me/sessions
+│   ├── people/            /admin/people/*
+│   ├── groups/            /admin/groups/*
+│   ├── oauth2/            /admin/oauth2/*
+│   ├── empty.rs           /empty (HTMX overlay clear)
+│   └── health.rs          /healthz
+└── views/                 reusable view structs (pagination, dropdown, toast, icons, partials, time)
 
-templates/              Askama templates (HTML)
-├── base.html           shell (sidebar + island mounts)
-└── dashboard.html
+templates/                 Askama templates
+├── base.html              app shell (sidebar + topbar + island mounts)
+├── dashboard.html
+├── error_*.html           404 / 403 / 500
+├── macros/                ui::, forms::, page:: macro libraries
+├── partials/              struct-backed shared partials (modal, pagination, …)
+├── login/, self_user/, sessions/
+└── people/, groups/, oauth2/
 
-islands/                Preact/TS islands for client-side bits
-├── entry.ts            mounts islands onto their DOM nodes
-└── command_palette.tsx Cmd+K palette
+islands/                   Preact/TS islands + behaviors
+├── entry.ts               mounts islands + behaviors
+├── command_palette.tsx    Cmd+K
+├── dropdown.tsx           data-dropdown JSON contract
+├── pagination.tsx
+├── toast.tsx
+├── lib/                   shared client utilities (base64url, etc.)
+└── behaviors/             delegated DOM enhancements (see behaviors/README.md)
+                           — includes copy, row-href, reveal-secret, webauthn-login, …
 
-styles/
-└── app.css             Tailwind v4 entry → /static/app.css
+styles/app.css             Tailwind v4 entry → /static/app.css
 
-static/                 build output, .gitignored
+static/                    build output (app.css/app.js gitignored; logos + favicon tracked)
 
-design/                 raw HTML mockups from claude.ai/design
-                        (drop them here, port into templates/ over time)
+deploy/                    docker-compose stack (Caddy + kanidm + admin-ui)
 ```
 
-## Where to drop the design HTML
+Architectural choices, kanidm-API gotchas, cross-cutting patterns, and styling rules are all in [CLAUDE.md](CLAUDE.md).
 
-Put the HTML files from claude.ai/design into [`design/`](design/). They're visual reference — we extract structure + Tailwind classes into Askama templates one by one.
+## Deployment
 
-## Phase 1 scope (current)
-
-- [x] Project scaffold
-- [x] Kanidm client + admin-group auth gate
-- [x] Dashboard route with real data (person/group/oauth2 counts + domain info)
-- [x] Preact island mounting (Cmd+K stub)
-- [ ] People list (next)
-- [ ] People detail + tabs
-- [ ] OAuth2 list + detail
-- [ ] Groups list + detail
-- [ ] Account policy editor
-
-## Phase 2 (later, optional)
-
-Replace kanidm's user-facing UI (login, apps portal, credential reset) under the same design system.
+See [`deploy/SETUP.md`](deploy/SETUP.md) for the docker-compose stack. The [`Dockerfile`](Dockerfile) is multi-stage (Bun → cargo → distroless-style runtime).
 
 ## License
 

@@ -1,3 +1,87 @@
+# Project guide
+
+Self-hosted operator panel for [kanidm](https://github.com/kanidm/kanidm).
+Server-rendered Rust (Axum + Askama) with HTMX, Tailwind v4, and a few
+Preact islands. Talks to kanidm exclusively over the public `/v1/` REST
+API. Deployable as a Docker container behind a reverse proxy on the same
+domain as kanidm.
+
+## Stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| HTTP server | **Axum 0.8** | Modern, ergonomic, great extractors |
+| Templating | **Askama 0.16** + `askama_web` (axum-0.8) | Compile-checked HTML, no runtime template loader |
+| Styling | **Tailwind v4** with shadcn/tweakcn-shaped tokens in `@theme` | Tokens become native Tailwind utilities; tweakcn can edit them online |
+| Client interactivity | **HTMX 2** | 80% of interactions are partial swaps |
+| Client islands | **Preact 10 + TypeScript**, bundled by **Bun** | Only for genuinely stateful widgets (Cmd+K, dropdowns, toasts, pagination) |
+| Behaviors | tiny `data-*` registry under `islands/behaviors/` | Delegated DOM enhancement for things that aren't worth an island |
+| Kanidm client | **`kanidm_client` + `kanidm_proto` 1.10** | Typed Rust client wraps `/v1/` REST API |
+| Config | **figment** (TOML + `KANIDM_ADMIN_*` env) | Both file and env, env wins |
+
+**Hard preference: never edit `Cargo.toml` manually. Always use `cargo add <crate> [--features ...]`.**
+
+**Non-goals (deliberately out of scope):** POSIX attributes, service
+accounts, recycle bin, system config, IDM sync, raw SCIM.
+
+## Code style
+
+- No comments unless explaining a non-obvious "why" (a hidden constraint, a workaround, an invariant). Identifiers should be self-documenting.
+- No backwards-compat shims, no dead code, no half-finished implementations.
+- No defensive checks for things internal code already guarantees.
+
+## Bun for the frontend toolchain
+
+The frontend bundle (CSS + JS) is built with Bun. The backend is Rust — it
+is **not** a Bun.serve app, so the Bun.serve / bun:sqlite / Bun.redis
+boilerplate does not apply here.
+
+- `bun install` for dependencies, `bun run build` (CSS + JS bundles), `bun run dev` (watch).
+- `bunx <package>` instead of `npx`.
+
+## Authentication model
+
+Started as session-cookie reuse (kanidm's `bearer` cookie sent to us on
+the shared domain). That path is gone: we ship our own homegrown login
+that talks to kanidm's `/v1/auth/*` endpoints. Reasons we own login:
+
+- Single design system (no jarring jump to kanidm's login screen).
+- Control over the WebAuthn challenge flow (passkey / security key auto-fire after HTMX swap).
+- Reauth modal on session expiry — re-prompts in place without losing the page.
+
+The `AdminUser` extractor checks admin-group membership against the
+configured `admin_group` (defaults to `idm_admins`) before any `/admin/*`
+route runs. `KanidmClientFactory::for_token(token)` builds a fresh
+client per request with the user's token already set, so per-user
+permissions and audit trails are preserved.
+
+## Critical gotchas in the kanidm API
+
+Surprises that hurt earlier attempts. Read these before touching the
+data layer.
+
+1. **Entries are `attrs: BTreeMap<String, Vec<String>>`.** Booleans encoded as strings (`"true"`/`"false"`), integers as strings, multivalued for everything. Use the helpers in `src/kanidm/entry.rs` (`attr_first`, `attr_all`, `attr_bool`, `attr_int`, `in_class`).
+2. **`oauth2_allow_insecure_client_disable_pkce` is INVERTED.** `"true"` means PKCE is DISABLED. Render UI as "PKCE enabled" with the bit flipped.
+3. **Account policy password attr is `auth_password_minimum_length`** (note the `auth_` prefix), not `password_minimum_length`.
+4. **Pre-formatted scope map strings:** `oauth2_rs_scope_map` is `["groupname@spn: {\"scope1\", \"scope2\"}"]`. Parser in `src/kanidm/scope_map.rs`.
+5. **Pre-formatted claim map strings:** `oauth2_rs_claim_map` is `["claim:group:joinchar:value1,value2"]`. Parser in `src/kanidm/claim_map.rs`. Join-char: space → ssv, semicolon → array. Strict — anything else is rejected.
+6. **OAuth2 image fetch URL** is `/ui/images/oauth2/{client_name}`, keyed by name not hash. We proxy it.
+7. **No "disable account policy" endpoint** — only per-field reset: `DELETE /v1/group/{id}/_attr/<attr>`.
+8. **Several endpoints return structured proto types**, not flat attrs: `CredentialStatus`, `UatStatus`, `CUIntentToken`, `Option<String>` for basic secret. Prefer these over scraping entry attrs.
+9. **`UatStatus` time fields** are Unix timestamps (integers), not RFC3339.
+10. **Reset-token format** is short (`xkdzk-fr2p7-...`), not a JWT — display verbatim.
+11. **Group membership identifiers** accept both SPN and UUID; backend normalizes.
+12. **kanidm 409 responses** are often opaque blobs. We surface attribute-aware friendly messages (mail already in use, name taken, …) via `friendly_client_error` in `src/handlers/common.rs`, with the full original error logged at trace level.
+
+## Cross-cutting patterns
+
+- **Tab-as-URL.** Detail pages (person, group, oauth2) keep the current tab in the URL path (`/admin/people/:id/credentials`), not query string. HTMX swaps the tab body, the URL updates, refresh-safe.
+- **HTMX OOB swaps** for tab nav: `TabsNavFragment` re-renders the nav strip alongside the main swap so the active-state stays correct.
+- **`render_actions_cell`** collapses 0/1/many row actions into the right control (nothing / direct icon button / kebab+menu). Three matching partials own the markup; the Preact dropdown island handles the menu.
+- **Macros vs struct-backed partials.** Pure-template fragments live in `templates/macros/{ui,forms,page}.html`. Anything with a real invariant (escaping, format branching) is a Rust struct under `src/views/partials.rs` with a matching `templates/partials/_*.html`. The rule of thumb for extracting something new: 3+ identical-shape markup chunks across templates.
+- **`data-behavior` registry.** Delegated DOM handlers live in `islands/behaviors/`, keyed by data attribute. See `islands/behaviors/README.md` for the contract.
+- **Friendly errors + rollback.** Multi-step kanidm operations (create person with mail + legalname) rollback on partial failure; errors preserve user input so the form re-renders with what they typed.
+
 ## Hard styling rule (Tailwind v4 + shadcn/tweakcn tokens)
 
 All visual properties come from shadcn-shaped design tokens defined in
@@ -45,7 +129,7 @@ Fonts: `font-sans`, `font-mono`.
 NEVER use:
 
 - Raw Tailwind palette colors: `bg-zinc-900`, `text-gray-500`, etc.
-- Raw hex values in `style="..."` attributes
+- Raw hex values in `style="..."` attributes for colors
 - `bg-(--var)` arbitrary-value escape hatches
 - Inline color declarations
 - The OLD vocabulary (`bg-canvas`, `bg-surface`, `bg-elevated`, `bg-hover`,
@@ -56,109 +140,3 @@ NEVER use:
 If a template needs a color or radius not in app.css, ADD IT to app.css
 as a new var on both `:root` and `.dark` and mirror it in `@theme inline` —
 do not work around it.
-
-Default to using Bun instead of Node.js.
-
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
-
-## APIs
-
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
-
-## Testing
-
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
-
-## Frontend
-
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
