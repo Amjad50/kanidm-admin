@@ -1,5 +1,5 @@
 {% import "macros/ui.html" as ui %}
-{{ ui::button(variant="secondary", label="Cancel", hx_attrs=" hx-get=\"/empty\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
+{{ ui::button(variant="secondary", label="Cancel", hx_attrs=" hx-get=\"/admin/empty\" hx-target=\"#overlay-slot\" hx-swap=\"innerHTML\"") }}
 {% if !cancel_only %}
 <button type="button"
         class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"

@@ -73,10 +73,10 @@ impl BaseFields {
 fn user_menu_json() -> String {
     use crate::views::dropdown::{DropdownConfig, DropdownItem};
     let items = vec![
-        DropdownItem::link("My profile", "/me").with_icon("user"),
-        DropdownItem::link("My sessions", "/me/sessions").with_icon("users"),
+        DropdownItem::link("My profile", "/admin/me").with_icon("user"),
+        DropdownItem::link("My sessions", "/admin/me/sessions").with_icon("users"),
         DropdownItem::Divider,
-        DropdownItem::htmx_post("Log out", "/logout")
+        DropdownItem::htmx_post("Log out", "/admin/logout")
             .with_icon("log-out")
             .danger(),
     ];

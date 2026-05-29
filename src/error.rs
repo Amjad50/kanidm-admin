@@ -37,10 +37,10 @@ impl IntoResponse for AppError {
                 if is_htmx {
                     let mut resp = StatusCode::OK.into_response();
                     resp.headers_mut()
-                        .insert("HX-Redirect", HeaderValue::from_static("/login"));
+                        .insert("HX-Redirect", HeaderValue::from_static("/admin/login"));
                     return resp;
                 }
-                Redirect::to("/login").into_response()
+                Redirect::to("/admin/login").into_response()
             }
             AppError::Forbidden { admin_group } => {
                 let view = ForbiddenView { admin_group };

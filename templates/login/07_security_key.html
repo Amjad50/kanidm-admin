@@ -5,6 +5,6 @@
 
 {% block login_body %}
   {% let passkey = false %}
-  {% let submit_action = "/login/security-key" %}
+  {% let submit_action = "/admin/login/security-key" %}
   {% include "login/_webauthn.html" %}
 {% endblock %}

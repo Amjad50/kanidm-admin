@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Kanidm Admin{% endblock %}</title>
-  <link rel="icon" href="/static/favicon.svg">
+  <link rel="icon" href="/admin/static/favicon.svg">
   <script>
     (function () {
       try {
@@ -19,9 +19,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/admin/static/app.css">
   <script src="https://unpkg.com/htmx.org@2.0.9" defer></script>
-  <script type="module" src="/static/app.js" defer></script>
+  <script type="module" src="/admin/static/app.js" defer></script>
 </head>
 <body class="bg-background text-foreground min-h-screen font-sans antialiased">
 
@@ -32,7 +32,7 @@
 
       <!-- Brand -->
       <a href="/admin" class="flex items-center gap-2.5 px-2.5 py-1.5 pb-3.5 no-underline text-foreground hover:opacity-80 transition-opacity">
-        <img src="/static/logo-square.svg" alt="Kanidm" width="28" height="28" class="shrink-0">
+        <img src="/admin/static/logo-square.svg" alt="Kanidm" width="28" height="28" class="shrink-0">
         <span class="text-lg font-bold tracking-tight">Kanidm</span>
         <span class="font-mono text-[10px] px-1.5 py-0.5 rounded-sm bg-popover text-muted-foreground ml-auto">v1.6.0</span>
       </a>
@@ -88,7 +88,7 @@
         </div>
 
         <!-- Logout -->
-        <form method="post" action="/logout">
+        <form method="post" action="/admin/logout">
           <button type="submit"
                   class="flex items-center gap-3 w-full h-10 px-3 rounded text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer border-0 bg-transparent font-sans text-left">
             <span class="w-5 h-5 inline-flex shrink-0">{{ crate::views::icons::icon("log-out") }}</span>

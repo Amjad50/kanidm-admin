@@ -71,7 +71,8 @@ pub struct SessionsData {
 ///
 /// `revoke_url_prefix` is the URL stem to which `"/{session_id}/destroy"` is
 /// appended — e.g. `"/admin/people/alice@example.com/sessions"` (admin) or
-/// `"/me/sessions"` (self). `revoke_url_suffix` is appended after `/destroy`
+/// `"/admin/me/sessions"` (self). `revoke_url_suffix` is appended after
+/// `/destroy`
 /// — typically empty, or `"?show_inactive=1"` when the toggle is on so the
 /// post-revoke re-render preserves the current view. Pre-computing the
 /// per-row URL avoids in-template `format!` and keeps the partial agnostic

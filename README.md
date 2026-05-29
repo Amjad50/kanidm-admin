@@ -9,11 +9,13 @@ Server-rendered (no SPA), feels as snappy as kanidm itself. Talks to kanidm excl
 - **People** — list / create / edit / delete, credentials & reset-link, SSH keys, RADIUS secret, sessions, validity windows.
 - **Groups** — list / create / edit / delete, members, account policy.
 - **OAuth2 clients** — list / create / delete, plus per-client tabs for general settings, secret (reveal / regenerate), scope maps, claim maps, signing keys (rotate / revoke), client image, advanced settings (refresh-token TTL, device flow).
-- **Self** — `/me` and `/me/sessions` for any logged-in user.
-- **Homegrown login** at `/login` with password / TOTP / passkey / security-key support, plus a reauth modal that re-prompts in place when your session expires.
+- **Self** — `/admin/me` and `/admin/me/sessions` for any logged-in user.
+- **Homegrown login** at `/admin/login` (password / TOTP / passkey / security-key), plus a reauth modal that re-prompts in place when your session expires.
 - **Cmd+K palette** to jump anywhere fast.
 
-Anyone in your `idm_admins` group (configurable) can reach `/admin/*`. Everyone else can still use `/login`, `/me`, and `/me/sessions`.
+The whole app lives under `/admin/*` — pages, login, /me, healthz, static assets, everything. Anyone in your `idm_admins` group (configurable) can reach the operator pages; everyone else can still use `/admin/login`, `/admin/me`, and `/admin/me/sessions`.
+
+Visiting `/` is harmless: the app responds with a permanent redirect to `/admin`, so a dedicated subdomain (`admin.idm.example.com/`) lands users on the dashboard automatically.
 
 ## Install
 
@@ -32,7 +34,7 @@ Two install paths — pick the one that fits.
 
 ### Path A: drop in next to your existing kanidm
 
-You already run kanidm behind a reverse proxy. Add this admin UI as a second backend and route the admin paths to it.
+You already run kanidm behind a reverse proxy. Add this admin UI as a second backend.
 
 **1. Write a minimal `kanidm-admin-ui.toml`** next to your compose file:
 
@@ -48,62 +50,66 @@ admin_group = "idm_admins"
 
 See [`kanidm-admin-ui.example.toml`](kanidm-admin-ui.example.toml) for all options (CA cert, accept-invalid-certs for dev, session cookie name, etc.).
 
-**2. Add the admin UI as a service** in the same `docker-compose.yml` as your kanidm + reverse proxy. The UI takes ownership of `/admin/*`, `/login*`, `/logout`, `/me*`, `/healthz`, `/empty`, and `/static/*` — everything else stays on kanidm.
+**2. Add the admin UI as a compose service.** Same definition either way:
+
+```yaml
+services:
+  admin-ui:
+    image: ghcr.io/amjad50/kanidm-admin-ui:latest
+    restart: unless-stopped
+    volumes:
+      - ./kanidm-admin-ui.toml:/app/kanidm-admin-ui.toml:ro
+    networks:
+      - kanidm-net
+
+networks:
+  kanidm-net:
+    external: true
+```
+
+**3. Route to it.** Two styles — pick one:
+
+- **Subdomain** (`admin.idm.example.com`) — clean separation, one rule per backend, easy to lock down independently.
+- **Path-split** (`idm.example.com/admin`) — keep one hostname; admin UI owns `/admin/*` and kanidm owns the rest.
+
+Snippets for both, in the three common reverse proxies:
 
 #### Traefik
 
+Subdomain — add to the `admin-ui` service's `labels:`
 ```yaml
-services:
-  admin-ui:
-    image: ghcr.io/amjad50/kanidm-admin-ui:latest
-    restart: unless-stopped
-    volumes:
-      - ./kanidm-admin-ui.toml:/app/kanidm-admin-ui.toml:ro
-    labels:
-      - "traefik.enable=true"
-      # Routes the admin UI owns. Priority must beat the kanidm router
-      # so these specific paths win over a kanidm catch-all on the same host.
-      - "traefik.http.routers.admin-ui.rule=Host(`idm.example.com`) && (PathPrefix(`/admin`) || PathPrefix(`/login`) || Path(`/logout`) || PathPrefix(`/me`) || Path(`/healthz`) || Path(`/empty`) || PathPrefix(`/static`))"
-      - "traefik.http.routers.admin-ui.entrypoints=websecure"
-      - "traefik.http.routers.admin-ui.tls=true"
-      - "traefik.http.routers.admin-ui.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.admin-ui.priority=100"
-      - "traefik.http.services.admin-ui.loadbalancer.server.port=3000"
-    networks:
-      - kanidm-net
-
-networks:
-  kanidm-net:
-    external: true
+- "traefik.enable=true"
+- "traefik.http.routers.admin-ui.rule=Host(`admin.idm.example.com`)"
+- "traefik.http.routers.admin-ui.entrypoints=websecure"
+- "traefik.http.routers.admin-ui.tls.certresolver=letsencrypt"
+- "traefik.http.services.admin-ui.loadbalancer.server.port=3000"
 ```
 
-Your existing kanidm router stays as-is — Traefik's path-priority routing sends `/admin/*` and friends to this service and everything else to kanidm.
+Path-split — same but match on `/admin*` instead of a hostname:
+```yaml
+- "traefik.enable=true"
+- "traefik.http.routers.admin-ui.rule=Host(`idm.example.com`) && PathPrefix(`/admin`)"
+- "traefik.http.routers.admin-ui.entrypoints=websecure"
+- "traefik.http.routers.admin-ui.tls.certresolver=letsencrypt"
+- "traefik.http.routers.admin-ui.priority=100"
+- "traefik.http.services.admin-ui.loadbalancer.server.port=3000"
+```
+
+Priority 100 ensures the path match beats any kanidm catch-all router on the same host.
 
 #### Caddy
 
-```yaml
-services:
-  admin-ui:
-    image: ghcr.io/amjad50/kanidm-admin-ui:latest
-    restart: unless-stopped
-    volumes:
-      - ./kanidm-admin-ui.toml:/app/kanidm-admin-ui.toml:ro
-    networks:
-      - kanidm-net
-
-networks:
-  kanidm-net:
-    external: true
+Subdomain:
+```caddyfile
+admin.idm.example.com {
+    reverse_proxy admin-ui:3000
+}
 ```
 
-Then in your `Caddyfile`:
-
+Path-split — add to your existing kanidm host block:
 ```caddyfile
 idm.example.com {
-    @ui_paths {
-        path /admin /admin/* /login /login/* /logout /me /me/* /healthz /empty /static/*
-    }
-    handle @ui_paths {
+    handle /admin* {
         reverse_proxy admin-ui:3000
     }
     handle {
@@ -116,25 +122,25 @@ idm.example.com {
 
 #### Nginx
 
-```yaml
-services:
-  admin-ui:
-    image: ghcr.io/amjad50/kanidm-admin-ui:latest
-    restart: unless-stopped
-    volumes:
-      - ./kanidm-admin-ui.toml:/app/kanidm-admin-ui.toml:ro
-    networks:
-      - kanidm-net
+Subdomain — a new `server` block:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name admin.idm.example.com;
+    # ... your TLS config ...
 
-networks:
-  kanidm-net:
-    external: true
+    location / {
+        proxy_pass http://admin-ui:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 
-In your nginx server block for `idm.example.com`:
-
+Path-split — add inside your existing `server` block for `idm.example.com`:
 ```nginx
-location ~ ^/(admin|login|logout|me|healthz|empty|static)(/|$) {
+location /admin {
     proxy_pass http://admin-ui:3000;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -142,13 +148,13 @@ location ~ ^/(admin|login|logout|me|healthz|empty|static)(/|$) {
 }
 ```
 
-**3. Bring it up.**
+**4. Bring it up and open it.**
 
 ```bash
 docker compose up -d admin-ui
 ```
 
-**4. Open `https://idm.example.com/admin`** and log in with an `idm_admins` account.
+Then open `https://admin.idm.example.com/` (subdomain) or `https://idm.example.com/admin` (path-split). Log in with any `idm_admins` account.
 
 ### Path B: full stack with docker-compose (fresh setup)
 
@@ -200,7 +206,7 @@ Pin to a version tag (e.g. `image: ghcr.io/amjad50/kanidm-admin-ui:v0.1.0`) if y
 
 ## Health check
 
-`GET /healthz` returns `200 OK` with body `ok`. Use it for container/orchestrator health probes.
+`GET /admin/healthz` returns `200 OK` with body `ok`. Use it for container/orchestrator health probes.
 
 ## Compatibility
 

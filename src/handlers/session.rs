@@ -13,6 +13,7 @@ use crate::AppState;
 use crate::auth::AdminUser;
 
 pub fn router() -> Router<AppState> {
+    // Route literal is relative; the parent router nests this under /admin.
     Router::new().route("/logout", post(logout))
 }
 
@@ -54,7 +55,7 @@ pub async fn logout(
     }
 
     let expired = Cookie::build((state.config.session_cookie_name.clone(), ""))
-        .path("/")
+        .path("/admin")
         .http_only(true)
         .secure(!state.config.dev_insecure_cookies)
         .same_site(SameSite::Lax)
@@ -65,8 +66,8 @@ pub async fn logout(
     if is_htmx {
         let mut resp = StatusCode::OK.into_response();
         resp.headers_mut()
-            .insert("HX-Redirect", HeaderValue::from_static("/login"));
+            .insert("HX-Redirect", HeaderValue::from_static("/admin/login"));
         return (jar, resp).into_response();
     }
-    (jar, Redirect::to("/login")).into_response()
+    (jar, Redirect::to("/admin/login")).into_response()
 }

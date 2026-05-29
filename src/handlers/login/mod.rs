@@ -28,6 +28,7 @@ use crate::AppState;
 const LOGIN_COOKIE: &str = "kanidm_admin_login";
 
 pub fn router() -> Router<AppState> {
+    // Route literals are relative; the parent router nests this under /admin.
     Router::new()
         .route("/login", get(get_username).post(post_username))
         .route("/login/mech", get(get_mech).post(post_mech))
@@ -147,7 +148,7 @@ fn pending_id(jar: &CookieJar) -> Option<Uuid> {
 
 fn build_login_cookie(value: String, state: &AppState) -> Cookie<'static> {
     Cookie::build((LOGIN_COOKIE, value))
-        .path("/login")
+        .path("/admin/login")
         .http_only(true)
         .secure(!state.config.dev_insecure_cookies)
         .same_site(SameSite::Strict)
@@ -157,7 +158,7 @@ fn build_login_cookie(value: String, state: &AppState) -> Cookie<'static> {
 
 fn clear_login_cookie(state: &AppState) -> Cookie<'static> {
     Cookie::build((LOGIN_COOKIE, ""))
-        .path("/login")
+        .path("/admin/login")
         .http_only(true)
         .secure(!state.config.dev_insecure_cookies)
         .same_site(SameSite::Strict)
@@ -168,7 +169,7 @@ fn clear_login_cookie(state: &AppState) -> Cookie<'static> {
 fn build_session_cookie(token: String, state: &AppState) -> Cookie<'static> {
     let expiry = decode_uat_expiry(&token);
     let mut b = Cookie::build((state.config.session_cookie_name.clone(), token))
-        .path("/")
+        .path("/admin")
         .http_only(true)
         .secure(!state.config.dev_insecure_cookies)
         .same_site(SameSite::Lax);
@@ -283,12 +284,12 @@ fn mech_from_form(v: &str) -> Option<AuthMech> {
 /// then routes to the password page after the factor is verified.
 fn route_for_mech(mech: &AuthMech) -> &'static str {
     match mech {
-        AuthMech::Passkey => "/login/passkey",
-        AuthMech::Password => "/login/password",
-        AuthMech::PasswordTotp => "/login/totp",
-        AuthMech::PasswordBackupCode => "/login/backup-code",
-        AuthMech::PasswordSecurityKey => "/login/security-key",
-        _ => "/login",
+        AuthMech::Passkey => "/admin/login/passkey",
+        AuthMech::Password => "/admin/login/password",
+        AuthMech::PasswordTotp => "/admin/login/totp",
+        AuthMech::PasswordBackupCode => "/admin/login/backup-code",
+        AuthMech::PasswordSecurityKey => "/admin/login/security-key",
+        _ => "/admin/login",
     }
 }
 
@@ -297,11 +298,11 @@ fn route_for_mech(mech: &AuthMech) -> &'static str {
 /// `Continue([Password])` — see authsession/mod.rs lines 518, 619, 714.
 fn route_for_next_allowed(allowed: &[AuthAllowed]) -> Result<&'static str, String> {
     if allowed.iter().any(|a| matches!(a, AuthAllowed::Password)) {
-        Ok("/login/password")
+        Ok("/admin/login/password")
     } else if allowed.iter().any(|a| matches!(a, AuthAllowed::Totp)) {
-        Ok("/login/totp")
+        Ok("/admin/login/totp")
     } else if allowed.iter().any(|a| matches!(a, AuthAllowed::BackupCode)) {
-        Ok("/login/backup-code")
+        Ok("/admin/login/backup-code")
     } else if allowed.iter().any(|a| matches!(a, AuthAllowed::Passkey(_))) {
         Err("Passkey login isn't wired up yet. Use a different sign-in method.".to_string())
     } else if allowed
@@ -418,12 +419,12 @@ async fn post_username(
             Err(msg) => discard_pending_and_redirect(
                 &state,
                 jar,
-                &format!("/login/denied?msg={}", urlencode(&msg)),
+                &format!("/admin/login/denied?msg={}", urlencode(&msg)),
             ),
         };
     }
 
-    redirect_with_cookies("/login/mech", jar)
+    redirect_with_cookies("/admin/login/mech", jar)
 }
 
 fn render_username_error(state: &AppState, jar: CookieJar, msg: &str) -> Response {
@@ -440,7 +441,7 @@ fn render_username_error(state: &AppState, jar: CookieJar, msg: &str) -> Respons
 
 async fn get_mech(State(state): State<AppState>, jar: CookieJar) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| MechView {
         domain_name: extract_domain(&state),
@@ -451,7 +452,7 @@ async fn get_mech(State(state): State<AppState>, jar: CookieJar) -> Response {
         error: None,
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     view.into_response()
 }
@@ -467,10 +468,10 @@ async fn post_mech(
     Form(form): Form<MechForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(mech) = mech_from_form(&form.mech) else {
-        return Redirect::to("/login/mech").into_response();
+        return Redirect::to("/admin/login/mech").into_response();
     };
 
     state.pending.with_mut(id, |p| p.mech = Some(mech.clone()));
@@ -480,7 +481,7 @@ async fn post_mech(
         Err(msg) => discard_pending_and_redirect(
             &state,
             jar,
-            &format!("/login/denied?msg={}", urlencode(&msg)),
+            &format!("/admin/login/denied?msg={}", urlencode(&msg)),
         ),
     }
 }
@@ -534,7 +535,7 @@ async fn get_password(
     jar: CookieJar,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| PasswordView {
         domain_name: extract_domain(&state),
@@ -545,7 +546,7 @@ async fn get_password(
         error: q.err.clone(),
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     view.into_response()
 }
@@ -561,21 +562,23 @@ async fn post_password(
     Form(form): Form<PasswordForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(client) = state
         .pending
         .with_mut(id, |p| std::sync::Arc::clone(&p.client))
     else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
 
     match client.auth_step_password(&form.password).await {
-        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/password"),
+        Ok(resp) => {
+            handle_terminal_or_continue(state, jar, id, resp.state, "/admin/login/password")
+        }
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_password call failed");
-            Redirect::to("/login/password?err=Wrong+password.").into_response()
+            Redirect::to("/admin/login/password?err=Wrong+password.").into_response()
         }
     }
 }
@@ -588,7 +591,7 @@ async fn get_totp(
     jar: CookieJar,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| TotpView {
         domain_name: extract_domain(&state),
@@ -598,7 +601,7 @@ async fn get_totp(
         error: q.err.clone(),
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     view.into_response()
 }
@@ -614,24 +617,26 @@ async fn post_totp(
     Form(form): Form<TotpForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let totp_value: u32 = match form.totp.trim().parse() {
         Ok(v) => v,
-        Err(_) => return Redirect::to("/login/totp?err=Enter+a+6-digit+code.").into_response(),
+        Err(_) => {
+            return Redirect::to("/admin/login/totp?err=Enter+a+6-digit+code.").into_response();
+        }
     };
     let Some(client) = state
         .pending
         .with_mut(id, |p| std::sync::Arc::clone(&p.client))
     else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     match client.auth_step_totp(totp_value).await {
-        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/totp"),
+        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/admin/login/totp"),
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_totp call failed");
-            Redirect::to("/login/totp?err=Incorrect+code.").into_response()
+            Redirect::to("/admin/login/totp?err=Incorrect+code.").into_response()
         }
     }
 }
@@ -644,7 +649,7 @@ async fn get_backup(
     jar: CookieJar,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| BackupCodeView {
         domain_name: extract_domain(&state),
@@ -654,7 +659,7 @@ async fn get_backup(
         error: q.err.clone(),
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     view.into_response()
 }
@@ -670,20 +675,22 @@ async fn post_backup(
     Form(form): Form<BackupForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(client) = state
         .pending
         .with_mut(id, |p| std::sync::Arc::clone(&p.client))
     else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     match client.auth_step_backup_code(form.code.trim()).await {
-        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/backup-code"),
+        Ok(resp) => {
+            handle_terminal_or_continue(state, jar, id, resp.state, "/admin/login/backup-code")
+        }
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_backup_code call failed");
-            Redirect::to("/login/backup-code?err=Backup+code+rejected.").into_response()
+            Redirect::to("/admin/login/backup-code?err=Backup+code+rejected.").into_response()
         }
     }
 }
@@ -696,7 +703,7 @@ async fn get_passkey(
     jar: CookieJar,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| {
         p.challenge.as_deref().map(|ch| PasskeyView {
@@ -710,10 +717,10 @@ async fn get_passkey(
         })
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     let Some(view) = view else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     view.into_response()
 }
@@ -729,13 +736,13 @@ async fn post_passkey(
     Form(form): Form<CredForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let pkc: Box<PublicKeyCredential> = match serde_json::from_str(&form.cred) {
         Ok(v) => v,
         Err(_) => {
             return Redirect::to(&format!(
-                "/login/passkey?err={}",
+                "/admin/login/passkey?err={}",
                 urlencode("Your device returned an unexpected response.")
             ))
             .into_response();
@@ -746,14 +753,14 @@ async fn post_passkey(
         .with_mut(id, |p| std::sync::Arc::clone(&p.client))
     else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     match client.auth_step_passkey_complete(pkc).await {
-        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/passkey"),
+        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/admin/login/passkey"),
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_passkey_complete failed");
             Redirect::to(&format!(
-                "/login/passkey?err={}",
+                "/admin/login/passkey?err={}",
                 urlencode("Passkey verification failed. Try again.")
             ))
             .into_response()
@@ -769,7 +776,7 @@ async fn get_security_key(
     jar: CookieJar,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let Some(view) = state.pending.with_mut(id, |p| {
         p.challenge.as_deref().map(|ch| SecurityKeyView {
@@ -783,10 +790,10 @@ async fn get_security_key(
         })
     }) else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     let Some(view) = view else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     view.into_response()
 }
@@ -797,13 +804,13 @@ async fn post_security_key(
     Form(form): Form<CredForm>,
 ) -> Response {
     let Some(id) = pending_id(&jar) else {
-        return Redirect::to("/login").into_response();
+        return Redirect::to("/admin/login").into_response();
     };
     let pkc: Box<PublicKeyCredential> = match serde_json::from_str(&form.cred) {
         Ok(v) => v,
         Err(_) => {
             return Redirect::to(&format!(
-                "/login/security-key?err={}",
+                "/admin/login/security-key?err={}",
                 urlencode("Your device returned an unexpected response.")
             ))
             .into_response();
@@ -814,14 +821,16 @@ async fn post_security_key(
         .with_mut(id, |p| std::sync::Arc::clone(&p.client))
     else {
         let jar = jar.add(clear_login_cookie(&state));
-        return redirect_with_cookies("/login?expired=1", jar);
+        return redirect_with_cookies("/admin/login?expired=1", jar);
     };
     match client.auth_step_securitykey_complete(pkc).await {
-        Ok(resp) => handle_terminal_or_continue(state, jar, id, resp.state, "/login/security-key"),
+        Ok(resp) => {
+            handle_terminal_or_continue(state, jar, id, resp.state, "/admin/login/security-key")
+        }
         Err(e) => {
             tracing::debug!(error = ?e, "auth_step_securitykey_complete failed");
             Redirect::to(&format!(
-                "/login/security-key?err={}",
+                "/admin/login/security-key?err={}",
                 urlencode("Security key verification failed. Try again.")
             ))
             .into_response()
@@ -887,7 +896,7 @@ fn handle_terminal_or_continue(
         AuthState::Denied(reason) => discard_pending_and_redirect(
             &state,
             jar,
-            &format!("/login/denied?msg={}", urlencode(&reason)),
+            &format!("/admin/login/denied?msg={}", urlencode(&reason)),
         ),
         AuthState::Continue(allowed) => match route_for_next_allowed(&allowed) {
             Ok(target) => {
@@ -897,12 +906,12 @@ fn handle_terminal_or_continue(
             Err(msg) => discard_pending_and_redirect(
                 &state,
                 jar,
-                &format!("/login/denied?msg={}", urlencode(&msg)),
+                &format!("/admin/login/denied?msg={}", urlencode(&msg)),
             ),
         },
         AuthState::Choose(_) => {
             tracing::warn!(path = %current_path, "unexpected AuthState::Choose after cred step");
-            Redirect::to("/login/denied?msg=Unexpected+protocol+state.").into_response()
+            Redirect::to("/admin/login/denied?msg=Unexpected+protocol+state.").into_response()
         }
     }
 }

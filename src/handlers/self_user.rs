@@ -19,11 +19,12 @@ use crate::views::sessions_card::SessionsCard;
 use crate::views::{BaseFields, format_relative_future, format_relative_past, initials};
 
 /// URL prefix passed to `build_session_row` so per-row revoke URLs come out
-/// as `/me/sessions/{uuid}/destroy`. Lifted to a constant so all the call
-/// sites stay in sync.
-const SELF_SESSIONS_PREFIX: &str = "/me/sessions";
+/// as `/admin/me/sessions/{uuid}/destroy`. Lifted to a constant so all the
+/// call sites stay in sync.
+const SELF_SESSIONS_PREFIX: &str = "/admin/me/sessions";
 
 pub fn router() -> Router<AppState> {
+    // Route literals are relative; the parent router nests this under /admin.
     Router::new()
         .route("/me", get(profile))
         .route("/me/sessions", get(sessions_tab))
@@ -167,7 +168,7 @@ fn build_self_card(
         rows,
         error,
         hx_target_id: "sessions-table".to_string(),
-        bulk_revoke_url: format!("/me/sessions/destroy_others{}", suffix),
+        bulk_revoke_url: format!("/admin/me/sessions/destroy_others{}", suffix),
         bulk_revoke_label: "Destroy other sessions".to_string(),
         bulk_revoke_confirm:
             "Destroy every session except the one you are currently using? Those other devices will be signed out immediately.".to_string(),
@@ -177,9 +178,9 @@ fn build_self_card(
         current_session_id,
         show_inactive,
         show_inactive_url: if show_inactive {
-            "/me/sessions".to_string()
+            "/admin/me/sessions".to_string()
         } else {
-            "/me/sessions?show_inactive=1".to_string()
+            "/admin/me/sessions?show_inactive=1".to_string()
         },
     }
 }

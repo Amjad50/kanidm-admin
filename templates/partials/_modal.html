@@ -1,5 +1,5 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-background/80"
-     hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML" hx-trigger="click[target===this]">
+     hx-get="/admin/empty" hx-target="#overlay-slot" hx-swap="innerHTML" hx-trigger="click[target===this]">
   <div class="bg-card border border-border rounded-md shadow-2xl {{ size_class }} w-full mx-4"
        role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="flex items-start justify-between gap-4 p-5 border-b border-border">
@@ -12,7 +12,7 @@
       <button type="button"
               class="text-muted-foreground hover:text-foreground border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors"
               aria-label="Close"
-              hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML">
+              hx-get="/admin/empty" hx-target="#overlay-slot" hx-swap="innerHTML">
         {% include "icons/_x.html" %}
       </button>
     </div>

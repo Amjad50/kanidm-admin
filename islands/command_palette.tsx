@@ -46,8 +46,8 @@ const ACTIONS: PaletteItem[] = [
     subtitle: "Configure SSO for a service",
     href: "/admin/oauth2/new",
   },
-  { kind: "action", label: "My profile", subtitle: "/me", href: "/me" },
-  { kind: "action", label: "My sessions", subtitle: "/me/sessions", href: "/me/sessions" },
+  { kind: "action", label: "My profile", subtitle: "/admin/me", href: "/admin/me" },
+  { kind: "action", label: "My sessions", subtitle: "/admin/me/sessions", href: "/admin/me/sessions" },
 ];
 
 function matchesQuery(it: PaletteItem, q: string): boolean {

@@ -44,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .merge(handlers::router())
-        .nest_service("/static", ServeDir::new(&config.static_dir))
+        .nest_service("/admin/static", ServeDir::new(&config.static_dir))
         .fallback(handlers::not_found)
         .layer(TraceLayer::new_for_http())
         .with_state(state);

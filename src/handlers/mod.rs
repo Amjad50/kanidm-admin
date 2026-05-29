@@ -11,27 +11,32 @@ mod session;
 
 use axum::Router;
 use axum::http::StatusCode;
+use axum::response::Redirect;
 use axum::routing::get;
 
 use crate::AppState;
 use crate::views::NotFoundView;
 
 pub fn router() -> Router<AppState> {
+    // The whole app lives under /admin/*. The reverse proxy can either send
+    // a dedicated host (e.g. admin.idm.example.com → all paths) or just the
+    // /admin/* paths on a shared host (e.g. idm.example.com/admin/*). The
+    // root-level redirect is there so visiting the dedicated-host root
+    // lands on the dashboard.
     Router::new()
-        // Root: utility + auth + user-facing
-        .route("/healthz", get(health::healthz))
-        .route("/empty", get(empty::empty))
-        .merge(login::router()) // /login, /login/*
-        .merge(session::router()) // /logout
-        .merge(self_user::router()) // /me, /me/sessions
-        // /admin/*: operator pages
+        .route("/", get(|| async { Redirect::permanent("/admin") }))
         .nest(
             "/admin",
             Router::new()
                 .route("/", get(dashboard::dashboard))
-                .merge(people::router())
-                .merge(groups::router())
-                .merge(oauth2::router()),
+                .route("/healthz", get(health::healthz))
+                .route("/empty", get(empty::empty))
+                .merge(login::router()) // /admin/login, /admin/login/*
+                .merge(session::router()) // /admin/logout
+                .merge(self_user::router()) // /admin/me, /admin/me/sessions
+                .merge(people::router()) // /admin/people/*
+                .merge(groups::router()) // /admin/groups/*
+                .merge(oauth2::router()), // /admin/oauth2/*
         )
 }
 

@@ -13,7 +13,7 @@
     {{ ui::alert_banner(kind="destructive", message=msg) }}
   {% endif %}
 
-  <form method="post" action="/login" class="flex flex-col gap-4">
+  <form method="post" action="/admin/login" class="flex flex-col gap-4">
     <input type="hidden" name="return_to" value="{{ return_to }}">
     <div>
       <label for="username" class="block text-sm font-medium text-muted-foreground mb-1.5">Username</label>
