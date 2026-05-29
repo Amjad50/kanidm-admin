@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
+
+{% block crumb %}
+<a href="/oauth2" class="hover:text-secondary transition-colors no-underline">OAuth2 Apps</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<span class="text-primary font-medium">Create app</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-8 py-6">
+
+  <div class="mb-7">
+    <div class="inline-flex items-center gap-1.5 bg-elevated rounded-pill px-3 py-1 text-xs font-mono text-tertiary mb-3">
+      Step 1 of 2
+    </div>
+    <h1 class="text-2xl font-semibold tracking-tight">Choose client type</h1>
+    <div class="text-secondary text-sm mt-1">
+      Pick the type that matches your application. You can't change this after creation.
+    </div>
+  </div>
+
+  <form action="/oauth2/new/details" method="get" style="max-width:620px">
+    <div class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-4">
+
+      <div class="flex flex-col gap-3">
+
+        <label class="flex items-start gap-3 p-4 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+          <input
+            type="radio"
+            name="type"
+            value="basic"
+            class="sr-only peer"
+            {% if let Some(sel) = selected %}{% if *sel == OAuth2CreateKind::Basic %}checked{% endif %}{% else %}checked{% endif %}
+          />
+          <span class="mt-0.5 w-4 h-4 rounded-full border border-strong bg-surface flex-shrink-0 relative">
+            <span class="hidden peer-checked:block absolute inset-1 rounded-full bg-accent"></span>
+          </span>
+          <div>
+            <div class="text-sm font-medium text-primary">Basic (confidential)</div>
+            <div class="text-xs text-tertiary mt-0.5 leading-snug">
+              Has a client secret. For server-side apps that can safely keep credentials
+              secret — Grafana, Nextcloud, Gitea, etc.
+            </div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 p-4 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+          <input
+            type="radio"
+            name="type"
+            value="public"
+            class="sr-only peer"
+            {% if let Some(sel) = selected %}{% if *sel == OAuth2CreateKind::Public %}checked{% endif %}{% endif %}
+          />
+          <span class="mt-0.5 w-4 h-4 rounded-full border border-strong bg-surface flex-shrink-0 relative">
+            <span class="hidden peer-checked:block absolute inset-1 rounded-full bg-accent"></span>
+          </span>
+          <div>
+            <div class="text-sm font-medium text-primary">Public (PKCE-only)</div>
+            <div class="text-xs text-tertiary mt-0.5 leading-snug">
+              No secret; PKCE required. For SPAs and native/mobile apps that cannot
+              safely store secrets.
+            </div>
+          </div>
+        </label>
+
+      </div>
+
+      <div class="flex items-center justify-between border-t border-subtle pt-4 mt-2">
+        <a href="/oauth2"
+           class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="bg-accent text-on-accent hover:bg-accent-hover h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6" transform="rotate(180 12 12)"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}
