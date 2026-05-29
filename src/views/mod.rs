@@ -1,3 +1,4 @@
+pub mod partials;
 pub mod time;
 
 use askama::Template;
@@ -64,12 +65,17 @@ impl BaseFields {
     }
 }
 
-fn initials(name: &str) -> String {
-    name.split_whitespace()
-        .filter_map(|w| w.chars().next())
-        .take(2)
-        .collect::<String>()
-        .to_uppercase()
+pub(crate) fn initials(name: &str) -> String {
+    let words: Vec<&str> = name.split_whitespace().collect();
+    match words.len() {
+        0 => String::new(),
+        1 => words[0].chars().take(2).collect::<String>().to_uppercase(),
+        _ => {
+            let first = words.first().and_then(|w| w.chars().next()).unwrap_or(' ');
+            let last = words.last().and_then(|w| w.chars().next()).unwrap_or(' ');
+            format!("{}{}", first, last).to_uppercase()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -88,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_initials_single_word() {
-        assert_eq!(initials("admin"), "A");
+        assert_eq!(initials("admin"), "AD");
     }
 
     #[test]

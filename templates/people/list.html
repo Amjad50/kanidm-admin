@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}People · Kanidm Admin{% endblock %}
+
+{% block crumb %}
+<span class="text-primary font-medium">People</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-8 py-6">
+
+  <div class="flex items-start justify-between gap-6 mb-7">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">People</h1>
+      <div class="text-secondary text-sm mt-1" id="people-subtitle">
+        {% if q.is_empty() && status.as_str() == "all" %}
+          {{ total_count }} {% if total_count == 1 %}person{% else %}people{% endif %}
+        {% else %}
+          {{ filtered_count }} of {{ total_count }} {% if total_count == 1 %}person{% else %}people{% endif %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="/people/new"
+         class="bg-accent text-on-accent rounded h-9 px-4 inline-flex items-center gap-2 text-sm font-medium hover:bg-accent-hover no-underline transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>Create person</span>
+      </a>
+    </div>
+  </div>
+
+  <form class="flex items-center gap-3 mb-4">
+    <div class="relative">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-tertiary pointer-events-none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+      </span>
+      <input
+        type="search"
+        name="q"
+        value="{{ q }}"
+        placeholder="Search by name, SPN, or email…"
+        class="bg-surface border border-default rounded h-9 pl-9 pr-3 w-80 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong"
+        hx-get="/people"
+        hx-trigger="input changed delay:200ms, search, keyup[key=='Enter']"
+        hx-target="#people-tbody"
+        hx-swap="innerHTML"
+        hx-push-url="true"
+        hx-include="closest form"
+        hx-vals='{"page": "1"}'
+      />
+    </div>
+
+    <select
+      name="status"
+      class="bg-surface border border-default rounded h-9 px-3 text-sm text-primary focus:outline-none focus:border-strong"
+      hx-get="/people"
+      hx-trigger="change"
+      hx-target="#people-tbody"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      hx-include="closest form"
+      hx-vals='{"page": "1"}'
+    >
+      <option value="all" {% if status.as_str() == "all" %}selected{% endif %}>Status: All</option>
+      <option value="active" {% if status.as_str() == "active" %}selected{% endif %}>Active</option>
+      <option value="expired" {% if status.as_str() == "expired" %}selected{% endif %}>Expired</option>
+      <option value="not_yet_active" {% if status.as_str() == "not_yet_active" %}selected{% endif %}>Not yet active</option>
+      <option value="no_credentials" {% if status.as_str() == "no_credentials" %}selected{% endif %}>Without credentials</option>
+    </select>
+
+    <input type="hidden" name="per" value="{{ per }}" />
+  </form>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <table class="w-full text-sm">
+      <thead class="text-tertiary text-xs uppercase tracking-wide">
+        <tr class="border-b border-subtle">
+          <th class="text-left font-medium px-3 py-3">Person</th>
+          <th class="text-left font-medium px-3 py-3">Email</th>
+          <th class="text-left font-medium px-3 py-3">Status</th>
+          <th class="px-3 py-3" style="width:48px"></th>
+        </tr>
+      </thead>
+      <tbody id="people-tbody">
+        {% include "people/_rows.html" %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if total_pages > 1 %}
+  <div class="flex items-center justify-between mt-4 text-sm text-secondary">
+    <div>
+      Showing
+      <span class="text-primary font-medium">{{ page_start }}–{{ page_end }}</span>
+      of
+      <span class="text-primary font-medium">{{ filtered_count }}</span>
+    </div>
+    <div class="flex items-center gap-1">
+      {% if page > 1 %}
+      <button
+        type="button"
+        class="w-8 h-8 rounded border border-default bg-surface text-secondary text-sm inline-flex items-center justify-center hover:bg-hover hover:text-primary transition-colors"
+        hx-get="/people?page={{ page - 1 }}"
+        hx-target="#people-tbody"
+        hx-swap="innerHTML"
+        hx-push-url="true"
+        hx-include="closest form"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      {% else %}
+      <button type="button" disabled class="w-8 h-8 rounded border border-default bg-surface text-secondary text-sm inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      {% endif %}
+
+      {% for p in 1..=total_pages %}
+        {% if p == page %}
+        <button type="button" class="w-8 h-8 rounded border border-accent bg-accent text-on-accent text-sm inline-flex items-center justify-center">{{ p }}</button>
+        {% else %}
+        <button
+          type="button"
+          class="w-8 h-8 rounded border border-default bg-surface text-secondary text-sm inline-flex items-center justify-center hover:bg-hover hover:text-primary transition-colors"
+          hx-get="/people?page={{ p }}"
+          hx-target="#people-tbody"
+          hx-swap="innerHTML"
+          hx-push-url="true"
+          hx-include="closest form"
+        >{{ p }}</button>
+        {% endif %}
+      {% endfor %}
+
+      {% if page < total_pages %}
+      <button
+        type="button"
+        class="w-8 h-8 rounded border border-default bg-surface text-secondary text-sm inline-flex items-center justify-center hover:bg-hover hover:text-primary transition-colors"
+        hx-get="/people?page={{ page + 1 }}"
+        hx-target="#people-tbody"
+        hx-swap="innerHTML"
+        hx-push-url="true"
+        hx-include="closest form"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      {% else %}
+      <button type="button" disabled class="w-8 h-8 rounded border border-default bg-surface text-secondary text-sm inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

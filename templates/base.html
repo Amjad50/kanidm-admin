@@ -125,6 +125,11 @@
         {% block crumb %}{% endblock %}
       </nav>
 
+      <!-- Page-level actions (between crumb and search) -->
+      <div class="flex items-center gap-2 shrink-0">
+        {% block page_actions %}{% endblock %}
+      </div>
+
       <!-- Cmd+K search hint (center-right) -->
       <button type="button"
               class="flex items-center gap-2.5 bg-surface border border-default rounded h-8 px-3 text-tertiary text-sm cursor-pointer hover:border-strong transition-colors w-90">

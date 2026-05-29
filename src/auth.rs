@@ -13,6 +13,7 @@ use time::OffsetDateTime;
 
 use crate::config::Config;
 use crate::error::AppError;
+use crate::kanidm::entry::attr_first;
 use crate::AppState;
 
 /// Builds per-request KanidmClient instances pre-loaded with the caller's
@@ -170,10 +171,6 @@ fn entry_in_group(entry: &Entry, group: &str) -> bool {
         .any(|m| {
             m == group || m.split('@').next().map(|n| n == group).unwrap_or(false)
         })
-}
-
-fn attr_first(entry: &Entry, name: &str) -> Option<String> {
-    entry.attrs.get(name).and_then(|v| v.first().cloned())
 }
 
 /// Decode the payload segment of a JWS compact-serialised token without

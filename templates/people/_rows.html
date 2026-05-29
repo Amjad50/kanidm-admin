@@ -1,0 +1,56 @@
+{% for person in people %}
+<tr
+  class="border-b border-subtle last:border-0 hover:bg-hover cursor-pointer transition-colors"
+  hx-get="/people/{{ person.spn_or_uuid }}"
+  hx-target="body"
+  hx-push-url="true"
+>
+  <td class="px-3 py-3">
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-pill bg-accent-soft text-accent border border-accent-soft inline-flex items-center justify-center text-xs font-semibold shrink-0 font-sans">
+        {{ person.initials }}
+      </span>
+      <div class="min-w-0">
+        <div class="font-medium text-primary text-sm">{{ person.displayname }}</div>
+        <div class="font-mono text-xs text-tertiary mt-0.5">{{ person.spn }}</div>
+      </div>
+    </div>
+  </td>
+  <td class="px-3 py-3">
+    {% if !person.mail.is_empty() %}
+    <span class="font-mono text-sm text-secondary">{{ person.mail }}</span>
+    {% else %}
+    <span class="text-tertiary text-sm">—</span>
+    {% endif %}
+  </td>
+  <td class="px-3 py-3">
+    <span class="inline-flex items-center gap-1.5 {{ person.status.badge_classes() }} rounded-pill text-xs font-medium px-2 py-0.5">
+      <span class="w-1.5 h-1.5 rounded-pill {{ person.status.dot_classes() }}"></span>
+      {{ person.status.label() }}
+    </span>
+  </td>
+  <td class="px-3 py-3 text-right">
+    <button
+      type="button"
+      onclick="event.stopPropagation()"
+      class="w-8 h-8 rounded inline-flex items-center justify-center text-tertiary hover:bg-hover hover:text-primary border-0 bg-transparent cursor-pointer transition-colors"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="1"/>
+        <circle cx="12" cy="5" r="1"/>
+        <circle cx="12" cy="19" r="1"/>
+      </svg>
+    </button>
+  </td>
+</tr>
+{% else %}
+<tr>
+  <td colspan="4" class="px-3 py-12 text-center text-tertiary">
+    {% if !q.is_empty() %}
+    No people match '{{ q }}'.
+    {% else %}
+    No people match this filter.
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}

@@ -1,4 +1,5 @@
 mod dashboard;
+mod empty;
 mod groups;
 mod health;
 mod oauth2;
@@ -16,6 +17,7 @@ use crate::AppState;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/healthz", get(health::healthz))
+        .route("/empty", get(empty::empty))
         .route("/", get(dashboard::dashboard))
         .merge(people::router())
         .merge(groups::router())

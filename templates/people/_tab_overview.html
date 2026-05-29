@@ -1,0 +1,180 @@
+<div class="flex flex-col gap-4">
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+    <div class="text-tertiary text-xs uppercase tracking-wider font-semibold mb-4">Identity</div>
+    <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
+
+      <dt class="text-tertiary self-center">UUID</dt>
+      <dd class="flex items-center gap-2 min-w-0">
+        <span class="font-mono text-xs text-primary break-all">{{ d.uuid }}</span>
+        <button type="button"
+                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                title="Copy UUID"
+                data-copy="{{ d.uuid }}">
+          {% include "icons/_copy.html" %}
+        </button>
+      </dd>
+
+      <dt class="text-tertiary self-center">Username</dt>
+      <dd><span class="font-mono text-primary">{{ d.name }}</span></dd>
+
+      <dt class="text-tertiary self-center">SPN</dt>
+      <dd class="flex items-center gap-2 min-w-0">
+        <span class="font-mono text-xs text-primary break-all">{{ person.spn }}</span>
+        <button type="button"
+                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                title="Copy SPN"
+                data-copy="{{ person.spn }}">
+          {% include "icons/_copy.html" %}
+        </button>
+      </dd>
+
+      <dt class="text-tertiary self-center">Display name</dt>
+      <dd class="text-primary">{{ d.displayname }}</dd>
+
+      {% match d.legalname %}
+      {% when Some with (ln) %}
+      <dt class="text-tertiary self-center">Legal name</dt>
+      <dd class="text-primary">{{ ln }}</dd>
+      {% when None %}
+      {% endmatch %}
+
+      <dt class="text-tertiary self-start pt-0.5">Emails</dt>
+      <dd>
+        {% if d.mails.is_empty() %}
+        <span class="text-tertiary">—</span>
+        {% else %}
+        <div class="flex flex-col gap-1.5">
+          {% for (i, mail) in d.mails.iter().enumerate() %}
+          <div class="flex items-center gap-2">
+            {% if i == 0 %}
+            <span class="text-accent shrink-0" title="Primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </span>
+            <span class="font-mono text-xs text-primary">{{ mail }}</span>
+            <span class="text-tertiary text-xs">primary</span>
+            {% else %}
+            <span class="shrink-0 w-[13px]"></span>
+            <span class="font-mono text-xs text-secondary">{{ mail }}</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </dd>
+
+    </dl>
+  </section>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Group memberships</div>
+      <span class="text-xs text-tertiary">{{ d.direct_group_count }} direct</span>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {% if d.groups.is_empty() %}
+      <span class="text-tertiary text-sm">No group memberships.</span>
+      {% else %}
+      {% for group in d.groups %}
+      <a href="/groups/{{ group.spn_or_id }}"
+         class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded-pill px-3 h-7 text-xs font-medium text-secondary hover:bg-hover hover:border-default hover:text-primary transition-colors no-underline">
+        {{ group.name }}
+      </a>
+      {% endfor %}
+      {% endif %}
+      <button type="button"
+              class="inline-flex items-center gap-1.5 bg-surface border border-default rounded-pill px-3 h-7 text-xs font-medium text-secondary hover:bg-hover hover:border-strong hover:text-primary transition-colors">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Add to a group
+      </button>
+    </div>
+  </section>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Validity</div>
+      <a href="/people/{{ person.spn_or_uuid }}/validity"
+         class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
+        Edit on Validity tab
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+    <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
+      <dt class="text-tertiary self-center">Valid from</dt>
+      <dd>
+        {% match d.valid_from %}
+        {% when Some with (vf) %}<span class="text-primary">{{ vf }}</span>
+        {% when None %}<span class="text-secondary">any time</span>
+        {% endmatch %}
+      </dd>
+      <dt class="text-tertiary self-center">Expires</dt>
+      <dd>
+        {% match d.expire_at %}
+        {% when Some with (exp) %}<span class="text-primary">{{ exp }}</span>
+        {% when None %}<span class="text-secondary">never</span>
+        {% endmatch %}
+      </dd>
+    </dl>
+  </section>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Credentials summary</div>
+      <a href="/people/{{ person.spn_or_uuid }}/credentials"
+         class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
+        Manage on Credentials tab
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+    <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
+
+      <dt class="text-tertiary self-center">Primary</dt>
+      <dd>
+        {% match d.credential_summary.primary %}
+        {% when Some with (p) %}<span class="text-primary">{{ p }}</span>
+        {% when None %}<span class="text-tertiary">Not configured</span>
+        {% endmatch %}
+      </dd>
+
+      <dt class="text-tertiary self-center">Passkeys</dt>
+      <dd>
+        {% if d.credential_summary.passkey_count == 0 %}
+        <span class="text-tertiary">None</span>
+        {% else %}
+        <span class="text-primary">{{ d.credential_summary.passkey_count }} registered</span>
+        {% endif %}
+      </dd>
+
+      <dt class="text-tertiary self-center">SSH keys</dt>
+      <dd>
+        {% if d.credential_summary.ssh_key_count == 0 %}
+        <span class="text-tertiary">None</span>
+        {% else %}
+        <span class="text-primary">{{ d.credential_summary.ssh_key_count }} registered</span>
+        {% endif %}
+      </dd>
+
+      <dt class="text-tertiary self-center">RADIUS</dt>
+      <dd>
+        {% if d.credential_summary.radius_configured %}
+        <span class="inline-flex items-center gap-1.5 bg-success-soft text-success rounded-pill text-xs font-medium px-2 py-0.5">
+          <span class="w-1.5 h-1.5 rounded-pill bg-success"></span>
+          Configured
+        </span>
+        {% else %}
+        <span class="text-tertiary">Not configured</span>
+        {% endif %}
+      </dd>
+
+    </dl>
+  </section>
+
+</div>

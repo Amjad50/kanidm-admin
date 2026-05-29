@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod error;
 mod handlers;
+mod kanidm;
 mod views;
 
 use std::sync::Arc;

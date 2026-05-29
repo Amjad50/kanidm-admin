@@ -1,7 +1,7 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 
-use crate::views::{ForbiddenView, ServerErrorView, UnauthenticatedView};
+use crate::views::{ForbiddenView, NotFoundView, ServerErrorView, UnauthenticatedView};
 
 /// App-level error type. Converts to an HTTP response.
 #[derive(thiserror::Error, Debug)]
@@ -11,6 +11,9 @@ pub enum AppError {
 
     #[error("forbidden: not a member of the admin group")]
     Forbidden { admin_group: String },
+
+    #[error("not found")]
+    NotFound,
 
     #[error("kanidm client error: {0}")]
     Kanidm(String),
@@ -32,6 +35,10 @@ impl IntoResponse for AppError {
             AppError::Forbidden { admin_group } => {
                 let view = ForbiddenView { admin_group };
                 (StatusCode::FORBIDDEN, view.into_response()).into_response()
+            }
+            AppError::NotFound => {
+                let view = NotFoundView {};
+                (StatusCode::NOT_FOUND, view.into_response()).into_response()
             }
             AppError::Kanidm(msg) => {
                 tracing::error!(error = %msg, "kanidm client error");

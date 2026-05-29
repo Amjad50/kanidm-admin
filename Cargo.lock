@@ -398,6 +398,7 @@ dependencies = [
  "axum-core",
  "bytes",
  "cookie",
+ "form_urlencoded",
  "futures-core",
  "futures-util",
  "http",
@@ -405,9 +406,22 @@ dependencies = [
  "http-body-util",
  "mime",
  "pin-project-lite",
+ "serde_core",
+ "serde_html_form",
+ "serde_path_to_error",
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "axum-htmx"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2d4a162b7621482903309c0e8a990a866728b6312350147181230f840252314"
+dependencies = [
+ "axum-core",
+ "http",
 ]
 
 [[package]]
@@ -2845,6 +2859,7 @@ dependencies = [
  "askama_web",
  "axum",
  "axum-extra",
+ "axum-htmx",
  "base64 0.22.1",
  "figment",
  "kanidm_client",
@@ -4289,6 +4304,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_html_form"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2f2d7ff8a2140333718bb329f5c40fc5f0865b84c426183ce14c97d2ab8154f"
+dependencies = [
+ "form_urlencoded",
+ "indexmap 2.14.0",
+ "itoa",
+ "ryu",
+ "serde_core",
 ]
 
 [[package]]

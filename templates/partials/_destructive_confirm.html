@@ -1,0 +1,42 @@
+<div class="text-secondary text-sm">{{ lead_text }}</div>
+<div class="bg-canvas border border-subtle rounded-md p-4">{{ target_html|safe }}</div>
+{% if !consequences.is_empty() %}
+<div>
+  <div class="text-tertiary text-xs font-medium uppercase tracking-wide mb-2">What happens</div>
+  <ul class="list-disc list-outside ml-5 text-secondary text-sm leading-relaxed flex flex-col gap-1">
+    {% for c in consequences %}<li>{{ c }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if let Some(err) = error %}
+<div class="bg-danger-soft border border-danger text-danger text-sm rounded px-3 py-2">{{ err }}</div>
+{% endif %}
+<div>
+  <label class="block text-sm font-medium text-primary mb-2" for="confirm-input-{{ input_id }}">{{ confirm_label }}</label>
+  <div class="flex items-center gap-2 mb-2">
+    <code class="font-mono text-sm bg-elevated border border-subtle rounded px-2.5 py-1 text-primary">{{ confirm_token }}</code>
+    <button type="button"
+            class="text-tertiary hover:text-primary border-0 bg-transparent cursor-pointer w-7 h-7 inline-flex items-center justify-center rounded transition-colors"
+            data-copy="{{ confirm_token }}"
+            aria-label="Copy">
+      {% include "icons/_copy.html" %}
+    </button>
+  </div>
+  <input id="confirm-input-{{ input_id }}"
+         type="text"
+         class="bg-surface border border-default rounded h-9 px-3 w-full font-mono text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
+         placeholder="Type to confirm"
+         autocomplete="off" />
+</div>
+<script>
+(function() {
+  var input = document.getElementById('confirm-input-{{ input_id }}');
+  var submit = document.getElementById('confirm-submit-{{ input_id }}');
+  if (!input || !submit) return;
+  var expected = {{ confirm_token_js|safe }};
+  input.addEventListener('input', function() {
+    // exact match by design — pasting whitespace should not silently succeed
+    submit.disabled = input.value !== expected;
+  });
+})();
+</script>

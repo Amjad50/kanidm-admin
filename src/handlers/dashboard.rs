@@ -4,6 +4,7 @@ use axum::extract::State;
 
 use crate::auth::AdminUser;
 use crate::error::AppResult;
+use crate::kanidm::entry::attr_first;
 use crate::views::{format_relative_future, format_relative_past, format_relative_remaining, BaseFields};
 use crate::AppState;
 
@@ -84,8 +85,3 @@ pub async fn dashboard(
     })
 }
 
-/// Extract the first value of an attr from a kanidm `Entry` (the flat
-/// `BTreeMap<String, Vec<String>>` shape).
-fn attr_first(entry: &kanidm_proto::v1::Entry, name: &str) -> Option<String> {
-    entry.attrs.get(name).and_then(|v| v.first().cloned())
-}

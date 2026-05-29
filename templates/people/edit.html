@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ person_displayname }} · People · Kanidm Admin{% endblock %}
+
+{% block crumb %}
+<a href="/people" class="hover:text-secondary transition-colors no-underline">People</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<a href="/people/{{ person_id }}/overview" class="hover:text-secondary transition-colors no-underline">{{ person_id }}</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<span class="text-primary font-medium">Edit</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-8 py-6">
+
+  <div class="mb-7">
+    <h1 class="text-2xl font-semibold tracking-tight">Edit {{ person_displayname }}</h1>
+    <div class="text-secondary text-sm mt-1" style="max-width:560px">
+      Basic attributes that can be updated.
+    </div>
+  </div>
+
+  {% if let Some(msg) = form_error %}
+  <div class="bg-danger-soft border border-danger text-danger text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
+    {{ msg }}
+  </div>
+  {% endif %}
+
+  <form method="post" action="/people/{{ person_id }}" style="max-width:680px">
+    <div class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-5">
+
+      <div class="bg-warning-soft border border-warning text-warning text-sm rounded px-4 py-3">
+        <strong class="font-semibold">Rename warning:</strong> Changing the username updates the login SPN and affects any external systems referencing it. Use sparingly.
+      </div>
+
+      {{ name_field|safe }}
+
+      {{ displayname_field|safe }}
+
+      {{ legalname_field|safe }}
+
+      <div>
+        <label class="block text-sm font-medium text-primary mb-1.5">Emails</label>
+        <div id="email-rows" class="flex flex-col gap-2">
+          {% for email in emails %}
+          <div class="flex items-center gap-2">
+            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="{% if email.is_primary %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+            <input type="email" name="email" value="{{ email.value }}" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
+            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+              {% include "icons/_x.html" %}
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" id="add-email" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add email</span>
+        </button>
+        <div class="text-tertiary text-xs mt-2">The starred email is primary. Other systems may use it first.</div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 border-t border-subtle pt-4 mt-2">
+        <a href="/people/{{ person_id }}/overview"
+           class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="bg-accent text-on-accent hover:bg-accent-hover h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save changes
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+
+<template id="email-row-tpl">
+  <div class="flex items-center gap-2">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </button>
+    <input type="email" name="email" value="" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</template>
+
+<script>
+(function () {
+  const rows = document.getElementById('email-rows');
+  const addBtn = document.getElementById('add-email');
+  const tpl = document.getElementById('email-row-tpl');
+  if (!rows || !addBtn) return;
+
+  addBtn.addEventListener('click', () => {
+    let newRow;
+    if (tpl) {
+      newRow = tpl.content.cloneNode(true).firstElementChild;
+    } else {
+      const first = rows.firstElementChild;
+      if (!first) return;
+      newRow = first.cloneNode(true);
+      const star = newRow.querySelector('[data-make-primary]');
+      if (star) {
+        star.classList.remove('text-warning');
+        star.classList.add('text-tertiary', 'hover:text-warning');
+        star.querySelector('svg')?.setAttribute('fill', 'none');
+      }
+      const input = newRow.querySelector('input[type=email]');
+      if (input) input.value = '';
+    }
+    rows.appendChild(newRow);
+    newRow.querySelector('input[type=email]')?.focus();
+  });
+
+  rows.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('[data-remove]');
+    if (removeBtn) {
+      removeBtn.closest('.flex')?.remove();
+      return;
+    }
+
+    const starBtn = e.target.closest('[data-make-primary]');
+    if (starBtn) {
+      const row = starBtn.closest('.flex');
+      if (!row) return;
+
+      rows.querySelectorAll('[data-make-primary]').forEach(b => {
+        b.classList.remove('text-warning');
+        b.classList.add('text-tertiary', 'hover:text-warning');
+        b.querySelector('svg')?.setAttribute('fill', 'none');
+      });
+
+      starBtn.classList.add('text-warning');
+      starBtn.classList.remove('text-tertiary', 'hover:text-warning');
+      starBtn.querySelector('svg')?.setAttribute('fill', 'currentColor');
+
+      if (rows.firstElementChild !== row) {
+        rows.insertBefore(row, rows.firstElementChild);
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}

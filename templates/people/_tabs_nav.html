@@ -1,0 +1,12 @@
+<nav id="people-tabs" class="flex border-b border-subtle mb-5" role="tablist"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+  {% for tab in tabs %}
+  <a href="/people/{{ person.spn_or_uuid }}/{{ tab.slug }}"
+     hx-get="/people/{{ person.spn_or_uuid }}/{{ tab.slug }}"
+     hx-target="#tab-content"
+     hx-swap="innerHTML"
+     hx-push-url="true"
+     class="h-10 px-4 inline-flex items-center text-sm font-medium transition-colors no-underline border-b-2 {% if tab.slug == active_tab %}border-accent text-accent{% else %}border-transparent text-secondary hover:text-primary{% endif %}">
+    {{ tab.label }}
+  </a>
+  {% endfor %}
+</nav>

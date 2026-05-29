@@ -1,0 +1,6 @@
+{% match tab_content %}
+{% when crate::handlers::people::detail::TabContent::Overview with (d) %}
+{% include "people/_tab_overview.html" %}
+{% when crate::handlers::people::detail::TabContent::Placeholder { message } %}
+<div class="p-12 text-center text-tertiary text-sm">{{ message }}</div>
+{% endmatch %}
