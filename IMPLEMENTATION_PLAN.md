@@ -815,9 +815,115 @@ A small Preact island bound to a global event. Server returns `HX-Trigger: {"toa
 
 ---
 
-## Phase 6 — Login flow (optional, deferred)
+## Phase 6 — Real authentication (OIDC against kanidm)
 
-If we decide to replace kanidm's login UI, screens 01–07 slot in:
+**Problem this solves.** Today the admin UI reads kanidm's `bearer` session cookie directly. To log in, a user must log into kanidm somewhere, open devtools, copy the cookie, and paste it into a cookie on the admin-ui origin. Fragile, manual, no refresh, and blocks ever offering this upstream. We replace it with the standard pattern every other kanidm client (Grafana, Nextcloud, Gitea) already uses: **OIDC authorization-code flow with PKCE against kanidm itself**.
+
+**Approach.** Register the admin UI as a **public** OAuth2 client in kanidm (PKCE-only, no client secret). On a cold request the UI redirects to kanidm's own `/ui/oauth2/authorise?...`. The user authenticates on kanidm's existing login pages (passwords, passkeys, TOTP — all of kanidm's existing UX, unchanged). Kanidm redirects back to `/auth/callback?code=...`. We exchange the code at `/oauth2/token`, get an access token (a JWT), drop it into a server-set `HttpOnly` `Secure` `SameSite=Lax` cookie scoped to the admin-ui origin, and let the existing `AdminUser` extractor read it. Refresh tokens handled in the background.
+
+**Why not other options.** A popup/iframe + `postMessage` would require modifying kanidm's login pages — defeats the "zero-fork" goal. Resource Owner Password Credentials (user types password into our form) bypasses MFA/passkeys and is an anti-pattern for federated identity.
+
+**Why this slots here, not earlier.** Phase 4 ships the OAuth2 admin screens. With those in place, the very first thing we do in Phase 6 is register `kanidm-admin-ui` *using the admin UI itself* — nice dogfooding loop. Doing it before Phase 4 would mean writing the registration via raw CLI, which works but loses the loop.
+
+### Routes
+
+```
+GET  /auth/login                 — generate PKCE verifier+challenge + state nonce, 302 to kanidm /ui/oauth2/authorise
+GET  /auth/callback              — verify state, POST /oauth2/token, set admin_session cookie, 302 to /
+POST /auth/logout                — delete cookie, optionally revoke at kanidm
+```
+
+### Tasks
+
+#### 6.1 OAuth2 client registration (one-time, documented)
+
+In the README, document the bootstrap steps using kanidm CLI (or the admin UI itself once it works):
+
+```bash
+kanidm system oauth2 create-public kanidm-admin-ui "Kanidm Admin" https://admin.idm.example.com
+kanidm system oauth2 update-scope-map kanidm-admin-ui idm_admins openid profile email groups
+# PKCE is on by default for public clients
+```
+
+The `groups` scope gives us the user's group memberships in the ID token claim, which lets us pre-check the `idm_admins` membership before hitting `/v1/whoami`. We still call `whoami` as the canonical source — the claim is just a fast-path gate.
+
+#### 6.2 Config keys
+
+Add to `Config`:
+- `oauth2_client_id: String` (e.g. `kanidm-admin-ui`)
+- `oauth2_redirect_url: String` (the admin UI's `/auth/callback` URL)
+- `cookie_signing_key_path: PathBuf` — 32-byte key for signing the short-lived PKCE state cookie. Auto-generate and persist on first start if missing.
+- Rename `kanidm_session_cookie` to `admin_session_cookie` (default: `admin_session`) — different name from kanidm's `bearer` so a shared parent domain doesn't collide.
+
+#### 6.3 New handler: `src/handlers/auth.rs`
+
+- `GET /auth/login`:
+  1. Generate PKCE `verifier` (random 64 bytes, base64url) and `challenge` (SHA256 of verifier, base64url).
+  2. Generate `state` nonce.
+  3. Store `{verifier, state, return_to}` in a signed, HttpOnly, 5-minute cookie (`auth_pending`).
+  4. 302 to `{kanidm_url}/ui/oauth2/authorise?response_type=code&client_id={id}&redirect_uri={cb}&scope=openid+profile+email+groups&state={state}&code_challenge={challenge}&code_challenge_method=S256`.
+
+- `GET /auth/callback?code=...&state=...`:
+  1. Read `auth_pending`, verify state matches, delete it.
+  2. POST `{kanidm_url}/oauth2/token` with `grant_type=authorization_code, code, redirect_uri, client_id, code_verifier`.
+  3. Parse response: `access_token`, optional `refresh_token`, `expires_in`.
+  4. Set `admin_session` cookie (HttpOnly, Secure, SameSite=Lax, expires=access expiry).
+  5. If refresh_token present, set `admin_refresh` cookie (HttpOnly, Secure, SameSite=Strict, longer expiry).
+  6. 302 to `return_to` (from `auth_pending`, default `/`).
+
+- `POST /auth/logout`:
+  1. Delete both cookies.
+  2. Optionally POST to `{kanidm_url}/oauth2/token/revoke` if access token exists.
+  3. 302 to `/auth/login` (which will immediately bounce them back to kanidm to log in again, which is fine).
+
+#### 6.4 `AdminUser` extractor changes
+
+- Change `cookie_name` from `bearer` to `admin_session_cookie` from config.
+- On `auth_valid()` failure: try refresh token if present, retry, then succeed. If refresh fails, fall through to `Unauthenticated`.
+- `AppError::Unauthenticated` rendering changes: instead of the current "paste your cookie" page, return 302 to `/auth/login?return_to={current_path}` for non-HTMX requests, or `HX-Redirect` header for HTMX requests.
+
+#### 6.5 Background refresh
+
+The token's `exp` is in the UAT payload (already decoded by `parse_uat_payload`). When `exp - now < 60s` and a refresh token is present, refresh inline at the start of `from_request_parts`. This keeps long-running browser sessions alive without the user noticing.
+
+#### 6.6 Smoke test against homelab
+
+1. Register the client in kanidm (CLI for bootstrap, or via the admin UI's own OAuth2 screen if available).
+2. Set the three config keys.
+3. Visit `/` in a cold browser. Confirm redirect to kanidm login.
+4. Log in with password+TOTP, then passkey.
+5. Confirm landing on `/`, all admin functions work.
+6. Wait for token expiry (or force-expire by setting `expires_in` low at kanidm); confirm silent refresh.
+7. Click logout, confirm cookie cleared and redirect works.
+
+### Phase 6 deliverables
+
+- README has a one-paragraph "First-time setup" section explaining the kanidm CLI commands.
+- `/auth/login`, `/auth/callback`, `/auth/logout` all work.
+- Cookie paste is no longer required for ANY user-facing flow.
+- Background refresh keeps sessions alive past initial access token expiry.
+- Logout from admin UI clears local cookie (kanidm session may persist; document that).
+
+### Phase 6 verification
+
+- Cold incognito → `/` → kanidm login → back to admin UI: works end-to-end.
+- Same flow with passkey-only: works.
+- Same flow with a non-idm_admins user: bounces with the existing `Forbidden` template, not a confusing "unauthenticated".
+- After 1 hour idle, refresh on a page: works (refresh token kicks in).
+- After revoking the OAuth2 client in kanidm: next request redirects to login.
+
+### Risks / things to document
+
+- **Bootstrap chicken-and-egg.** Registering the OAuth2 client requires already being authenticated to kanidm. The very first admin still uses CLI or upstream `/ui/admin`. Same as Grafana/Nextcloud setup.
+- **Logout asymmetry.** Logging out of admin UI doesn't log you out of kanidm. Matches every other OIDC client's behavior; document it.
+- **Cookie scope.** If admin UI and kanidm share a parent domain, kanidm's `bearer` cookie may also arrive on admin UI requests. Harmless because we don't read it, but worth knowing for debugging.
+- **PKCE state cookie key rotation.** If the signing key changes, in-flight logins fail (state cookie won't verify). Acceptable; users just retry.
+
+---
+
+## Phase 7 — Login flow (optional, deferred)
+
+If we decide to replace kanidm's login UI entirely (NOT what Phase 6 does — Phase 6 *uses* kanidm's login; this phase would *replace* it), screens 01–07 slot in:
 
 - `01-login-username.html` → `/login` (username + passkey shortcut)
 - `02-login-choose-mech.html` → `/login/mech` (pick mechanism)
@@ -827,7 +933,7 @@ If we decide to replace kanidm's login UI, screens 01–07 slot in:
 - `06-login-passkey.html` → `/login/passkey`
 - `07-login-denied.html` → `/login/denied`
 
-Backend: walk kanidm's `auth_init`/`auth_step` state machine, set the `bearer` cookie on success. This is a separate project — don't start until Phases 0–5 are stable.
+Backend: walk kanidm's `auth_init`/`auth_step` state machine, set the `admin_session` cookie on success. This is a separate project — don't start until Phases 0–6 are stable. Realistically, **Phase 6 makes this unnecessary** for most use cases. Only do this if you also want to theme/customize the login UX itself.
 
 ---
 
@@ -891,7 +997,9 @@ After each phase, run the verification recipe and check off the deliverables. Do
 **Per-phase smoke test against your homelab kanidm:**
 1. Stop bun dev / Rust dev.
 2. `bun run build && cargo run`.
-3. Copy your `bearer` cookie from the kanidm domain to `localhost:3000` in DevTools.
+3. Authenticate:
+   - **Pre-Phase-6:** copy your `bearer` cookie from the kanidm domain to `localhost:3000` in DevTools.
+   - **Phase 6+:** visit `localhost:3000`, redirect bounces you to kanidm, log in normally.
 4. Walk through the phase's deliverables one-by-one.
 5. Compare side-by-side with the matching `design/*.html` file — pixel-close acceptance.
 
