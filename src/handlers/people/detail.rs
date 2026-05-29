@@ -12,6 +12,7 @@ use crate::AppState;
 
 use super::common::{compute_status_at, parse_kanidm_datetime, summarize_credentials, CredentialSummary};
 use super::credentials::CredentialsData;
+use super::groups_tab::GroupsTabData;
 use super::radius::RadiusData;
 use super::sessions::SessionsData;
 use super::ssh::SshData;
@@ -28,6 +29,7 @@ pub const TABS: &[TabDef] = &[
     TabDef { slug: "ssh",          label: "SSH Keys"      },
     TabDef { slug: "radius",       label: "RADIUS"        },
     TabDef { slug: "sessions",     label: "Sessions"      },
+    TabDef { slug: "groups",       label: "Groups"        },
     TabDef { slug: "validity",     label: "Validity"      },
 ];
 
@@ -67,6 +69,7 @@ pub enum TabContent {
     Ssh(SshData),
     Radius(RadiusData),
     Sessions(SessionsData),
+    Groups(GroupsTabData),
     Validity(ValidityData),
 }
 
@@ -161,8 +164,10 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
         attr_all(entry, "memberof")
     };
     let direct_group_count = group_spns.len();
+    // Show only the first 5 groups inline; the dedicated Groups tab has the full list.
     let groups: Vec<GroupChip> = group_spns
         .into_iter()
+        .take(5)
         .map(|spn| {
             let name = spn.split('@').next().unwrap_or(&spn).to_string();
             GroupChip { name, spn_or_id: spn }

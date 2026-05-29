@@ -40,7 +40,7 @@ Each row below documents which strategy applies.
 | 7 | Status badge (pill with dot + label + soft-bg + colored text) | candidate | `{% include %}` (caller has `status_label` + `status_badge_classes` + `status_dot_classes` in scope) | `templates/partials/_status_badge.html` (proposed path) | 2A (`_rows.html`), 2B (detail header) | TBD (whoever touches both next) |
 | 8 | Empty-state row inside a table (`<tr>` spanning all cols with friendly message) | candidate | `{% include %}` with parent providing message + colspan | `templates/partials/_table_empty_row.html` (proposed) | 2A, 3A, 4A | TBD |
 | 9 | Kebab "more actions" button (icon-only `<button>` shell) | candidate | `{% include %}`, with `aria_label` in scope | `templates/icons/_kebab.html` (icon only — surrounding `<button>` stays local) | 2A (`_rows.html`), 2B (header) | TBD |
-| 10 | Pagination block (prev / 1…N / next + per-page select) | candidate | nested `Template` + `\|safe`, fed paging data | `templates/partials/_pagination.html` (proposed) | 2A; reused by 3A, 4A | TBD (extract when 3A copies the markup) |
+| 10 | Pagination block (prev / 1…N / next, windowed with ellipses) | extracted | `{% include %}` with `pagination: Pagination` field on the parent view | `templates/partials/_pagination.html` (struct: `Pagination` in `src/views/pagination.rs`) | 2A (people), 3A (groups); reuse for 4A (oauth2) | Phase 2.5 |
 | 11 | Card frame (`<section>` with surface bg + border + shadow + padding) | rejected | n/a | n/a | everywhere | n/a — Tailwind utility soup is short enough (5 classes); extracting into a partial complicates more than it simplifies |
 | 12 | "Copy button" composite (icon-only `<button data-copy="...">` wrapping the copy SVG) | candidate | nested `Template` + `\|safe`, takes a value | `templates/partials/_copy_button.html` (proposed) | 2B (UUID, SPN), 2E (SPN in destructive confirm), expected in 2F, 2H, 4D | TBD (extract when a third call-site lands) |
 | 13 | List-row drag handle SVG (six-dot grip) | rejected | n/a | n/a | Drag reorder deferred to future task; edit form uses star-to-top instead | 2D |
@@ -76,13 +76,7 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 
 ## Newly discovered (this task)
 
-| # | Partial | Status | Strategy | Path | Used by | Owner |
-|---|---|---|---|---|---|---|
-| 25 | OAuth2 card grid (`_cards.html`) | rejected (scope too narrow) | n/a | `templates/oauth2/_cards.html` | 4A only | 4A |
-| 26 | Toggle switch (CSS-only checkbox styled as pill toggle, peer-checked pattern) | candidate | `{% include %}` with caller providing `field` name, `enabled` bool, `disabled` bool | `templates/partials/_toggle.html` (proposed) | 4C general tab (6 toggles), 4D advanced tab — extract when second call-site lands | 4C |
-| 27 | Inline field-save form row (label + text input + Save button, posts to same URL with `field`+`value`) | candidate | `{% include %}` with caller providing field name, current value, and label | (proposed) | 4C general tab (name/displayname/landing fields); may recur in 4H | 4C |
-
-Decision: the card-grid layout is unique to OAuth2 list and won't be reused by any other screen, so it stays local. The kebab button (partial #9 candidate) is also used here but just as a placeholder inline button — no wire-up yet; extraction deferred to when kebab menus are wired in a later task.
+*(Subagents append rows here during a task. Controller moves them into the main table at task-merge time.)*
 
 ---
 

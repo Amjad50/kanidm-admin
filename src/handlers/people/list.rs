@@ -53,6 +53,27 @@ pub struct PersonRow {
     pub mail: String,
     pub status: PersonStatus,
     pub spn_or_uuid: String,
+    /// Pre-rendered actions cell HTML (kebab + dropdown, or single icon).
+    pub actions_html: String,
+}
+
+fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
+    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+    render_actions_cell(
+        vec![
+            DropdownItem::link("Edit", format!("/people/{spn_or_uuid}/edit")).with_icon("edit"),
+            DropdownItem::htmx_get(
+                "Generate reset link",
+                format!("/people/{spn_or_uuid}/credentials/reset"),
+            )
+            .with_icon("reset"),
+            DropdownItem::Divider,
+            DropdownItem::htmx_get("Delete", format!("/people/{spn_or_uuid}/delete"))
+                .with_icon("delete")
+                .danger(),
+        ],
+        format!("Actions for {displayname}"),
+    )
 }
 
 #[derive(Template, WebTemplate)]
@@ -64,11 +85,8 @@ pub struct PeopleListView {
     pub filtered_count: usize,
     pub q: String,
     pub status: StatusFilter,
-    pub page: usize,
     pub per: usize,
-    pub total_pages: usize,
-    pub page_start: usize,
-    pub page_end: usize,
+    pub pagination: crate::views::pagination::Pagination,
 }
 
 #[derive(Template)]
@@ -76,6 +94,12 @@ pub struct PeopleListView {
 pub struct PeopleRowsFragment {
     pub people: Vec<PersonRow>,
     pub q: String,
+}
+
+#[derive(Template)]
+#[template(path = "partials/_pagination_oob.html")]
+pub struct PaginationOob<'a> {
+    pub pagination: &'a crate::views::pagination::Pagination,
 }
 
 
@@ -115,7 +139,7 @@ pub async fn list(
 
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
     let status_filter = params.status;
-    let per = params.per.unwrap_or(50).min(200).max(1);
+    let per = params.per.unwrap_or(15).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);
 
     let now = OffsetDateTime::now_utc();
@@ -141,13 +165,16 @@ pub async fn list(
                 .unwrap_or_default();
             let spn = attr_first(entry, "spn").unwrap_or_default();
             let mail = attr_first(entry, "mail").unwrap_or_default();
+            let id = spn_or_uuid(entry);
+            let actions_html = build_person_actions(&id, &displayname);
             Some(PersonRow {
                 initials: initials(&displayname),
                 displayname,
                 spn,
                 mail,
                 status,
-                spn_or_uuid: spn_or_uuid(entry),
+                spn_or_uuid: id,
+                actions_html,
             })
         })
         .collect();
@@ -163,18 +190,27 @@ pub async fn list(
     let page = page.min(total_pages.max(1));
 
     let start = (page - 1) * per;
-    let page_start = if filtered_count == 0 { 0 } else { start + 1 };
-    let page_end = (start + per).min(filtered_count);
     let people: Vec<PersonRow> = filtered.into_iter().skip(start).take(per).collect();
 
     if is_htmx {
-        let fragment = PeopleRowsFragment {
+        let pagination = crate::views::pagination::Pagination {
+            page,
+            total_pages,
+            filtered_count,
+            per_page: per,
+            base_url: "/people",
+            target: "#people-tbody",
+        };
+        let rows_html = askama::Template::render(&PeopleRowsFragment {
             people,
             q: q.clone(),
-        };
-        let html = askama::Template::render(&fragment)
-            .map_err(AppError::Template)?;
-        return Ok(Html(html).into_response());
+        })
+        .map_err(AppError::Template)?;
+        let pagination_html = askama::Template::render(&PaginationOob {
+            pagination: &pagination,
+        })
+        .map_err(AppError::Template)?;
+        return Ok(Html(format!("{rows_html}{pagination_html}")).into_response());
     }
 
     let view = PeopleListView {
@@ -184,11 +220,15 @@ pub async fn list(
         filtered_count,
         q,
         status: status_filter,
-        page,
         per,
-        total_pages,
-        page_start,
-        page_end,
+        pagination: crate::views::pagination::Pagination {
+            page,
+            total_pages,
+            filtered_count,
+            per_page: per,
+            base_url: "/people",
+            target: "#people-tbody",
+        },
     };
 
     Ok(view.into_response())

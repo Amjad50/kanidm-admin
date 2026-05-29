@@ -29,6 +29,31 @@ pub struct GroupRow {
     pub has_policy: bool,
     pub is_builtin: bool,
     pub is_dynamic: bool,
+    pub actions_html: String,
+}
+
+fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> String {
+    use crate::views::dropdown::{render_actions_cell, DropdownItem};
+
+    let mut items = vec![DropdownItem::link(
+        "Members",
+        format!("/groups/{spn_or_uuid}/members"),
+    )
+    .with_icon("members")];
+
+    if !is_builtin {
+        items.push(
+            DropdownItem::link("Edit", format!("/groups/{spn_or_uuid}/edit")).with_icon("edit"),
+        );
+        items.push(DropdownItem::Divider);
+        items.push(
+            DropdownItem::htmx_get("Delete", format!("/groups/{spn_or_uuid}/delete"))
+                .with_icon("delete")
+                .danger(),
+        );
+    }
+
+    render_actions_cell(items, format!("Actions for {name}"))
 }
 
 // ── View structs ──────────────────────────────────────────────────────────────
@@ -41,11 +66,8 @@ pub struct GroupsListView {
     pub total_count: usize,
     pub filtered_count: usize,
     pub q: String,
-    pub page: usize,
     pub per: usize,
-    pub total_pages: usize,
-    pub page_start: usize,
-    pub page_end: usize,
+    pub pagination: crate::views::pagination::Pagination,
 }
 
 #[derive(Template)]
@@ -53,6 +75,12 @@ pub struct GroupsListView {
 pub struct GroupRowsFragment {
     pub groups: Vec<GroupRow>,
     pub q: String,
+}
+
+#[derive(Template)]
+#[template(path = "partials/_pagination_oob.html")]
+pub struct PaginationOob<'a> {
+    pub pagination: &'a crate::views::pagination::Pagination,
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -81,14 +109,18 @@ fn entry_to_row(entry: &kanidm_proto::v1::Entry) -> GroupRow {
         attr_all(entry, "member").len()
     };
 
+    let id = spn_or_uuid(entry);
+    let name = attr_first(entry, "name").unwrap_or_default();
+    let actions_html = build_group_actions(&id, &name, is_builtin);
     GroupRow {
-        name: attr_first(entry, "name").unwrap_or_default(),
-        spn_or_uuid: spn_or_uuid(entry),
+        name,
+        spn_or_uuid: id,
         description: attr_first(entry, "description"),
         member_count,
         has_policy,
         is_builtin,
         is_dynamic,
+        actions_html,
     }
 }
 
@@ -113,7 +145,7 @@ pub async fn list(
 
     let total_count = entries.len();
     let q = params.q.as_deref().unwrap_or("").trim().to_string();
-    let per = params.per.unwrap_or(50).min(200).max(1);
+    let per = params.per.unwrap_or(15).min(200).max(1);
     let page = params.page.unwrap_or(1).max(1);
 
     let mut filtered: Vec<GroupRow> = entries
@@ -133,14 +165,27 @@ pub async fn list(
     let page = page.min(total_pages.max(1));
 
     let start = (page - 1) * per;
-    let page_start = if filtered_count == 0 { 0 } else { start + 1 };
-    let page_end = (start + per).min(filtered_count);
     let groups: Vec<GroupRow> = filtered.into_iter().skip(start).take(per).collect();
 
     if is_htmx {
-        let fragment = GroupRowsFragment { groups, q: q.clone() };
-        let html = askama::Template::render(&fragment).map_err(AppError::Template)?;
-        return Ok(Html(html).into_response());
+        let pagination = crate::views::pagination::Pagination {
+            page,
+            total_pages,
+            filtered_count,
+            per_page: per,
+            base_url: "/groups",
+            target: "#groups-tbody",
+        };
+        let rows_html = askama::Template::render(&GroupRowsFragment {
+            groups,
+            q: q.clone(),
+        })
+        .map_err(AppError::Template)?;
+        let pagination_html = askama::Template::render(&PaginationOob {
+            pagination: &pagination,
+        })
+        .map_err(AppError::Template)?;
+        return Ok(Html(format!("{rows_html}{pagination_html}")).into_response());
     }
 
     Ok(GroupsListView {
@@ -149,11 +194,15 @@ pub async fn list(
         total_count,
         filtered_count,
         q,
-        page,
         per,
-        total_pages,
-        page_start,
-        page_end,
+        pagination: crate::views::pagination::Pagination {
+            page,
+            total_pages,
+            filtered_count,
+            per_page: per,
+            base_url: "/groups",
+            target: "#groups-tbody",
+        },
     }
     .into_response())
 }

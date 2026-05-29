@@ -49,15 +49,18 @@
         </svg>
         <span>Edit</span>
       </a>
-      <a href="/people/{{ person.spn_or_uuid }}/credentials"
-         class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 no-underline transition-colors">
+      <button type="button"
+              class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 transition-colors cursor-pointer"
+              hx-get="/people/{{ person.spn_or_uuid }}/credentials/reset"
+              hx-target="#overlay-slot"
+              hx-swap="innerHTML">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2 18a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v0"/>
-          <path d="M22 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-          <path d="M19 13v9M22 16h-6"/>
+          <circle cx="7.5" cy="15.5" r="5.5"/>
+          <path d="m21 2-9.6 9.6"/>
+          <path d="m15.5 7.5 3 3L22 7l-3-3"/>
         </svg>
         <span>Generate reset link</span>
-      </a>
+      </button>
       <button type="button"
               class="bg-transparent border border-default text-secondary h-8 px-3 rounded text-sm hover:border-danger hover:text-danger inline-flex items-center gap-2 transition-colors cursor-pointer"
               hx-get="/people/{{ person.spn_or_uuid }}/delete"
@@ -87,6 +90,8 @@
     {% include "people/_tab_radius.html" %}
     {% when crate::handlers::people::detail::TabContent::Sessions with (sess) %}
     {% include "people/_tab_sessions.html" %}
+    {% when crate::handlers::people::detail::TabContent::Groups with (g) %}
+    {% include "people/_tab_groups.html" %}
     {% when crate::handlers::people::detail::TabContent::Validity(v) %}
     {% include "people/_tab_validity.html" %}
     {% endmatch %}

@@ -1,3 +1,5 @@
+pub mod dropdown;
+pub mod pagination;
 pub mod partials;
 pub mod time;
 

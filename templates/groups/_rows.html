@@ -12,7 +12,7 @@
 {% for g in groups %}
 <tr
   class="border-b border-subtle hover:bg-hover transition-colors cursor-pointer last:border-b-0"
-  onclick="if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey){location='/groups/{{ g.spn_or_uuid }}/overview'}"
+  onclick="if(event.metaKey||event.ctrlKey||event.shiftKey||event.target.closest('button,a')){return}location='/groups/{{ g.spn_or_uuid }}/overview'"
 >
   <td class="px-3 py-3">
     <div class="flex items-center gap-2">
@@ -55,22 +55,7 @@
     </div>
     {% endif %}
   </td>
-  <td class="px-3 py-3 text-right">
-    <button
-      type="button"
-      class="w-8 h-8 inline-flex items-center justify-center text-tertiary hover:text-primary hover:bg-hover rounded transition-colors"
-      onclick="event.stopPropagation()"
-      hx-get="/groups/{{ g.spn_or_uuid }}/delete"
-      hx-target="#overlay-slot"
-      hx-swap="innerHTML"
-      aria-label="Delete group"
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18"/>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-      </svg>
-    </button>
-  </td>
+  <td class="px-3 py-3 text-right">{{ g.actions_html|safe }}</td>
 </tr>
 {% endfor %}
 {% endif %}

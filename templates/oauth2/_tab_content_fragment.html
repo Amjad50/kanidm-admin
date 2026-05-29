@@ -1,6 +1,0 @@
-{% match tab_content %}
-{% when crate::handlers::oauth2::detail::TabContent::General with (g) %}
-{% include "oauth2/_tab_general.html" %}
-{% when crate::handlers::oauth2::detail::TabContent::Placeholder with (p) %}
-{% include "oauth2/_tab_placeholder.html" %}
-{% endmatch %}

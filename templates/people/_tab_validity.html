@@ -41,16 +41,11 @@
             hx-swap="innerHTML">
         <div class="flex flex-col gap-2 mb-5">
           <label class="flex items-start gap-3 cursor-pointer">
-            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 inline-flex items-center justify-center
-              {% match v.valid_from.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Clear %}border-accent bg-accent{% when crate::handlers::people::validity::ValidityMode::Datetime %}border-default bg-surface{% endmatch %}">
-              {% match v.valid_from.current_mode %}
-              {% when crate::handlers::people::validity::ValidityMode::Clear %}
-              <span class="w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
-              {% when crate::handlers::people::validity::ValidityMode::Datetime %}
-              {% endmatch %}
-            </span>
-            <input type="radio" name="mode" value="clear" class="sr-only"
+            <input type="radio" name="mode" value="clear" class="peer sr-only"
               {% match v.valid_from.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Clear %}checked{% when crate::handlers::people::validity::ValidityMode::Datetime %}{% endmatch %}>
+            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 border-default bg-surface inline-flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent peer-checked:[&>span]:block">
+              <span class="hidden w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
+            </span>
             <div>
               <div class="text-sm font-medium text-primary">{{ v.valid_from.clear_label }}</div>
               <div class="text-xs text-tertiary mt-0.5">{{ v.valid_from.clear_description }}</div>
@@ -58,16 +53,11 @@
           </label>
 
           <label class="flex items-start gap-3 cursor-pointer">
-            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 inline-flex items-center justify-center
-              {% match v.valid_from.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Datetime %}border-accent bg-accent{% when crate::handlers::people::validity::ValidityMode::Clear %}border-default bg-surface{% endmatch %}">
-              {% match v.valid_from.current_mode %}
-              {% when crate::handlers::people::validity::ValidityMode::Datetime %}
-              <span class="w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
-              {% when crate::handlers::people::validity::ValidityMode::Clear %}
-              {% endmatch %}
-            </span>
-            <input type="radio" name="mode" value="datetime" class="sr-only"
+            <input type="radio" name="mode" value="datetime" class="peer sr-only"
               {% match v.valid_from.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Datetime %}checked{% when crate::handlers::people::validity::ValidityMode::Clear %}{% endmatch %}>
+            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 border-default bg-surface inline-flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent peer-checked:[&>span]:block">
+              <span class="hidden w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
+            </span>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-primary">Specific date</div>
               <div class="flex items-center gap-2 mt-2 flex-wrap">
@@ -100,16 +90,11 @@
             hx-swap="innerHTML">
         <div class="flex flex-col gap-2 mb-5">
           <label class="flex items-start gap-3 cursor-pointer">
-            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 inline-flex items-center justify-center
-              {% match v.expire.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Clear %}border-accent bg-accent{% when crate::handlers::people::validity::ValidityMode::Datetime %}border-default bg-surface{% endmatch %}">
-              {% match v.expire.current_mode %}
-              {% when crate::handlers::people::validity::ValidityMode::Clear %}
-              <span class="w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
-              {% when crate::handlers::people::validity::ValidityMode::Datetime %}
-              {% endmatch %}
-            </span>
-            <input type="radio" name="mode" value="clear" class="sr-only"
+            <input type="radio" name="mode" value="clear" class="peer sr-only"
               {% match v.expire.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Clear %}checked{% when crate::handlers::people::validity::ValidityMode::Datetime %}{% endmatch %}>
+            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 border-default bg-surface inline-flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent peer-checked:[&>span]:block">
+              <span class="hidden w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
+            </span>
             <div>
               <div class="text-sm font-medium text-primary">{{ v.expire.clear_label }}</div>
               <div class="text-xs text-tertiary mt-0.5">{{ v.expire.clear_description }}</div>
@@ -117,16 +102,11 @@
           </label>
 
           <label class="flex items-start gap-3 cursor-pointer">
-            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 inline-flex items-center justify-center
-              {% match v.expire.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Datetime %}border-accent bg-accent{% when crate::handlers::people::validity::ValidityMode::Clear %}border-default bg-surface{% endmatch %}">
-              {% match v.expire.current_mode %}
-              {% when crate::handlers::people::validity::ValidityMode::Datetime %}
-              <span class="w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
-              {% when crate::handlers::people::validity::ValidityMode::Clear %}
-              {% endmatch %}
-            </span>
-            <input type="radio" name="mode" value="datetime" class="sr-only"
+            <input type="radio" name="mode" value="datetime" class="peer sr-only"
               {% match v.expire.current_mode %}{% when crate::handlers::people::validity::ValidityMode::Datetime %}checked{% when crate::handlers::people::validity::ValidityMode::Clear %}{% endmatch %}>
+            <span class="mt-0.5 shrink-0 w-4 h-4 rounded-pill border-2 border-default bg-surface inline-flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent peer-checked:[&>span]:block">
+              <span class="hidden w-1.5 h-1.5 rounded-pill bg-on-accent"></span>
+            </span>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-medium text-primary">Specific date</div>
               <div class="flex items-center gap-2 mt-2 flex-wrap">
