@@ -1,7 +1,7 @@
 {% for person in people %}
 <tr
   class="border-b border-border last:border-0 hover:bg-accent cursor-pointer transition-colors"
-  onclick="if(event.ctrlKey||event.metaKey||event.button===1||event.target.closest('button,a')){return}window.location='/people/{{ person.spn_or_uuid }}/overview'"
+  data-row-href="/people/{{ person.spn_or_uuid }}/overview"
 >
   <td class="px-3 py-3">
     <div class="flex items-center gap-3">

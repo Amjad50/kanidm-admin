@@ -369,9 +369,6 @@ fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> Strin
     .render()
     .unwrap_or_default();
 
-    let confirm_token_js =
-        serde_json::to_string(group_name).unwrap_or_else(|_| format!("{:?}", group_name));
-
     let body_html = DestructiveConfirm {
         lead_text: "This will remove ALL members from:".to_string(),
         target_html,
@@ -380,7 +377,6 @@ fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> Strin
             "This cannot be undone — you'll need to re-add members manually.".to_string(),
         ],
         confirm_token: group_name.to_string(),
-        confirm_token_js,
         confirm_label: "Type the group name to confirm:".to_string(),
         input_id: input_id.clone(),
         error,

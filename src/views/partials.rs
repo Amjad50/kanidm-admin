@@ -32,8 +32,6 @@ pub struct DestructiveConfirm {
     pub consequences: Vec<String>,
     /// The exact string the user must type to unlock the confirm button.
     pub confirm_token: String,
-    /// JSON-encoded version of `confirm_token` for safe embedding in `<script>`.
-    pub confirm_token_js: String,
     /// Label above the confirm input, e.g. `"Type the SPN to confirm:"`.
     pub confirm_label: String,
     /// DOM id suffix; used to build `confirm-input-{id}` and `confirm-submit-{id}`.

@@ -39,8 +39,6 @@ async fn build_modal(
     .render()
     .map_err(AppError::Template)?;
 
-    let confirm_token_js = serde_json::to_string(&spn).unwrap_or_else(|_| format!("{:?}", spn));
-
     let body_html = DestructiveConfirm {
         lead_text: "You're about to delete:".to_string(),
         target_html,
@@ -51,7 +49,6 @@ async fn build_modal(
             "Active OAuth2 tokens they have signed are revoked.".to_string(),
         ],
         confirm_token: spn.clone(),
-        confirm_token_js,
         confirm_label: "Type the SPN to confirm:".to_string(),
         input_id: input_id.clone(),
         error,

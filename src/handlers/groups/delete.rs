@@ -46,8 +46,6 @@ async fn build_modal(
     .render()
     .map_err(AppError::Template)?;
 
-    let confirm_token_js = serde_json::to_string(&name).unwrap_or_else(|_| format!("{:?}", name));
-
     let body_html = DestructiveConfirm {
         lead_text: "You're about to delete:".to_string(),
         target_html,
@@ -57,7 +55,6 @@ async fn build_modal(
             "OAuth2 scope maps referencing this group will stop granting scopes.".to_string(),
         ],
         confirm_token: name.clone(),
-        confirm_token_js,
         confirm_label: "Type the group name to confirm:".to_string(),
         input_id: input_id.clone(),
         error,

@@ -142,8 +142,6 @@ async fn build_revoke_modal(
 
     let input_id = format!("revoke-key-{}", safe_id(key_id));
     let confirm_token = key_id.to_string();
-    let confirm_token_js = serde_json::to_string(&confirm_token)
-        .unwrap_or_else(|_| format!("{:?}", confirm_token));
 
     let target_html = IdentityRow {
         initials: "KY".to_string(),
@@ -162,7 +160,6 @@ async fn build_revoke_modal(
             "This action cannot be undone.".to_string(),
         ],
         confirm_token: confirm_token.clone(),
-        confirm_token_js,
         confirm_label: "Type the key ID to confirm:".to_string(),
         input_id: input_id.clone(),
         error,

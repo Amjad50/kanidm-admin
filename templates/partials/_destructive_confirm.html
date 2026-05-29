@@ -24,19 +24,10 @@
   </div>
   <input id="confirm-input-{{ input_id }}"
          type="text"
+         data-bind-source
+         data-bind-expected="{{ confirm_token }}"
+         data-bind-target="#confirm-submit-{{ input_id }}"
          class="bg-card border border-border rounded h-9 px-3 w-full font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors"
          placeholder="Type to confirm"
          autocomplete="off" />
 </div>
-<script>
-(function() {
-  var input = document.getElementById('confirm-input-{{ input_id }}');
-  var submit = document.getElementById('confirm-submit-{{ input_id }}');
-  if (!input || !submit) return;
-  var expected = {{ confirm_token_js|safe }};
-  input.addEventListener('input', function() {
-    // exact match by design — pasting whitespace should not silently succeed
-    submit.disabled = input.value !== expected;
-  });
-})();
-</script>
