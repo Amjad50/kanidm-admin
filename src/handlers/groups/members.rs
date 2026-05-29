@@ -1,0 +1,406 @@
+use askama::Template;
+use axum::extract::{Path, State};
+use axum::http::HeaderMap;
+use axum::response::{Html, IntoResponse, Response};
+use axum::Form;
+use axum_htmx::HxRequest;
+
+use crate::auth::AdminUser;
+use crate::error::{AppError, AppResult};
+use crate::kanidm::entry::{attr_all, attr_first};
+use crate::views::partials::{DeleteFooter, DestructiveConfirm, IdentityRow, Modal};
+use crate::AppState;
+
+use super::common::{compute_header, fetch_group, friendly_error, spn_initials, GroupHeader};
+use super::detail::{render_detail, TabContent};
+
+// ── Member row data ───────────────────────────────────────────────────────────
+
+pub struct MemberRow {
+    pub initials: String,
+    pub name: String,
+    pub displayname: String,
+    pub spn: String,
+    pub encoded_id: String,
+}
+
+/// All data needed to render the Members tab.
+pub struct MembersData {
+    pub members: Vec<MemberRow>,
+    pub is_dynamic: bool,
+    pub people_spns: Vec<String>,
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+
+#[derive(Template)]
+#[template(path = "groups/_tab_members.html")]
+pub struct MembersTabFragment<'a> {
+    pub data: &'a MembersData,
+    pub group: &'a GroupHeader,
+}
+
+#[derive(Template)]
+#[template(path = "groups/_members_list.html")]
+pub struct MembersListFragment<'a> {
+    pub data: &'a MembersData,
+    pub group: &'a GroupHeader,
+}
+
+// ── Form structs ──────────────────────────────────────────────────────────────
+
+#[derive(serde::Deserialize)]
+pub struct AddMemberForm {
+    pub member: String,
+}
+
+// ── Data helpers ──────────────────────────────────────────────────────────────
+
+/// URL-encode a member id for safe use in route paths.
+/// Kanidm SPNs contain `@` which must be percent-encoded.
+pub fn encode_member_id(id: &str) -> String {
+    id.chars()
+        .flat_map(|c| match c {
+            'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' | '.' | '~' => {
+                vec![c]
+            }
+            _ => {
+                let mut buf = [0u8; 4];
+                let bytes = c.encode_utf8(&mut buf);
+                bytes
+                    .bytes()
+                    .flat_map(|b| format!("%{b:02X}").chars().collect::<Vec<_>>())
+                    .collect()
+            }
+        })
+        .collect()
+}
+
+async fn build_members_data(
+    state: &AppState,
+    user: &AdminUser,
+    entry: &kanidm_proto::v1::Entry,
+) -> MembersData {
+    let classes = attr_all(entry, "class");
+    let is_dynamic = classes.iter().any(|c| c == "dyngroup");
+
+    let member_spns = if is_dynamic {
+        attr_all(entry, "dynmember")
+    } else {
+        attr_all(entry, "member")
+    };
+
+    let members: Vec<MemberRow> = member_spns
+        .into_iter()
+        .map(|spn| {
+            let name_part = spn.split('@').next().unwrap_or(&spn).to_string();
+            MemberRow {
+                initials: spn_initials(&spn),
+                name: name_part.clone(),
+                displayname: name_part,
+                spn: spn.clone(),
+                encoded_id: encode_member_id(&spn),
+            }
+        })
+        .collect();
+
+    // Fetch people list for datalist typeahead — failures are non-fatal
+    let people_spns = if let Ok(client) = state.kanidm.for_token(&user.token).await {
+        client
+            .idm_person_account_list()
+            .await
+            .unwrap_or_default()
+            .iter()
+            .filter_map(|e| attr_first(e, "spn"))
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    MembersData { members, is_dynamic, people_spns }
+}
+
+// ── Handlers ─────────────────────────────────────────────────────────────────
+
+/// GET /groups/{id}/members
+pub async fn tab(
+    State(state): State<AppState>,
+    HxRequest(is_htmx): HxRequest,
+    Path(id): Path<String>,
+    user: AdminUser,
+) -> AppResult<Response> {
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group = compute_header(&entry);
+    let data = build_members_data(&state, &user, &entry).await;
+    let tab_content = TabContent::Members(data);
+    render_detail(is_htmx, user, group, "members", tab_content)
+}
+
+/// POST /groups/{id}/members/add
+pub async fn add(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    user: AdminUser,
+    Form(form): Form<AddMemberForm>,
+) -> AppResult<Response> {
+    let member = form.member.trim().to_string();
+    if member.is_empty() {
+        return Ok(Html(String::new()).into_response());
+    }
+
+    let members: Vec<&str> = member.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group = compute_header(&entry);
+
+    if group.is_dynamic {
+        let data = build_members_data(&state, &user, &entry).await;
+        let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
+            .map_err(AppError::Template)?;
+        let error_oob = render_members_error_oob(Some(
+            "Dynamic group membership is computed automatically and cannot be edited.".to_string(),
+        ));
+        return Ok(Html(format!("{rows_html}{error_oob}")).into_response());
+    }
+
+    let client = state
+        .kanidm
+        .for_token(&user.token)
+        .await
+        .map_err(|e| AppError::Kanidm(e.to_string()))?;
+
+    let add_error = if let Err(e) = client.idm_group_add_members(&id, &members).await {
+        tracing::warn!(group = %id, error = ?e, "failed to add members");
+        Some(friendly_error("add members", &e))
+    } else {
+        None
+    };
+
+    // Re-fetch entry and return updated members list fragment
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group = compute_header(&entry);
+    let data = build_members_data(&state, &user, &entry).await;
+
+    let rows_html = askama::Template::render(&MembersListFragment {
+        data: &data,
+        group: &group,
+    })
+    .map_err(AppError::Template)?;
+
+    let error_oob = render_members_error_oob(add_error);
+    Ok(Html(format!("{rows_html}{error_oob}")).into_response())
+}
+
+/// POST /groups/{id}/members/{mid}/remove
+pub async fn remove(
+    State(state): State<AppState>,
+    Path((id, mid)): Path<(String, String)>,
+    user: AdminUser,
+) -> AppResult<Response> {
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group = compute_header(&entry);
+
+    if group.is_dynamic {
+        let data = build_members_data(&state, &user, &entry).await;
+        let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
+            .map_err(AppError::Template)?;
+        let error_oob = render_members_error_oob(Some(
+            "Dynamic group membership is computed automatically and cannot be edited.".to_string(),
+        ));
+        return Ok(Html(format!("{rows_html}{error_oob}")).into_response());
+    }
+
+    let client = state
+        .kanidm
+        .for_token(&user.token)
+        .await
+        .map_err(|e| AppError::Kanidm(e.to_string()))?;
+
+    let remove_error = if let Err(e) = client.idm_group_remove_members(&id, &[mid.as_str()]).await {
+        tracing::warn!(group = %id, member = %mid, error = ?e, "failed to remove member");
+        Some(friendly_error("remove member", &e))
+    } else {
+        None
+    };
+
+    // Re-fetch and return updated members list
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group = compute_header(&entry);
+    let data = build_members_data(&state, &user, &entry).await;
+
+    let rows_html = askama::Template::render(&MembersListFragment {
+        data: &data,
+        group: &group,
+    })
+    .map_err(AppError::Template)?;
+
+    let error_oob = render_members_error_oob(remove_error);
+    Ok(Html(format!("{rows_html}{error_oob}")).into_response())
+}
+
+/// Returns an HTMX OOB swap fragment that updates `#members-error`.
+/// When `msg` is None the div is cleared; when Some it shows the error banner.
+fn render_members_error_oob(msg: Option<String>) -> String {
+    match msg {
+        None => r#"<div id="members-error" hx-swap-oob="innerHTML"></div>"#.to_string(),
+        Some(text) => format!(
+            r#"<div id="members-error" hx-swap-oob="innerHTML"><div class="text-danger text-sm bg-danger-soft border border-danger rounded px-3 py-2">{text}</div></div>"#,
+        ),
+    }
+}
+
+const PURGE_SHIELD_SVG: &str = r#"<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>"#;
+
+/// POST /groups/{id}/members/purge
+pub async fn purge(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    user: AdminUser,
+) -> AppResult<Response> {
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group_header = compute_header(&entry);
+
+    if group_header.is_dynamic {
+        let group_name = attr_first(&entry, "name").unwrap_or_else(|| id.clone());
+        let html = build_purge_modal(
+            &id,
+            &group_name,
+            Some("Dynamic group membership is computed automatically and cannot be edited.".to_string()),
+        );
+        return Ok(Html(html).into_response());
+    }
+
+    let client = state
+        .kanidm
+        .for_token(&user.token)
+        .await
+        .map_err(|e| AppError::Kanidm(e.to_string()))?;
+
+    match client.idm_group_purge_members(&id).await {
+        Ok(()) => {
+            // Re-fetch and return updated members list
+            let entry = fetch_group(&state, &user, &id).await?;
+            let group = compute_header(&entry);
+            let data = build_members_data(&state, &user, &entry).await;
+            let html = askama::Template::render(&MembersListFragment {
+                data: &data,
+                group: &group,
+            })
+            .map_err(AppError::Template)?;
+            // Also close the modal overlay
+            let mut headers = HeaderMap::new();
+            headers.insert(
+                "HX-Trigger",
+                "closeModal".parse().expect("static header"),
+            );
+            Ok((headers, Html(html)).into_response())
+        }
+        Err(e) => {
+            tracing::warn!(group = %id, error = ?e, "purge members failed");
+            let msg = friendly_error("purge members", &e);
+            // Return error modal
+            let entry = fetch_group(&state, &user, &id).await?;
+            let group_name = attr_first(&entry, "name").unwrap_or_else(|| id.clone());
+            let html = build_purge_modal(&id, &group_name, Some(msg));
+            Ok(Html(html).into_response())
+        }
+    }
+}
+
+fn build_purge_modal(id: &str, group_name: &str, error: Option<String>) -> String {
+    let input_id = format!("purge-{id}");
+    let initials: String = group_name.chars().take(2).collect::<String>().to_uppercase();
+
+    let target_html = IdentityRow {
+        initials,
+        displayname: group_name.to_string(),
+        spn: group_name.to_string(),
+    }
+    .render()
+    .unwrap_or_default();
+
+    let confirm_token_js =
+        serde_json::to_string(group_name).unwrap_or_else(|_| format!("{:?}", group_name));
+
+    let body_html = DestructiveConfirm {
+        lead_text: "This will remove ALL members from:".to_string(),
+        target_html,
+        consequences: vec![
+            "All static members will be removed immediately.".to_string(),
+            "This cannot be undone — you'll need to re-add members manually.".to_string(),
+        ],
+        confirm_token: group_name.to_string(),
+        confirm_token_js,
+        confirm_label: "Type the group name to confirm:".to_string(),
+        input_id: input_id.clone(),
+        error,
+    }
+    .render()
+    .unwrap_or_default();
+
+    let footer_html = DeleteFooter {
+        action_url: format!("/groups/{id}/members/purge"),
+        confirm_label: "Purge all members".to_string(),
+        input_id,
+    }
+    .render()
+    .unwrap_or_default();
+
+    Modal {
+        title: "Purge all members".to_string(),
+        icon_svg: Some(PURGE_SHIELD_SVG),
+        icon_color_class: "text-danger",
+        body_html,
+        footer_html,
+        size_class: "max-w-md",
+    }
+    .render()
+    .unwrap_or_default()
+}
+
+/// Returns the purge confirmation modal HTML (for triggering via HTMX get).
+pub async fn purge_modal(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    user: AdminUser,
+) -> AppResult<Response> {
+    let entry = fetch_group(&state, &user, &id).await?;
+    let group_name = attr_first(&entry, "name").unwrap_or_else(|| id.clone());
+    let html = build_purge_modal(&id, &group_name, None);
+    Ok(Html(html).into_response())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::encode_member_id;
+
+    #[test]
+    fn at_sign_encodes_to_percent40() {
+        assert_eq!(encode_member_id("@"), "%40");
+    }
+
+    #[test]
+    fn slash_encodes_to_percent2f() {
+        assert_eq!(encode_member_id("/"), "%2F");
+    }
+
+    #[test]
+    fn alphanumeric_and_unreserved_passthrough() {
+        assert_eq!(encode_member_id("abc-XYZ_1.2~"), "abc-XYZ_1.2~");
+    }
+
+    #[test]
+    fn multibyte_utf8_encodes_correctly() {
+        assert_eq!(encode_member_id("é"), "%C3%A9");
+    }
+
+    #[test]
+    fn empty_string_stays_empty() {
+        assert_eq!(encode_member_id(""), "");
+    }
+
+    #[test]
+    fn spn_encodes_at_sign() {
+        assert_eq!(encode_member_id("alice@example.com"), "alice%40example.com");
+    }
+}

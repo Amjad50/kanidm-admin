@@ -1,0 +1,76 @@
+{% if groups.is_empty() %}
+<tr>
+  <td colspan="5" class="px-4 py-12 text-center text-tertiary text-sm">
+    {% if !q.is_empty() %}
+    No groups match <span class="font-mono text-secondary">{{ q }}</span>.
+    {% else %}
+    No groups found.
+    {% endif %}
+  </td>
+</tr>
+{% else %}
+{% for g in groups %}
+<tr
+  class="border-b border-subtle hover:bg-hover transition-colors cursor-pointer last:border-b-0"
+  onclick="if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey){location='/groups/{{ g.spn_or_uuid }}/overview'}"
+>
+  <td class="px-3 py-3">
+    <div class="flex items-center gap-2">
+      <span class="font-mono font-medium text-sm text-primary">{{ g.name }}</span>
+      {% if g.is_builtin %}
+      <span class="inline-flex items-center bg-elevated border border-subtle rounded-pill text-xs font-medium px-2 h-5 text-secondary">Built-in</span>
+      {% endif %}
+      {% if g.is_dynamic %}
+      <span class="inline-flex items-center bg-info-soft border border-info rounded-pill text-xs font-medium px-2 h-5 text-info">Dynamic</span>
+      {% endif %}
+    </div>
+  </td>
+  <td class="px-3 py-3 text-secondary text-sm truncate max-w-xs">
+    {% match g.description %}
+    {% when Some with (d) %}{{ d }}
+    {% when None %}<span class="text-tertiary">—</span>
+    {% endmatch %}
+  </td>
+  <td class="px-3 py-3">
+    <div class="flex items-center gap-1.5 text-sm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-tertiary shrink-0">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span class="font-mono">{{ g.member_count }}</span>
+    </div>
+  </td>
+  <td class="px-3 py-3">
+    {% if g.has_policy %}
+    <div class="flex items-center gap-1.5 text-xs text-secondary">
+      <span class="w-2 h-2 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+      Enabled
+    </div>
+    {% else %}
+    <div class="flex items-center gap-1.5 text-xs text-tertiary">
+      <span class="w-2 h-2 rounded-pill border border-strong shrink-0"></span>
+      Default
+    </div>
+    {% endif %}
+  </td>
+  <td class="px-3 py-3 text-right">
+    <button
+      type="button"
+      class="w-8 h-8 inline-flex items-center justify-center text-tertiary hover:text-primary hover:bg-hover rounded transition-colors"
+      onclick="event.stopPropagation()"
+      hx-get="/groups/{{ g.spn_or_uuid }}/delete"
+      hx-target="#overlay-slot"
+      hx-swap="innerHTML"
+      aria-label="Delete group"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </button>
+  </td>
+</tr>
+{% endfor %}
+{% endif %}

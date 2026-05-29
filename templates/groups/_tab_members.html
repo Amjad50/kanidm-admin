@@ -1,0 +1,73 @@
+<div class="flex flex-col gap-4">
+
+  {% if data.is_dynamic %}
+  <div class="bg-info-soft border border-info rounded-md px-4 py-3 text-info text-sm flex items-center gap-2">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4M12 8h.01"/>
+    </svg>
+    This is a dynamic group. Members are managed automatically by a filter rule and cannot be added or removed manually.
+  </div>
+  {% endif %}
+
+  {% if !data.is_dynamic %}
+  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+    <div class="text-tertiary text-xs uppercase tracking-wider font-semibold mb-3">Add members</div>
+    <form hx-post="/groups/{{ group.spn_or_uuid }}/members/add"
+          hx-target="#members-table-body"
+          hx-swap="innerHTML"
+          hx-on::after-request="this.reset()">
+      <div class="flex gap-2">
+        <input
+          type="text"
+          name="member"
+          list="people-spns"
+          placeholder="user@example.com or SPN"
+          class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
+          autocomplete="off"
+        />
+        <datalist id="people-spns">
+          {% for spn in data.people_spns %}
+          <option value="{{ spn }}"/>
+          {% endfor %}
+        </datalist>
+        <button type="submit"
+                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:bg-accent-hover transition-colors shrink-0">
+          Add
+        </button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+
+  <div id="members-error"></div>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-subtle">
+      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">
+        Members
+        <span class="ml-1.5 text-secondary font-mono">{{ data.members.len() }}</span>
+      </div>
+      {% if !data.is_dynamic && !data.members.is_empty() %}
+      <button type="button"
+              class="text-xs text-tertiary hover:text-danger transition-colors inline-flex items-center gap-1"
+              hx-get="/groups/{{ group.spn_or_uuid }}/members/purge-modal"
+              hx-target="#overlay-slot"
+              hx-swap="innerHTML">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Purge all
+      </button>
+      {% endif %}
+    </div>
+
+    <table class="w-full text-sm">
+      <tbody id="members-table-body">
+        {% include "groups/_members_list.html" %}
+      </tbody>
+    </table>
+  </section>
+
+</div>

@@ -1,0 +1,8 @@
+{% match tab_content %}
+{% when crate::handlers::groups::detail::TabContent::Overview with (d) %}
+{% include "groups/_tab_overview.html" %}
+{% when crate::handlers::groups::detail::TabContent::Members with (data) %}
+{% include "groups/_tab_members.html" %}
+{% when crate::handlers::groups::detail::TabContent::Policy with (p) %}
+{% include "groups/_tab_policy_content.html" %}
+{% endmatch %}

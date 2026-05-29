@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ group_name }} · Groups · Kanidm Admin{% endblock %}
+
+{% block crumb %}
+<a href="/groups" class="hover:text-secondary transition-colors no-underline">Groups</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<a href="/groups/{{ group_id }}/overview" class="hover:text-secondary transition-colors no-underline font-mono truncate">{{ group_name }}</a>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 shrink-0">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+<span class="text-primary font-medium">Edit</span>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-8 py-6">
+
+  <div class="flex items-start justify-between gap-6 mb-7">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">Edit {{ group_name }}</h1>
+      <div class="text-secondary text-sm mt-1">Group attributes that can be updated.</div>
+    </div>
+  </div>
+
+  <form class="bg-surface border border-subtle rounded-md shadow-card p-6 max-w-3xl" method="post" action="/groups/{{ group_id }}">
+
+    {% if let Some(err) = form_error %}
+    <div class="mb-4 px-4 py-3 bg-danger-soft border border-danger rounded text-danger text-sm">
+      {{ err }}
+    </div>
+    {% endif %}
+
+    <div class="flex flex-col gap-5">
+
+      {{ name_field.render().unwrap()|safe }}
+      {{ description_field.render().unwrap()|safe }}
+
+      <div>
+        <label class="block text-sm font-medium text-secondary mb-1.5">
+          Mail addresses
+        </label>
+        <div id="emails-list">
+          {% for row in emails %}
+          <div class="flex items-center gap-2 mb-2">
+            <input
+              type="email"
+              name="email"
+              value="{{ row.value }}"
+              class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
+              placeholder="group@example.com"
+            />
+            {% if row.is_primary %}
+            <span class="text-xs text-tertiary shrink-0">primary</span>
+            {% endif %}
+            <button type="button"
+                    class="text-tertiary hover:text-danger transition-colors shrink-0"
+                    onclick="this.closest('div').remove()">
+              {% include "icons/_x.html" %}
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button"
+                class="mt-1 text-sm text-link hover:underline inline-flex items-center gap-1"
+                onclick="addEmail()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add mail
+        </button>
+        <div class="text-tertiary text-xs mt-1.5">First address is primary. Leave empty to remove all mail.</div>
+        <script>
+          function addEmail() {
+            const list = document.getElementById('emails-list');
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 mb-2';
+            row.innerHTML = '<input type="email" name="email" class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong" placeholder="group@example.com" /><button type="button" class="text-tertiary hover:text-danger transition-colors shrink-0" onclick="this.closest(\'div\').remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+            list.appendChild(row);
+            row.querySelector('input').focus();
+          }
+        </script>
+      </div>
+
+      {{ entry_managed_by_field.render().unwrap()|safe }}
+
+      <div class="flex justify-end gap-2 border-t border-subtle pt-4 mt-2">
+        <a href="/groups/{{ group_id }}/overview"
+           class="bg-transparent border border-default text-secondary h-9 px-4 rounded text-sm hover:bg-hover hover:text-primary inline-flex items-center gap-2 no-underline transition-colors">
+          Cancel
+        </a>
+        <button type="submit"
+                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:bg-accent-hover transition-colors">
+          Save changes
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}
