@@ -2,64 +2,51 @@
 
 {% block title %}Dashboard · Kanidm Admin{% endblock %}
 
+{% block crumb %}Dashboard{% endblock %}
+
 {% block content %}
-<header class="mb-8">
-    <h1 class="text-2xl font-semibold">Dashboard</h1>
-    <p class="text-zinc-400 text-sm mt-1">
-        Signed in as <span class="text-zinc-200">{{ display_name }}</span>
-        <span class="text-zinc-500">·</span>
-        <span class="font-mono text-xs">{{ spn }}</span>
-    </p>
-</header>
+<div class="max-w-7xl mx-auto px-8 py-6">
 
-<section class="grid grid-cols-3 gap-4 mb-8">
+  <!-- Page header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
+    <p class="text-secondary text-sm mt-1">Welcome, {{ base.user_displayname }}</p>
+  </div>
 
-    <a href="/people" class="block rounded-lg border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 px-5 py-4 transition">
-        <div class="text-zinc-400 text-xs uppercase tracking-wide">People</div>
-        <div class="text-3xl font-semibold tabular-nums mt-1">
-            {% match person_count %}
-                {% when Some with (n) %}{{ n }}
-                {% when None %}<span class="text-zinc-500">—</span>
-            {% endmatch %}
-        </div>
+  <!-- Count cards -->
+  <div class="grid grid-cols-3 gap-4">
+
+    <a href="/people" class="bg-surface border border-subtle rounded-md shadow-card p-6 block no-underline hover:border-default transition-colors">
+      <div class="text-3xl font-semibold">
+        {% match person_count %}
+          {% when Some with (n) %}{{ n }}
+          {% when None %}<span class="text-disabled">—</span>
+        {% endmatch %}
+      </div>
+      <div class="text-secondary text-sm mt-1">People</div>
     </a>
 
-    <a href="/groups" class="block rounded-lg border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 px-5 py-4 transition">
-        <div class="text-zinc-400 text-xs uppercase tracking-wide">Groups</div>
-        <div class="text-3xl font-semibold tabular-nums mt-1">
-            {% match group_count %}
-                {% when Some with (n) %}{{ n }}
-                {% when None %}<span class="text-zinc-500">—</span>
-            {% endmatch %}
-        </div>
+    <a href="/groups" class="bg-surface border border-subtle rounded-md shadow-card p-6 block no-underline hover:border-default transition-colors">
+      <div class="text-3xl font-semibold">
+        {% match group_count %}
+          {% when Some with (n) %}{{ n }}
+          {% when None %}<span class="text-disabled">—</span>
+        {% endmatch %}
+      </div>
+      <div class="text-secondary text-sm mt-1">Groups</div>
     </a>
 
-    <a href="/oauth2" class="block rounded-lg border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 px-5 py-4 transition">
-        <div class="text-zinc-400 text-xs uppercase tracking-wide">OAuth2 Apps</div>
-        <div class="text-3xl font-semibold tabular-nums mt-1">
-            {% match oauth2_count %}
-                {% when Some with (n) %}{{ n }}
-                {% when None %}<span class="text-zinc-500">—</span>
-            {% endmatch %}
-        </div>
+    <a href="/oauth2" class="bg-surface border border-subtle rounded-md shadow-card p-6 block no-underline hover:border-default transition-colors">
+      <div class="text-3xl font-semibold">
+        {% match oauth2_count %}
+          {% when Some with (n) %}{{ n }}
+          {% when None %}<span class="text-disabled">—</span>
+        {% endmatch %}
+      </div>
+      <div class="text-secondary text-sm mt-1">OAuth2 Apps</div>
     </a>
-</section>
 
-<section class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-6 py-5">
-    <h2 class="text-sm font-medium text-zinc-300 mb-3">Instance</h2>
-    <dl class="space-y-2 text-sm">
-        <div class="flex gap-3">
-            <dt class="text-zinc-500 w-32">Domain</dt>
-            <dd class="font-mono">{{ domain_name.as_deref().unwrap_or("—") }}</dd>
-        </div>
-        <div class="flex gap-3">
-            <dt class="text-zinc-500 w-32">Display name</dt>
-            <dd>{{ domain_display_name.as_deref().unwrap_or("—") }}</dd>
-        </div>
-    </dl>
-</section>
+  </div>
 
-<p class="mt-8 text-xs text-zinc-500">
-    This is a Phase 1 scaffold. Real screens drop in here as we port from <code>design/</code>.
-</p>
+</div>
 {% endblock %}

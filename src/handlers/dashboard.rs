@@ -4,13 +4,13 @@ use axum::extract::State;
 
 use crate::auth::AdminUser;
 use crate::error::AppResult;
+use crate::views::BaseFields;
 use crate::AppState;
 
 #[derive(Template, WebTemplate)]
 #[template(path = "dashboard.html")]
 pub struct DashboardView {
-    pub display_name: String,
-    pub spn: String,
+    pub base: BaseFields,
     pub person_count: Option<usize>,
     pub group_count: Option<usize>,
     pub oauth2_count: Option<usize>,
@@ -52,8 +52,7 @@ pub async fn dashboard(
     };
 
     Ok(DashboardView {
-        display_name: user.displayname().to_string(),
-        spn: user.spn().to_string(),
+        base: BaseFields::new(&user, "dashboard"),
         person_count,
         group_count,
         oauth2_count,

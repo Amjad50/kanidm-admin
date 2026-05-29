@@ -1,14 +1,16 @@
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 
+use crate::views::{ForbiddenView, ServerErrorView, UnauthenticatedView};
+
 /// App-level error type. Converts to an HTTP response.
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
     #[error("not authenticated")]
-    Unauthenticated,
+    Unauthenticated { kanidm_url: String },
 
     #[error("forbidden: not a member of the admin group")]
-    Forbidden,
+    Forbidden { admin_group: String },
 
     #[error("kanidm client error: {0}")]
     Kanidm(String),
@@ -23,27 +25,28 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
-            // For now, both unauth and forbidden return generic responses.
-            // Phase 2 will wire these to the kanidm login redirect + an HTML "forbidden" page.
-            AppError::Unauthenticated => {
-                (StatusCode::UNAUTHORIZED, "Unauthenticated. Sign in to kanidm first.").into_response()
+            AppError::Unauthenticated { kanidm_url } => {
+                let view = UnauthenticatedView { kanidm_url };
+                (StatusCode::UNAUTHORIZED, view.into_response()).into_response()
             }
-            AppError::Forbidden => (
-                StatusCode::FORBIDDEN,
-                "Forbidden. Your account is not in the admin group.",
-            )
-                .into_response(),
+            AppError::Forbidden { admin_group } => {
+                let view = ForbiddenView { admin_group };
+                (StatusCode::FORBIDDEN, view.into_response()).into_response()
+            }
             AppError::Kanidm(msg) => {
                 tracing::error!(error = %msg, "kanidm client error");
-                (StatusCode::BAD_GATEWAY, format!("Upstream error: {msg}")).into_response()
+                let view = ServerErrorView { category: "Kanidm API error" };
+                (StatusCode::BAD_GATEWAY, view.into_response()).into_response()
             }
             AppError::Template(err) => {
                 tracing::error!(error = %err, "template render error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Template error").into_response()
+                let view = ServerErrorView { category: "Template render error" };
+                (StatusCode::INTERNAL_SERVER_ERROR, view.into_response()).into_response()
             }
             AppError::Other(err) => {
                 tracing::error!(error = ?err, "unhandled error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error").into_response()
+                let view = ServerErrorView { category: "Server error" };
+                (StatusCode::INTERNAL_SERVER_ERROR, view.into_response()).into_response()
             }
         }
     }

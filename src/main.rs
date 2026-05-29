@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod error;
 mod handlers;
+mod views;
 
 use std::sync::Arc;
 
@@ -41,6 +42,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .merge(handlers::router())
         .nest_service("/static", ServeDir::new(&config.static_dir))
+        .fallback(handlers::not_found)
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 

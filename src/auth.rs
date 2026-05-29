@@ -68,15 +68,6 @@ pub struct AdminUser {
     pub uuid: String,
 }
 
-impl AdminUser {
-    pub fn spn(&self) -> &str {
-        &self.spn
-    }
-    pub fn displayname(&self) -> &str {
-        &self.displayname
-    }
-}
-
 impl FromRequestParts<AppState> for AdminUser {
     type Rejection = AppError;
 
@@ -89,7 +80,9 @@ impl FromRequestParts<AppState> for AdminUser {
         let token = jar
             .get(cookie_name)
             .map(|c| c.value().to_string())
-            .ok_or(AppError::Unauthenticated)?;
+            .ok_or_else(|| AppError::Unauthenticated {
+                kanidm_url: state.config.kanidm_url.clone(),
+            })?;
 
         let client = state
             .kanidm
@@ -113,7 +106,9 @@ impl FromRequestParts<AppState> for AdminUser {
         // Admin gate: must be in the configured admin group.
         let admin_group = &state.config.admin_group;
         if !entry_in_group(&entry, admin_group) {
-            return Err(AppError::Forbidden);
+            return Err(AppError::Forbidden {
+                admin_group: admin_group.clone(),
+            });
         }
 
         let spn = attr_first(&entry, "spn").unwrap_or_default();
