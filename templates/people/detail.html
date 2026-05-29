@@ -79,6 +79,12 @@
     {% match tab_content %}
     {% when crate::handlers::people::detail::TabContent::Overview with (d) %}
     {% include "people/_tab_overview.html" %}
+    {% when crate::handlers::people::detail::TabContent::Credentials with (c) %}
+    {% include "people/_tab_credentials.html" %}
+    {% when crate::handlers::people::detail::TabContent::Ssh with (s) %}
+    {% include "people/_tab_ssh.html" %}
+    {% when crate::handlers::people::detail::TabContent::Radius with (r) %}
+    {% include "people/_tab_radius.html" %}
     {% when crate::handlers::people::detail::TabContent::Placeholder { message } %}
     <div class="p-12 text-center text-tertiary text-sm">{{ message }}</div>
     {% endmatch %}

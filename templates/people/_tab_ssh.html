@@ -1,0 +1,105 @@
+<div class="flex flex-col gap-4">
+
+  {% if let Some(err) = s.form_error %}
+  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  {% endif %}
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card">
+    <div class="px-5 py-4 border-b border-subtle flex items-center justify-between">
+      <div>
+        <div class="text-sm font-semibold text-primary">Public keys</div>
+        <div class="text-xs text-tertiary mt-0.5">
+          {% if s.keys.is_empty() %}
+          No keys registered.
+          {% else if s.keys.len() == 1 %}
+          1 key registered.
+          {% else %}
+          {{ s.keys.len() }} keys registered.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if s.keys.is_empty() %}
+    <div class="px-5 py-10 text-center text-tertiary text-sm">No SSH public keys on this account.</div>
+    {% else %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-subtle">
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Label</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Algorithm</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Fingerprint</th>
+          <th class="px-5 py-2.5 text-left text-xs font-medium text-tertiary uppercase tracking-wide">Public key</th>
+          <th class="px-5 py-2.5 w-16"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in s.keys %}
+        <tr class="border-b border-subtle last:border-0 hover:bg-hover transition-colors">
+          <td class="px-5 py-3">
+            <span class="font-mono text-xs font-medium text-primary">{{ key.tag }}</span>
+          </td>
+          <td class="px-5 py-3">
+            <span class="font-mono text-xs text-secondary">{{ key.algorithm_friendly }}</span>
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-tertiary" title="{{ key.fingerprint }}">{{ key.fingerprint_truncated }}</span>
+              <button type="button"
+                      class="text-tertiary hover:text-primary border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
+                      data-copy="{{ key.fingerprint }}"
+                      aria-label="Copy fingerprint">
+                {% include "icons/_copy.html" %}
+              </button>
+            </div>
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs text-tertiary truncate max-w-xs" title="{{ key.openssh_line }}">{{ key.openssh_line_preview }}</span>
+              <button type="button"
+                      class="text-tertiary hover:text-primary border-0 bg-transparent cursor-pointer w-6 h-6 inline-flex items-center justify-center rounded transition-colors shrink-0"
+                      data-copy="{{ key.openssh_line }}"
+                      aria-label="Copy public key">
+                {% include "icons/_copy.html" %}
+              </button>
+            </div>
+          </td>
+          <td class="px-5 py-3 text-right">
+            <button type="button"
+                    class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                    hx-post="/people/{{ s.person_id }}/ssh/{{ key.tag }}/delete"
+                    hx-target="#tab-content"
+                    hx-swap="innerHTML"
+                    hx-confirm="Delete SSH key &quot;{{ key.tag }}&quot;? This cannot be undone."
+                    aria-label="Delete key {{ key.tag }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+
+  <section class="bg-surface border border-subtle rounded-md shadow-card px-5 py-5">
+    <h3 class="text-sm font-semibold text-primary mb-4">Add a key</h3>
+    <form hx-post="/people/{{ s.person_id }}/ssh"
+          hx-target="#tab-content"
+          hx-swap="innerHTML"
+          class="flex flex-col gap-4">
+      {{ s.tag_field.render().unwrap()|safe }}
+      {{ s.pubkey_field.render().unwrap()|safe }}
+      <div class="flex justify-end pt-2 border-t border-subtle">
+        <button type="submit"
+                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
+          Add key
+        </button>
+      </div>
+    </form>
+  </section>
+
+</div>

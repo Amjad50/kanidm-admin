@@ -52,6 +52,29 @@ pub struct IdentityRow {
     pub spn: String,
 }
 
+// ── One-time secret reveal ────────────────────────────────────────────────────
+
+#[derive(Template)]
+#[template(path = "partials/_one_time_secret.html")]
+pub struct OneTimeSecret {
+    /// Display label, e.g. "Reset URL", "RADIUS secret".
+    pub label: String,
+    /// The secret or URL value itself.
+    pub value: String,
+    /// Optional helper text shown below the value box.
+    pub helper: Option<String>,
+    /// Aria label for the copy button.
+    pub copy_aria: String,
+    /// Relative expiry string, e.g. "in 1 hour".
+    pub expires_relative: Option<String>,
+    /// Absolute expiry string, e.g. "2026-05-14 17:22 UTC".
+    pub expires_absolute: Option<String>,
+    /// Pre-rendered inline SVG for the QR code, or `None` if not applicable.
+    pub qr_svg: Option<String>,
+    /// Pre-rendered HTML for any action buttons shown below the value, optional.
+    pub action_html: Option<String>,
+}
+
 // ── Delete footer fragment ────────────────────────────────────────────────────
 
 #[derive(Template)]

@@ -11,7 +11,10 @@ use crate::kanidm::entry::{attr_all, attr_first, attr_present, spn_or_uuid};
 use crate::views::{initials, BaseFields};
 use crate::AppState;
 
-use super::common::compute_status_at;
+use super::common::{compute_status_at, summarize_credentials, CredentialSummary};
+use super::credentials::CredentialsData;
+use super::radius::RadiusData;
+use super::ssh::SshData;
 
 pub struct TabDef {
     pub slug: &'static str,
@@ -25,7 +28,6 @@ pub const TABS: &[TabDef] = &[
     TabDef { slug: "radius",       label: "RADIUS"        },
     TabDef { slug: "sessions",     label: "Sessions"      },
     TabDef { slug: "validity",     label: "Validity"      },
-    TabDef { slug: "edit",         label: "Edit"          },
 ];
 
 /// Header info shown on every detail tab.
@@ -45,13 +47,6 @@ pub struct GroupChip {
     pub spn_or_id: String,
 }
 
-pub struct CredentialSummary {
-    pub primary: Option<String>,
-    pub passkey_count: usize,
-    pub ssh_key_count: usize,
-    pub radius_configured: bool,
-}
-
 pub struct OverviewData {
     pub uuid: String,
     pub name: String,
@@ -67,6 +62,9 @@ pub struct OverviewData {
 
 pub enum TabContent {
     Overview(OverviewData),
+    Credentials(CredentialsData),
+    Ssh(SshData),
+    Radius(RadiusData),
     Placeholder { message: &'static str },
 }
 
@@ -128,7 +126,7 @@ fn format_validity_display(val: Option<String>) -> Option<String> {
     }
 }
 
-fn compute_header(entry: &kanidm_proto::v1::Entry) -> PersonHeader {
+pub(super) fn compute_header(entry: &kanidm_proto::v1::Entry) -> PersonHeader {
     let now = OffsetDateTime::now_utc();
     let status = compute_status_at(entry, now);
 
@@ -176,16 +174,8 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
     let valid_from = format_validity_display(attr_first(entry, "account_valid_from"));
     let expire_at  = format_validity_display(attr_first(entry, "account_expire"));
 
-    // Credential summary — derived from entry attrs only; no extra API call
-    let primary = if attr_present(entry, "primary_credential") {
-        Some("Configured".to_string())
-    } else {
-        None
-    };
-    let passkey_count = attr_all(entry, "passkey").len()
-        + attr_all(entry, "webauthn_pk").len();
-    let ssh_key_count   = attr_all(entry, "ssh_publickey").len();
-    let radius_configured = attr_present(entry, "radius_secret");
+    // Credential summary — derived from entry attrs only; no extra API call on the Overview tab.
+    let credential_summary = summarize_credentials(entry, None);
 
     OverviewData {
         uuid,
@@ -197,12 +187,7 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
         direct_group_count,
         valid_from,
         expire_at,
-        credential_summary: CredentialSummary {
-            primary,
-            passkey_count,
-            ssh_key_count,
-            radius_configured,
-        },
+        credential_summary,
     }
 }
 
@@ -224,38 +209,6 @@ pub async fn overview(
     render_detail(is_htmx, user, person, "overview", tab_content)
 }
 
-/// GET /people/{id}/credentials
-pub async fn credentials_tab(
-    State(state): State<AppState>,
-    HxRequest(is_htmx): HxRequest,
-    Path(id): Path<String>,
-    user: AdminUser,
-) -> AppResult<Response> {
-    render_placeholder_tab(state, is_htmx, id, user, "credentials",
-        "Credentials reset — coming in Task 2F").await
-}
-
-/// GET /people/{id}/ssh
-pub async fn ssh_tab(
-    State(state): State<AppState>,
-    HxRequest(is_htmx): HxRequest,
-    Path(id): Path<String>,
-    user: AdminUser,
-) -> AppResult<Response> {
-    render_placeholder_tab(state, is_htmx, id, user, "ssh",
-        "SSH keys — coming in Task 2G").await
-}
-
-/// GET /people/{id}/radius
-pub async fn radius_tab(
-    State(state): State<AppState>,
-    HxRequest(is_htmx): HxRequest,
-    Path(id): Path<String>,
-    user: AdminUser,
-) -> AppResult<Response> {
-    render_placeholder_tab(state, is_htmx, id, user, "radius",
-        "RADIUS — coming in Task 2H").await
-}
 
 /// GET /people/{id}/sessions
 pub async fn sessions_tab(
@@ -280,7 +233,7 @@ pub async fn validity_tab(
 }
 
 
-async fn fetch_person(
+pub(super) async fn fetch_person(
     state: &AppState,
     user: &AdminUser,
     id: &str,
@@ -311,7 +264,7 @@ async fn render_placeholder_tab(
     render_detail(is_htmx, user, person, active_tab, TabContent::Placeholder { message })
 }
 
-fn render_detail(
+pub(super) fn render_detail(
     is_htmx: bool,
     user: AdminUser,
     person: PersonHeader,

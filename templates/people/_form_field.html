@@ -2,7 +2,17 @@
   <label for="{{ id }}" class="block text-sm font-medium text-primary mb-1.5">
     {{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}
   </label>
-  {% if let Some(sfx) = suffix %}
+  {% if multiline %}
+  <textarea
+    id="{{ id }}"
+    name="{{ name }}"
+    rows="{{ rows }}"
+    {% if required %}required{% endif %}
+    {% if autofocus %}autofocus{% endif %}
+    placeholder="{{ placeholder }}"
+    class="bg-surface border {% if error.is_some() %}border-danger{% else %}border-default{% endif %} rounded px-3 py-2 w-full text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors resize-y"
+  >{{ value }}</textarea>
+  {% else if let Some(sfx) = suffix %}
   <div class="flex items-stretch gap-0">
     <input
       id="{{ id }}"

@@ -32,10 +32,10 @@ Each row below documents which strategy applies.
 | # | Partial | Status | Strategy | Path | Used by | Owner |
 |---|---|---|---|---|---|---|
 | 1 | Copy-to-clipboard SVG icon | extracted | `{% include %}` | `templates/icons/_copy.html` | 2B | 2B |
-| 2 | Form field (label + input + optional suffix + helper + error) | extracted | nested `Template` + `\|safe` | `templates/people/_form_field.html` (struct: `FormField`) | 2C, 2D, 3*, 4* | 2C |
+| 2 | Form field (label + input + optional suffix + helper + error) | extracted | nested `Template` + `\|safe` | `templates/people/_form_field.html` (struct: `FormField` in `src/handlers/people/create.rs`; fields: `multiline: bool`, `rows: u32` branch `<textarea>` vs `<input>` — existing callers use `multiline: false, rows: 0`) | 2C, 2D, 2G (multiline variant), 3*, 4* | 2C |
 | 3 | Tab nav (people detail tabs, OOB-swappable) | extracted | `{% include %}`, with `oob: bool` field | `templates/people/_tabs_nav.html` | 2B | 2B |
 | 4 | Modal frame (overlay backdrop + dialog card + close affordance) | extracted | nested `Template` + `\|safe` (body is markup) | `templates/partials/_modal.html` (struct: `Modal` in `src/views/partials.rs`) | 2E, 2F, 3E, 4J, more | 2E |
-| 5 | One-time-show secret reveal (masked + reveal + copy + dismiss) | proposed | nested `Template` + `\|safe` | `templates/partials/_one_time_secret.html` (planned) | 2F, 2H, 4D | 2F |
+| 5 | One-time-show secret reveal (value + copy + QR + expiry + optional action row) | extracted | nested `Template` + `\|safe` | `templates/partials/_one_time_secret.html` (struct: `OneTimeSecret` in `src/views/partials.rs`) | 2F, 2H, 4D | 2F |
 | 6 | Toast notification (success / warning / danger) | proposed | nested `Template` + `\|safe`, triggered via `HX-Trigger` | `templates/partials/_toast.html` (planned) | 5E and any mutation handler | 5E |
 | 7 | Status badge (pill with dot + label + soft-bg + colored text) | candidate | `{% include %}` (caller has `status_label` + `status_badge_classes` + `status_dot_classes` in scope) | `templates/partials/_status_badge.html` (proposed path) | 2A (`_rows.html`), 2B (detail header) | TBD (whoever touches both next) |
 | 8 | Empty-state row inside a table (`<tr>` spanning all cols with friendly message) | candidate | `{% include %}` with parent providing message + colspan | `templates/partials/_table_empty_row.html` (proposed) | 2A, 3A, 4A | TBD |
@@ -48,6 +48,8 @@ Each row below documents which strategy applies.
 | 15 | Remove "×" button (small icon-only delete affordance, used in list rows / chips) | extracted | `{% include %}` icon-only | `templates/icons/_x.html` | 2B (group chip), 2D (email row), 2E (modal close button), 3C (member chip), 4E (scope row), 4F (claim row) | 2E |
 | 16 | Confirm-destructive modal body (type-NAME-to-confirm input + confirm button disabled until match) | extracted | nested `Template` + `\|safe` | `templates/partials/_destructive_confirm.html` (struct: `DestructiveConfirm` in `src/views/partials.rs`) | 2E, 3E, 4J | 2E |
 | 17 | Email-row interactive script (add / remove / star-to-primary JS) | candidate | inline `<script>` in template, or hoist to `static/app.js` | Inline in `templates/people/edit.html` now | 2D; any future multi-email edit form | TBD (hoist when a second form needs it) |
+| 18 | Identity row (avatar initials + display name + SPN mono) | extracted | nested `Template` + `\|safe` | `templates/partials/_identity_row.html` (struct: `IdentityRow` in `src/views/partials.rs`) | 2E (delete modal), 3E (delete group), 4J (delete oauth2) | 2E |
+| 19 | Destructive-action footer (Cancel + disabled confirm button wired to `_destructive_confirm` input) | extracted | nested `Template` + `\|safe` | `templates/partials/_delete_footer.html` (struct: `DeleteFooter` with `action_url: String`, `confirm_label: String`, `input_id: String` in `src/views/partials.rs`) | 2E; reusable by 3E and 4J by passing different `action_url` + `confirm_label` | 2E |
 
 ---
 
@@ -57,7 +59,7 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 
 | # | Companion | Status | Where it lives | Triggers |
 |---|---|---|---|---|
-| 1 | Clipboard copy handler (binds to `[data-copy]` selector, calls `navigator.clipboard.writeText`, shows brief "copied" hint) | proposed | `islands/entry.ts` global behavior, no island root needed | Click on any `data-copy` element across the app |
+| 1 | Clipboard copy handler (binds to `[data-copy]` selector, calls `navigator.clipboard.writeText`, shows brief "copied" hint) | extracted | `islands/entry.ts` global behavior, no island root needed | Click on any `data-copy` element across the app |
 | 2 | Modal-close shortcut (Esc key clears `#overlay-slot`) | proposed | `islands/entry.ts` | Esc key while overlay-slot non-empty |
 | 3 | Toast renderer | proposed | `islands/toast.tsx` (Preact island bound to `#toast-stack`) | `htmx:trigger` event `toast` payload |
 | 4 | Datetime picker with keyword shortcuts (now / never / clear) | proposed | `islands/datetime_keyword.tsx` (mounted by data-attr) | 2J validity form |
@@ -67,11 +69,6 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 ## Newly discovered (this task)
 
 *(Subagents append rows here during a task. Controller moves them into the main table at task-merge time.)*
-
-| # | Partial | Status | Strategy | Path | Used by | Owner |
-|---|---|---|---|---|---|---|
-| 18 | Identity row (avatar initials + display name + SPN mono) | extracted | nested `Template` + `\|safe` | `templates/partials/_identity_row.html` (struct: `IdentityRow` in `src/views/partials.rs`) | 2E (delete modal), 3E (delete group), 4J (delete oauth2) | 2E |
-| 19 | Delete modal footer (Cancel + disabled Delete button wired to confirm input) | extracted | nested `Template` + `\|safe` | `templates/partials/_delete_footer.html` (struct: `DeleteFooter` in `src/views/partials.rs`) | 2E; reuse for 3E and 4J by generalising `hx-post` path if needed | 2E |
 
 ---
 

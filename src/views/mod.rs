@@ -6,7 +6,7 @@ use askama_web::WebTemplate;
 
 use crate::auth::AdminUser;
 
-pub use time::{format_relative_future, format_relative_past, format_relative_remaining};
+pub use time::{format_absolute, format_relative_future, format_relative_past, format_relative_remaining};
 
 // ── Placeholder ──────────────────────────────────────────────────────────────
 

@@ -1,5 +1,18 @@
 use time::OffsetDateTime;
 
+/// Format a datetime as "YYYY-MM-DD HH:MM UTC".
+pub fn format_absolute(t: OffsetDateTime) -> String {
+    let t = t.to_offset(time::UtcOffset::UTC);
+    format!(
+        "{:04}-{:02}-{:02} {:02}:{:02} UTC",
+        t.year(),
+        t.month() as u8,
+        t.day(),
+        t.hour(),
+        t.minute(),
+    )
+}
+
 /// Format a past `OffsetDateTime` relative to now.
 /// Examples: "just now", "38 minutes ago", "2 hours ago", "5 days ago".
 pub fn format_relative_past(t: OffsetDateTime) -> String {
@@ -105,7 +118,27 @@ fn format_relative_remaining_at(t: OffsetDateTime, now: OffsetDateTime) -> Strin
 mod tests {
     use time::macros::datetime;
 
-    use super::{format_relative_future_at, format_relative_past_at, format_relative_remaining_at};
+    use super::{format_absolute, format_relative_future_at, format_relative_past_at, format_relative_remaining_at};
+
+    // ── format_absolute ───────────────────────────────────────────────────────
+
+    #[test]
+    fn absolute_basic() {
+        let t = datetime!(2026-05-14 17:22:00 UTC);
+        assert_eq!(format_absolute(t), "2026-05-14 17:22 UTC");
+    }
+
+    #[test]
+    fn absolute_midnight() {
+        let t = datetime!(2026-01-01 00:00:00 UTC);
+        assert_eq!(format_absolute(t), "2026-01-01 00:00 UTC");
+    }
+
+    #[test]
+    fn absolute_single_digit_month_day() {
+        let t = datetime!(2026-03-05 09:07:00 UTC);
+        assert_eq!(format_absolute(t), "2026-03-05 09:07 UTC");
+    }
 
     // ── format_relative_past ──────────────────────────────────────────────────
 

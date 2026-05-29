@@ -39,6 +39,10 @@ pub struct FormField {
     pub suffix: Option<String>,
     pub helper: Option<&'static str>,
     pub error: Option<String>,
+    /// Renders a `<textarea>` instead of `<input>`. `input_type` and `suffix` are ignored.
+    pub multiline: bool,
+    /// Number of visible rows for the textarea. Only used when `multiline` is true.
+    pub rows: u32,
 }
 
 // ── View ─────────────────────────────────────────────────────────────────────
@@ -138,6 +142,8 @@ fn build_view(
                  underscore, hyphen. Cannot be changed after creation without consequences.",
             ),
             error: name_err.map(str::to_owned),
+            multiline: false,
+            rows: 0,
         },
         displayname_field: FormField {
             id: "displayname",
@@ -151,6 +157,8 @@ fn build_view(
             suffix: None,
             helper: Some("Shown in lists and on the person's profile."),
             error: dn_err.map(str::to_owned),
+            multiline: false,
+            rows: 0,
         },
         form_error,
     }

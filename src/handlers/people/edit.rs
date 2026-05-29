@@ -224,6 +224,8 @@ fn build_view(
             suffix,
             helper: None,
             error: name_err.map(str::to_owned),
+            multiline: false,
+            rows: 0,
         },
         displayname_field: FormField {
             id: "displayname",
@@ -237,6 +239,8 @@ fn build_view(
             suffix: None,
             helper: Some("Shown in lists and on the person's profile."),
             error: dn_err.map(str::to_owned),
+            multiline: false,
+            rows: 0,
         },
         legalname_field: FormField {
             id: "legalname",
@@ -250,6 +254,8 @@ fn build_view(
             suffix: None,
             helper: Some("Used in reports and audit logs. Leave empty to clear."),
             error: None,
+            multiline: false,
+            rows: 0,
         },
         emails,
         form_error,

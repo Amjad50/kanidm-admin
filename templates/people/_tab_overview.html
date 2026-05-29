@@ -138,7 +138,7 @@
 
       <dt class="text-tertiary self-center">Primary</dt>
       <dd>
-        {% match d.credential_summary.primary %}
+        {% match d.credential_summary.primary.label() %}
         {% when Some with (p) %}<span class="text-primary">{{ p }}</span>
         {% when None %}<span class="text-tertiary">Not configured</span>
         {% endmatch %}

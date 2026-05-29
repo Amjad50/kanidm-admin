@@ -1,8 +1,9 @@
 use kanidm_client::{ClientError, StatusCode};
+use kanidm_proto::internal::{CredentialDetailType, CredentialStatus};
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 
-use crate::kanidm::entry::attr_first;
+use crate::kanidm::entry::{attr_all, attr_first, attr_present};
 use crate::AppState;
 use crate::auth::AdminUser;
 
@@ -44,14 +45,14 @@ pub fn validate_displayname(s: &str) -> Result<(), &'static str> {
 }
 
 /// Map kanidm client errors to a short user-friendly sentence.
-/// `context` is a short noun like `"create person"` or `"update person"`.
+/// `context` is a short verb phrase like `"create person"` or `"add SSH key"`.
 pub fn friendly_client_error(context: &str, e: &ClientError) -> String {
     match e {
         ClientError::Http(StatusCode::CONFLICT, _, _) => {
-            "A person with that username already exists.".to_string()
+            format!("Could not {context}: this value is already in use.")
         }
         ClientError::Http(StatusCode::NOT_FOUND, _, _) => {
-            "Person not found.".to_string()
+            format!("Could not {context}: resource not found.")
         }
         _ => format!("Could not {context}: {e:?}"),
     }
@@ -92,6 +93,114 @@ impl PersonStatus {
     }
 }
 
+// ── Shared credential summary ─────────────────────────────────────────────────
+
+#[derive(Debug, PartialEq)]
+pub enum PrimaryCred {
+    None,
+    Password,
+    PasswordWithTotp,
+    PasswordWithBackupCode,
+    GeneratedPassword,
+    Other,
+}
+
+impl PrimaryCred {
+    pub fn label(&self) -> Option<&'static str> {
+        match self {
+            PrimaryCred::None => None,
+            PrimaryCred::Password => Some("Password"),
+            PrimaryCred::PasswordWithTotp => Some("Password + TOTP"),
+            PrimaryCred::PasswordWithBackupCode => Some("Password + Backup codes"),
+            PrimaryCred::GeneratedPassword => Some("Generated password"),
+            PrimaryCred::Other => Some("Configured"),
+        }
+    }
+}
+
+pub struct CredentialSummary {
+    pub primary: PrimaryCred,
+    pub passkey_count: usize,
+    pub passkey_names: Vec<String>,
+    pub attested_passkey_count: usize,
+    pub attested_passkey_names: Vec<String>,
+    pub ssh_key_count: usize,
+    pub backup_codes_remaining: Option<usize>,
+    pub backup_codes_generated: bool,
+    pub totp_labels: Vec<String>,
+    pub radius_configured: bool,
+}
+
+/// Build a `CredentialSummary` from an entry and optional live credential status.
+/// Pass `status = None` when no API call has been made (e.g. the Overview tab).
+pub fn summarize_credentials(
+    entry: &kanidm_proto::v1::Entry,
+    status: Option<&CredentialStatus>,
+) -> CredentialSummary {
+    let passkey_names = attr_all(entry, "passkeys");
+    let passkey_count = passkey_names.len();
+    let attested_passkey_names = attr_all(entry, "attested_passkeys");
+    let attested_passkey_count = attested_passkey_names.len();
+    let ssh_key_count = attr_all(entry, "ssh_publickey").len();
+    let radius_configured = attr_present(entry, "radius_secret");
+
+    let (primary, totp_labels, backup_codes_remaining, backup_codes_generated) =
+        if let Some(st) = status {
+            let mut primary = PrimaryCred::None;
+            let mut totp_labels: Vec<String> = vec![];
+            let mut backup_codes_remaining: Option<usize> = None;
+            let mut backup_codes_generated = false;
+
+            for cred in &st.creds {
+                match &cred.type_ {
+                    CredentialDetailType::Password => {
+                        primary = PrimaryCred::Password;
+                    }
+                    CredentialDetailType::GeneratedPassword => {
+                        primary = PrimaryCred::GeneratedPassword;
+                    }
+                    CredentialDetailType::PasswordMfa(totps, _wan_labels, count) => {
+                        if !totps.is_empty() {
+                            primary = PrimaryCred::PasswordWithTotp;
+                            totp_labels = totps.clone();
+                        } else if *count > 0 {
+                            primary = PrimaryCred::PasswordWithBackupCode;
+                        } else {
+                            primary = PrimaryCred::Other;
+                        }
+                        if *count > 0 {
+                            backup_codes_remaining = Some(*count);
+                            backup_codes_generated = true;
+                        }
+                    }
+                    CredentialDetailType::Passkey(_) => {}
+                }
+            }
+
+            (primary, totp_labels, backup_codes_remaining, backup_codes_generated)
+        } else {
+            let primary = if attr_present(entry, "primary_credential") {
+                PrimaryCred::Password
+            } else {
+                PrimaryCred::None
+            };
+            (primary, vec![], None, false)
+        };
+
+    CredentialSummary {
+        primary,
+        passkey_count,
+        passkey_names,
+        attested_passkey_count,
+        attested_passkey_names,
+        ssh_key_count,
+        backup_codes_remaining,
+        backup_codes_generated,
+        totp_labels,
+        radius_configured,
+    }
+}
+
 pub(super) fn parse_kanidm_datetime(s: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(s, &Rfc3339).ok()
 }
@@ -118,6 +227,61 @@ pub(super) fn compute_status_at(entry: &kanidm_proto::v1::Entry, now: OffsetDate
     }
 
     PersonStatus::Active
+}
+
+#[cfg(test)]
+mod credential_summary_tests {
+    use std::collections::BTreeMap;
+    use kanidm_proto::internal::{CredentialDetail, CredentialDetailType, CredentialStatus};
+    use uuid::Uuid;
+
+    use super::{summarize_credentials, PrimaryCred};
+
+    fn entry(attrs: &[(&str, &[&str])]) -> kanidm_proto::v1::Entry {
+        let mut map: BTreeMap<String, Vec<String>> = BTreeMap::new();
+        for (k, values) in attrs {
+            for v in *values {
+                map.entry(k.to_string()).or_default().push(v.to_string());
+            }
+        }
+        kanidm_proto::v1::Entry { attrs: map }
+    }
+
+    #[test]
+    fn passkey_only_entry_no_status() {
+        let e = entry(&[("passkeys", &["bitwarden-new"])]);
+        let s = summarize_credentials(&e, None);
+        assert_eq!(s.primary, PrimaryCred::None);
+        assert_eq!(s.passkey_count, 1);
+        assert_eq!(s.passkey_names, vec!["bitwarden-new".to_string()]);
+        assert_eq!(s.attested_passkey_count, 0);
+    }
+
+    #[test]
+    fn empty_entry_gives_all_zeros() {
+        let e = entry(&[]);
+        let s = summarize_credentials(&e, None);
+        assert_eq!(s.primary, PrimaryCred::None);
+        assert_eq!(s.passkey_count, 0);
+        assert_eq!(s.attested_passkey_count, 0);
+        assert_eq!(s.ssh_key_count, 0);
+        assert!(!s.radius_configured);
+        assert!(s.totp_labels.is_empty());
+        assert!(s.backup_codes_remaining.is_none());
+    }
+
+    #[test]
+    fn password_status_maps_to_primary_password() {
+        let e = entry(&[("primary_credential", &["primary"])]);
+        let status = CredentialStatus {
+            creds: vec![CredentialDetail {
+                uuid: Uuid::nil(),
+                type_: CredentialDetailType::Password,
+            }],
+        };
+        let s = summarize_credentials(&e, Some(&status));
+        assert_eq!(s.primary, PrimaryCred::Password);
+    }
 }
 
 #[cfg(test)]
