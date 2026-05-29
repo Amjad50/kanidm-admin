@@ -55,6 +55,9 @@ pub struct BaseFields {
     /// Pre-rendered JSON for the topbar user-menu dropdown, safe to embed
     /// inside `data-dropdown='...'`.
     pub user_menu_json: String,
+    /// Crate version baked in at compile time, rendered as the `vX.Y.Z`
+    /// badge next to the sidebar brand.
+    pub app_version: &'static str,
 }
 
 impl BaseFields {
@@ -66,6 +69,7 @@ impl BaseFields {
             user_initials: initials(&user.displayname),
             privileged: user.privileged,
             user_menu_json: user_menu_json(),
+            app_version: env!("CARGO_PKG_VERSION"),
         }
     }
 }
