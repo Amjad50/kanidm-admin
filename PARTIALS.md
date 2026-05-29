@@ -76,7 +76,11 @@ Some partials need a tiny JS counterpart. List them here so we don't lose track.
 
 ## Newly discovered (this task)
 
-*(Subagents append rows here during a task. Controller moves them into the main table at task-merge time.)*
+| # | Partial | Status | Strategy | Path | Used by | Owner |
+|---|---|---|---|---|---|---|
+| 25 | OAuth2 card grid (`_cards.html`) | rejected (scope too narrow) | n/a | `templates/oauth2/_cards.html` | 4A only | 4A |
+
+Decision: the card-grid layout is unique to OAuth2 list and won't be reused by any other screen, so it stays local. The kebab button (partial #9 candidate) is also used here but just as a placeholder inline button — no wire-up yet; extraction deferred to when kebab menus are wired in a later task.
 
 ---
 

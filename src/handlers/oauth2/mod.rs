@@ -1,3 +1,5 @@
+pub mod list;
+
 use axum::extract::State;
 use axum::routing::get;
 use axum::Router;
@@ -9,24 +11,13 @@ use crate::AppState;
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/oauth2", get(list))
-        .route("/oauth2/new", get(create))
-        .route("/oauth2/{id}", get(detail))
+        .route("/oauth2", get(list::list))
+        .route("/oauth2/new", get(create_placeholder))
+        // /new must come before /{id}
+        .route("/oauth2/{id}", get(detail_placeholder))
 }
 
-pub async fn list(
-    State(_state): State<AppState>,
-    user: AdminUser,
-) -> AppResult<PlaceholderView> {
-    Ok(PlaceholderView {
-        base: BaseFields::new(&user, "oauth2"),
-        section_label: "OAuth2 Apps",
-        message: "Browse, create, and manage OAuth2 resource servers in your Kanidm instance.",
-        phase_label: "Phase 4",
-    })
-}
-
-pub async fn create(
+pub async fn create_placeholder(
     State(_state): State<AppState>,
     user: AdminUser,
 ) -> AppResult<PlaceholderView> {
@@ -38,7 +29,7 @@ pub async fn create(
     })
 }
 
-pub async fn detail(
+pub async fn detail_placeholder(
     State(_state): State<AppState>,
     user: AdminUser,
 ) -> AppResult<PlaceholderView> {
