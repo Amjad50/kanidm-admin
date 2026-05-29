@@ -27,7 +27,6 @@ pub struct OverviewToggles {
 
 pub struct ScopeMapSummary {
     pub group_name: String,
-    pub group_spn: String,
     pub scopes: Vec<String>,
 }
 
@@ -111,7 +110,6 @@ pub(super) fn build_overview_data(
         .filter_map(|raw| parse_scope_map(&raw))
         .map(|m| ScopeMapSummary {
             group_name: short_group_name(&m.group_spn),
-            group_spn: m.group_spn,
             scopes: m.scopes,
         })
         .collect();
@@ -122,7 +120,6 @@ pub(super) fn build_overview_data(
             .filter_map(|raw| parse_scope_map(&raw))
             .map(|m| ScopeMapSummary {
                 group_name: short_group_name(&m.group_spn),
-                group_spn: m.group_spn,
                 scopes: m.scopes,
             })
             .collect();

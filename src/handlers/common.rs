@@ -82,11 +82,10 @@ pub fn friendly_client_error(context: &str, e: &ClientError) -> String {
     log_client_error(context, e);
 
     if let ClientError::Http(status, op_err, body) = e {
-        if let Some(op) = op_err {
-            if let Some(msg) = friendly_operation_error(op) {
+        if let Some(op) = op_err
+            && let Some(msg) = friendly_operation_error(op) {
                 return msg;
             }
-        }
         // No structured OperationError. Fall back on body-sniffing for the
         // common conflict case before the generic per-status message.
         if let Some(msg) = body_sniff_message(*status, body, context) {
@@ -232,7 +231,7 @@ fn body_sniff_message(status: StatusCode, body: &str, context: &str) -> Option<S
 fn context_specific_conflict_message(context: &str) -> String {
     match context {
         "create person" | "create group" => {
-            format!("That name is already taken — pick a different one.")
+            "That name is already taken — pick a different one.".to_string()
         }
         "set additional fields" | "update person" => {
             "One of the email addresses you entered is already taken by another account."

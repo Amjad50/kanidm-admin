@@ -21,7 +21,9 @@ import "./behaviors/email-rows";
 import "./behaviors/row-href";
 import "./behaviors/bind-disabled";
 import "./behaviors/reveal-secret";
+import "./behaviors/password-reveal";
 import "./behaviors/warn-duplicate";
+import "./behaviors/webauthn-login";
 
 mountBehaviors();
 mountDropdowns();
@@ -32,9 +34,3 @@ const paletteHost = document.getElementById("cmd-palette-island");
 if (paletteHost) {
   render(h(CommandPalette, {}), paletteHost);
 }
-
-// Reauth modal — surfaced from session-expiry events instead of a 401 redirect.
-document.body.addEventListener('kanidm-reauth', () => {
-  // @ts-expect-error htmx global is loaded by base.html
-  window.htmx.ajax('GET', '/reauth', { target: '#overlay-slot', swap: 'innerHTML' });
-});

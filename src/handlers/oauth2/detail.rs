@@ -46,6 +46,8 @@ pub struct OAuth2Header {
 // ── Placeholder data (used by not-yet-implemented tabs) ───────────────────────
 
 pub struct PlaceholderTabData {
+    // Read by templates/oauth2/_tab_content_fragment.html and detail.html match arms.
+    #[allow(dead_code)]
     pub tab_name: &'static str,
 }
 
@@ -54,6 +56,8 @@ pub struct PlaceholderTabData {
 pub enum TabContent {
     Overview(super::overview::OverviewData),
     General(GeneralData),
+    // Reserved for not-yet-implemented tabs; templates have match arms ready.
+    #[allow(dead_code)]
     Placeholder(PlaceholderTabData),
     ScopeMaps(super::scope_maps::ScopeMapsData),
     ClaimMaps(super::claim_maps::ClaimMapsData),
@@ -91,7 +95,6 @@ impl IntoResponse for DetailView {
 #[template(path = "oauth2/_tab_content_fragment.html")]
 pub struct TabContentFragment<'a> {
     pub tab_content: &'a TabContent,
-    pub header: &'a OAuth2Header,
 }
 
 #[derive(Template)]
@@ -167,7 +170,6 @@ pub(super) fn render_detail(
     if is_htmx {
         let content_html = askama::Template::render(&TabContentFragment {
             tab_content: &tab_content,
-            header: &header,
         })
         .map_err(AppError::Template)?;
 

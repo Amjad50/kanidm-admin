@@ -66,8 +66,6 @@ fn build_group_actions(spn_or_uuid: &str, name: &str, is_builtin: bool) -> Strin
 pub struct GroupsListView {
     pub base: BaseFields,
     pub groups: Vec<GroupRow>,
-    pub total_count: usize,
-    pub filtered_count: usize,
     pub q: String,
     pub per: usize,
     pub pagination: crate::views::pagination::Pagination,
@@ -172,12 +170,12 @@ pub async fn list(
                 })
             })
             .collect();
-        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.sort_by_key(|a| a.label.to_lowercase());
         items.truncate(50);
         return Ok(Json(PaletteResponse { items }).into_response());
     }
 
-    let per = params.per.unwrap_or(15).min(200).max(1);
+    let per = params.per.unwrap_or(15).clamp(1, 200);
     let page = params.page.unwrap_or(1).max(1);
 
     let mut filtered: Vec<GroupRow> = entries
@@ -231,8 +229,6 @@ pub async fn list(
     Ok(GroupsListView {
         base: BaseFields::new(&user, "groups"),
         groups,
-        total_count,
-        filtered_count,
         q,
         per,
         pagination: crate::views::pagination::Pagination {

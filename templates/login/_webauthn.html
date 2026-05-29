@@ -1,0 +1,48 @@
+{% include "login/_identity.html" %}
+
+{% if let Some(msg) = error %}
+  <div class="flex gap-3 p-3 rounded-md border border-destructive/30 bg-destructive-soft text-sm">
+    <div class="flex-1 text-foreground">{{ msg }}</div>
+  </div>
+{% endif %}
+
+<div class="flex flex-col items-center gap-3 text-center px-2 py-1">
+  <div class="relative w-30 h-30 flex items-center justify-center my-1">
+    <span class="passkey-ring absolute inset-0 rounded-pill bg-primary-soft"></span>
+    <span class="passkey-ring delayed absolute inset-0 rounded-pill bg-primary-soft"></span>
+    <span class="passkey-icon relative w-22 h-22 rounded-pill bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11c-1 0-2 0-2 2v2c0 4-1 6-2 7"/><path d="M14 3a8 8 0 0 0-3.18.65"/><path d="M3 17c0 1 0 2-.5 3"/><path d="M5 9C7 4 11.5 3 14 3c2 0 7 1 7 8"/><path d="M21 14c0 5-2 6-2 6"/><path d="M14 9c0 4-1.5 6-3 6"/><path d="M9 21c1.5-2 1.5-5 1.5-6"/><path d="M17 22c1-1 1.5-3 1.5-5"/></svg>
+    </span>
+  </div>
+  <div class="text-sm text-muted-foreground max-w-xs leading-relaxed">
+    {% if passkey %}
+      Tap or touch your passkey authenticator, or use Touch ID / Windows Hello.
+    {% else %}
+      Insert and tap your security key, or use Touch ID / Windows Hello.
+    {% endif %}
+  </div>
+</div>
+
+<form id="webauthn-form" method="post" action="{{ submit_action }}"
+      data-webauthn-form
+      data-webauthn-challenge="{{ challenge }}"
+      class="flex flex-col gap-3">
+  <input type="hidden" name="cred" id="webauthn-cred">
+  <button type="button" data-webauthn-start autofocus
+          class="h-11 w-full rounded-md bg-primary text-primary-foreground font-medium text-md hover:bg-primary/90 transition-colors cursor-pointer">
+    {% if passkey %}
+      Use passkey
+    {% else %}
+      Use security key
+    {% endif %}
+  </button>
+  <div data-webauthn-error hidden
+       class="flex gap-3 p-3 rounded-md border border-destructive/30 bg-destructive-soft text-sm">
+    <div class="flex-1 text-foreground"></div>
+  </div>
+</form>
+
+<a href="/login/mech" class="text-sm self-center text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 no-underline">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+  Choose another method
+</a>

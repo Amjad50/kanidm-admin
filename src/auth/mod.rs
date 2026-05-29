@@ -1,3 +1,5 @@
+pub mod pending;
+
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
@@ -16,6 +18,8 @@ use crate::config::Config;
 use crate::error::AppError;
 use crate::kanidm::entry::attr_first;
 use crate::AppState;
+
+pub use pending::PendingAuthStore;
 
 /// Builds per-request KanidmClient instances pre-loaded with the caller's
 /// session token. One factory holds the connection config; each request gets
@@ -58,6 +62,18 @@ impl KanidmClientFactory {
         client.set_token(token.to_string()).await;
         Ok(client)
     }
+
+    /// Build a fresh, anonymous client wrapped in Arc. Used to start a login
+    /// conversation — the same instance must be reused across
+    /// auth_step_init → auth_step_begin → auth_step_<cred>, because
+    /// kanidm_client stashes the in-flight auth_session_id internally.
+    pub fn anonymous(&self) -> Result<std::sync::Arc<KanidmClient>> {
+        let builder = self.builder()?;
+        let client = builder
+            .build()
+            .map_err(|e| anyhow!("building kanidm client: {e:?}"))?;
+        Ok(std::sync::Arc::new(client))
+    }
 }
 
 /// Authenticated admin user. Extracted from a request via [`FromRequestParts`].
@@ -95,14 +111,11 @@ impl FromRequestParts<AppState> for AdminUser {
         let HxRequest(is_htmx) = HxRequest::from_request_parts(parts, state)
             .await
             .unwrap_or(HxRequest(false));
-        let cookie_name = &state.config.kanidm_session_cookie;
+        let cookie_name = &state.config.session_cookie_name;
         let token = jar
             .get(cookie_name)
             .map(|c| c.value().to_string())
-            .ok_or_else(|| AppError::Unauthenticated {
-                kanidm_url: state.config.kanidm_url.clone(),
-                is_htmx,
-            })?;
+            .ok_or(AppError::Unauthenticated { is_htmx })?;
 
         let client = state
             .kanidm
@@ -115,10 +128,7 @@ impl FromRequestParts<AppState> for AdminUser {
         // reauth modal trigger instead of a generic 502.
         if let Err(e) = client.auth_valid().await {
             tracing::debug!(error = ?e, "auth_valid rejected; treating as unauthenticated");
-            return Err(AppError::Unauthenticated {
-                kanidm_url: state.config.kanidm_url.clone(),
-                is_htmx,
-            });
+            return Err(AppError::Unauthenticated { is_htmx });
         }
 
         // Pull the caller's full entry, including memberof, via whoami.
@@ -181,6 +191,7 @@ impl FromRequestParts<AppState> for AdminUser {
 /// Check if an Entry has membership in a group identified by either:
 ///   - its bare name (e.g. "idm_admins"), or
 ///   - its full SPN (e.g. "idm_admins@idm.home.amsh.dev").
+///
 /// We look at `memberof` (transitive) so nested membership counts.
 fn entry_in_group(entry: &Entry, group: &str) -> bool {
     entry

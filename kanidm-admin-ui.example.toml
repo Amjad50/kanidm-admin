@@ -13,12 +13,15 @@ kanidm_url = "https://idm.example.com"
 # Dev only — never use in production.
 # kanidm_accept_invalid_certs = false
 
-# Name of the cookie kanidm sets after login. Default is "bearer" (matches
-# kanidm_proto::internal::COOKIE_BEARER_TOKEN). Override only if kanidm changes
-# this in a future release.
-# kanidm_session_cookie = "bearer"
+# Name of the cookie this admin UI sets on successful login. Default
+# "kanidm_admin_session" — deliberately distinct from kanidm's own "bearer"
+# cookie so the two never collide on a shared parent domain.
+# session_cookie_name = "kanidm_admin_session"
 
 # Group SPN/name that grants access. Members of this group can use the admin panel.
 admin_group = "idm_admins"
 
 static_dir = "static"
+
+# Drop the `Secure` cookie flag for local http://localhost dev. NEVER true in production.
+# dev_insecure_cookies = false

@@ -13,13 +13,14 @@ use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
-use crate::auth::KanidmClientFactory;
+use crate::auth::{KanidmClientFactory, PendingAuthStore};
 use crate::config::Config;
 
 #[derive(Clone)]
 pub struct AppState {
     pub config: Arc<Config>,
     pub kanidm: Arc<KanidmClientFactory>,
+    pub pending: Arc<PendingAuthStore>,
 }
 
 #[tokio::main]
@@ -38,6 +39,7 @@ async fn main() -> anyhow::Result<()> {
     let state = AppState {
         config: config.clone(),
         kanidm,
+        pending: Arc::new(PendingAuthStore::new()),
     };
 
     let app = Router::new()

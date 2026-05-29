@@ -28,12 +28,6 @@ pub struct PlaceholderView {
 // ── Error views (standalone — no BaseFields needed) ──────────────────────────
 
 #[derive(Template, WebTemplate)]
-#[template(path = "error_unauthenticated.html")]
-pub struct UnauthenticatedView {
-    pub kanidm_url: String,
-}
-
-#[derive(Template, WebTemplate)]
 #[template(path = "error_forbidden.html")]
 pub struct ForbiddenView {
     pub admin_group: String,
@@ -88,6 +82,10 @@ fn user_menu_json() -> String {
     let mut cfg = DropdownConfig::new(items);
     cfg.align = Some("right");
     cfg.to_attr_value()
+}
+
+pub fn initials_for_login(name: &str) -> String {
+    initials(name)
 }
 
 pub(crate) fn initials(name: &str) -> String {

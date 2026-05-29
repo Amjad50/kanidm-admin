@@ -51,7 +51,6 @@ pub struct ScopeMapsData {
     pub supplementary: Vec<ScopeMapRow>,
     /// All group SPNs — for the `<datalist>` autocomplete.
     pub all_groups: Vec<String>,
-    pub standard_scopes: &'static [&'static str],
     pub error: Option<String>,
 }
 
@@ -226,7 +225,6 @@ async fn build_scope_maps_data(
         standard,
         supplementary,
         all_groups,
-        standard_scopes: STANDARD_SCOPES,
         error,
     }
 }
@@ -275,6 +273,7 @@ pub async fn tab(
 }
 
 /// Build and render a scope-map modal (add or edit).
+#[allow(clippy::too_many_arguments)]
 fn render_scope_map_modal(
     title: String,
     section: &'static str,
@@ -441,7 +440,6 @@ async fn add_scope_map_impl(
                     use askama::Template;
                     crate::handlers::oauth2::detail::TabContentFragment {
                         tab_content: &TabContent::ScopeMaps(data),
-                        header: &header,
                     }
                     .render()
                     .map_err(AppError::Template)?

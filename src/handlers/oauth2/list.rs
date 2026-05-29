@@ -67,8 +67,6 @@ pub struct ListParams {
 pub struct OAuth2ListView {
     pub base: BaseFields,
     pub apps: Vec<OAuth2AppRow>,
-    pub total_count: usize,
-    pub filtered_count: usize,
     pub q: String,
     pub per: usize,
     pub pagination: crate::views::pagination::Pagination,
@@ -174,12 +172,12 @@ pub async fn list(
                 })
             })
             .collect();
-        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.sort_by_key(|a| a.label.to_lowercase());
         items.truncate(50);
         return Ok(Json(PaletteResponse { items }).into_response());
     }
 
-    let per = params.per.unwrap_or(24).min(200).max(1);
+    let per = params.per.unwrap_or(24).clamp(1, 200);
     let page = params.page.unwrap_or(1).max(1);
 
     let kanidm_url = state.config.kanidm_url.clone();
@@ -236,8 +234,6 @@ pub async fn list(
     Ok(OAuth2ListView {
         base: BaseFields::new(&user, "oauth2"),
         apps,
-        total_count,
-        filtered_count,
         q,
         per,
         pagination,

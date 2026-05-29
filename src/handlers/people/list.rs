@@ -84,8 +84,6 @@ fn build_person_actions(spn_or_uuid: &str, displayname: &str) -> String {
 pub struct PeopleListView {
     pub base: BaseFields,
     pub people: Vec<PersonRow>,
-    pub total_count: usize,
-    pub filtered_count: usize,
     pub q: String,
     pub status: StatusFilter,
     pub per: usize,
@@ -169,13 +167,13 @@ pub async fn list(
                 })
             })
             .collect();
-        items.sort_by(|a, b| a.label.to_lowercase().cmp(&b.label.to_lowercase()));
+        items.sort_by_key(|a| a.label.to_lowercase());
         items.truncate(50);
         return Ok(Json(PaletteResponse { items }).into_response());
     }
 
     let status_filter = params.status;
-    let per = params.per.unwrap_or(15).min(200).max(1);
+    let per = params.per.unwrap_or(15).clamp(1, 200);
     let page = params.page.unwrap_or(1).max(1);
 
     let now = OffsetDateTime::now_utc();
@@ -191,7 +189,7 @@ pub async fn list(
                 StatusFilter::Active => status == PersonStatus::Active,
                 StatusFilter::Expired => status == PersonStatus::Expired,
                 StatusFilter::NotYetActive => status == PersonStatus::NotYetActive,
-                StatusFilter::NoCredentials => entry.attrs.get("primary_credential").is_none(),
+                StatusFilter::NoCredentials => !entry.attrs.contains_key("primary_credential"),
             };
             if !matches_status {
                 return None;
@@ -260,8 +258,6 @@ pub async fn list(
     let view = PeopleListView {
         base: BaseFields::new(&user, "people"),
         people,
-        total_count,
-        filtered_count,
         q,
         status: status_filter,
         per,

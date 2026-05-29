@@ -31,7 +31,6 @@ pub const TABS: &[TabDef] = &[
 pub struct MemberChip {
     pub initials: String,
     pub name: String,
-    pub spn_or_id: String,
 }
 
 pub struct OverviewData {
@@ -42,7 +41,6 @@ pub struct OverviewData {
     pub mails: Vec<String>,
     pub entry_managed_by: Option<String>,
     pub members_preview: Vec<MemberChip>,
-    pub member_count: usize,
     pub members_overflow: usize,
     /// Account policy summary fields (only populated when has_policy is true)
     pub policy_summary: Vec<(String, String)>,
@@ -153,9 +151,8 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
     } else {
         attr_all(entry, "member")
     };
-    let member_count = all_members.len();
     let preview_max = 6;
-    let members_overflow = member_count.saturating_sub(preview_max);
+    let members_overflow = all_members.len().saturating_sub(preview_max);
     let members_preview: Vec<MemberChip> = all_members
         .into_iter()
         .take(preview_max)
@@ -164,7 +161,6 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
             MemberChip {
                 initials: spn_initials(&spn),
                 name: name_part,
-                spn_or_id: spn,
             }
         })
         .collect();
@@ -198,7 +194,6 @@ fn build_overview(entry: &kanidm_proto::v1::Entry) -> OverviewData {
         mails,
         entry_managed_by,
         members_preview,
-        member_count,
         members_overflow,
         policy_summary,
     }

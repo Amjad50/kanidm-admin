@@ -129,7 +129,6 @@ pub async fn profile(State(state): State<AppState>, user: AdminUser) -> AppResul
 pub struct SessionsView {
     pub base: BaseFields,
     pub displayname: String,
-    pub spn: String,
     pub sessions: Vec<SessionRow>,
     pub current_session_id: Option<String>,
     pub error: Option<String>,
@@ -215,7 +214,6 @@ pub async fn sessions_tab(
     Ok(SessionsView {
         base: BaseFields::new(&user, "me"),
         displayname: user.displayname.clone(),
-        spn: user.spn.clone(),
         sessions,
         current_session_id,
         error,
@@ -233,8 +231,8 @@ pub async fn destroy_session(
 
     // Don't let the user destroy their own active session — they'd be logged out
     // immediately. They can use Logout for that.
-    if let Some(cur) = &current_session_id {
-        if cur == &session_id.to_string() {
+    if let Some(cur) = &current_session_id
+        && cur == &session_id.to_string() {
             let (sessions, _err) = fetch_my_sessions(&state, &user).await;
             let fragment = SessionsTableFragment {
                 sessions,
@@ -247,7 +245,6 @@ pub async fn destroy_session(
             return Ok(Html(askama::Template::render(&fragment).map_err(AppError::Template)?)
                 .into_response());
         }
-    }
 
     let client = state
         .kanidm
@@ -282,7 +279,6 @@ pub async fn destroy_session(
     Ok(SessionsView {
         base: BaseFields::new(&user, "me"),
         displayname: user.displayname.clone(),
-        spn: user.spn.clone(),
         sessions,
         current_session_id,
         error,

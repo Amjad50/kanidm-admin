@@ -257,7 +257,6 @@ fn render_claim_tab_with_oob_close(
     let tab_html = {
         crate::handlers::oauth2::detail::TabContentFragment {
             tab_content: &TabContent::ClaimMaps(data),
-            header,
         }
         .render()
         .map_err(AppError::Template)?
@@ -710,11 +709,10 @@ pub async fn delete_all_for_claim(
     // Collect (claim, group) pairs that belong to this claim.
     let mut pairs: Vec<(String, String)> = Vec::new();
     for raw in &raw_values {
-        if let Some(parsed) = parse_claim_map(raw) {
-            if parsed.claim_name == claim {
+        if let Some(parsed) = parse_claim_map(raw)
+            && parsed.claim_name == claim {
                 pairs.push((parsed.claim_name, parsed.group_spn));
             }
-        }
     }
 
     let client = state

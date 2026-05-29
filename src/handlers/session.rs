@@ -50,13 +50,10 @@ pub async fn logout(
         destroy_session_best_effort(&state, &user.token, &user.spn, sid).await;
     }
 
-    let cookie_name = state.config.kanidm_session_cookie.clone();
-    let kanidm_url = state.config.kanidm_url.clone();
-
-    let expired = Cookie::build((cookie_name, ""))
+    let expired = Cookie::build((state.config.session_cookie_name.clone(), ""))
         .path("/")
         .http_only(true)
-        .secure(true)
+        .secure(!state.config.dev_insecure_cookies)
         .same_site(SameSite::Lax)
         .expires(OffsetDateTime::UNIX_EPOCH)
         .build();
@@ -64,10 +61,9 @@ pub async fn logout(
 
     if is_htmx {
         let mut resp = StatusCode::OK.into_response();
-        if let Ok(v) = HeaderValue::from_str(&kanidm_url) {
-            resp.headers_mut().insert("HX-Redirect", v);
-        }
+        resp.headers_mut()
+            .insert("HX-Redirect", HeaderValue::from_static("/login"));
         return (jar, resp).into_response();
     }
-    (jar, Redirect::to(&kanidm_url)).into_response()
+    (jar, Redirect::to("/login")).into_response()
 }

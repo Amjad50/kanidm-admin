@@ -1,0 +1,10 @@
+{% extends "login/base.html" %}
+
+{% block title %}Use your security key · Kanidm Admin{% endblock %}
+{% block login_title %}Use your security key{% endblock %}
+
+{% block login_body %}
+  {% let passkey = false %}
+  {% let submit_action = "/login/security-key" %}
+  {% include "login/_webauthn.html" %}
+{% endblock %}

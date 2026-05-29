@@ -62,8 +62,6 @@ pub struct GroupHeader {
     pub spn: String,
     pub spn_or_uuid: String,
     pub description: Option<String>,
-    pub member_count: usize,
-    pub has_policy: bool,
     pub is_builtin: bool,
     pub is_dynamic: bool,
 }
@@ -76,24 +74,14 @@ pub(super) fn compute_header(entry: &kanidm_proto::v1::Entry) -> GroupHeader {
     let description = attr_first(entry, "description");
 
     let classes = attr_all(entry, "class");
-    let has_policy = classes.iter().any(|c| c == "account_policy");
     let is_builtin = classes.iter().any(|c| c == "builtin");
     let is_dynamic = classes.iter().any(|c| c == "dyngroup");
-
-    // Static member count — prefer `member` for normal groups, `dynmember` for dyngroups
-    let member_count = if is_dynamic {
-        attr_all(entry, "dynmember").len()
-    } else {
-        attr_all(entry, "member").len()
-    };
 
     GroupHeader {
         name,
         spn,
         spn_or_uuid: spn_or_uuid(entry),
         description,
-        member_count,
-        has_policy,
         is_builtin,
         is_dynamic,
     }

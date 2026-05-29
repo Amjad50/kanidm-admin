@@ -1,0 +1,39 @@
+{% extends "login/base.html" %}
+
+{% block title %}Sign in · Kanidm Admin{% endblock %}
+{% block login_title %}Sign in{% endblock %}
+
+{% block login_body %}
+  {% if expired %}
+    <div class="flex gap-3 p-3 rounded-md border border-warning/30 bg-warning-soft text-sm">
+      <div class="text-warning shrink-0 mt-0.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+      </div>
+      <div class="flex-1">Your sign-in took too long. Try again.</div>
+    </div>
+  {% endif %}
+
+  {% if let Some(msg) = error %}
+    <div class="flex gap-3 p-3 rounded-md border border-destructive/30 bg-destructive-soft text-sm">
+      <div class="text-destructive shrink-0 mt-0.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+      </div>
+      <div class="flex-1">{{ msg }}</div>
+    </div>
+  {% endif %}
+
+  <form method="post" action="/login" class="flex flex-col gap-4">
+    <input type="hidden" name="return_to" value="{{ return_to }}">
+    <div>
+      <label for="username" class="block text-sm font-medium text-muted-foreground mb-1.5">Username</label>
+      <input id="username" name="ident" type="text" required autocomplete="username" autofocus
+             placeholder="alice.smith"
+             class="h-11 w-full px-4 bg-background border border-input rounded-md text-md outline-none transition-colors focus:border-ring focus:shadow-primary-ring placeholder:text-muted-foreground" />
+      <div class="text-xs text-muted-foreground mt-1.5 leading-relaxed">Enter your username or SPN (e.g., <span class="font-mono">alice.smith</span>).</div>
+    </div>
+    <button type="submit"
+            class="h-11 w-full rounded-md bg-primary text-primary-foreground font-medium text-md hover:bg-primary/90 transition-colors cursor-pointer">
+      Continue
+    </button>
+  </form>
+{% endblock %}

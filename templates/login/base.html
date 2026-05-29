@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Sign in · Kanidm Admin{% endblock %}</title>
+  <link rel="icon" href="/static/favicon.svg">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('kanidm-admin-ui:theme');
+        if (t !== 'light' && t !== 'dark') t = 'dark';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/app.css">
+  <script type="module" src="/static/app.js" defer></script>
+  <style>
+    /* Background ambience for the login surface. Two layers:
+     *   1. soft warm gradient at top, evoking the primary accent
+     *   2. dotted grid for texture
+     * Both use color-mix on --primary so the look adapts to theme tweaks. */
+    .login-bg::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(900px 540px at 50% -8%,
+                                  color-mix(in srgb, var(--primary) 8%, transparent),
+                                  transparent 60%);
+    }
+    .login-bg::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background-image: radial-gradient(circle at 1px 1px,
+                                        color-mix(in srgb, var(--foreground) 4%, transparent) 1px,
+                                        transparent 0);
+      background-size: 24px 24px;
+    }
+    /* TOTP digit appearance — single concrete style, retained because
+     * digit grids don't have an idiomatic Tailwind equivalent. */
+    .digit-cell { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+    /* Passkey waiting animation. */
+    @keyframes passkeyScale { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+    @keyframes passkeyRing  { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.6); opacity: 0; } }
+    .passkey-icon { animation: passkeyScale 1.8s cubic-bezier(.45,0,.55,1) infinite; }
+    .passkey-ring { animation: passkeyRing 2s cubic-bezier(.22,.61,.36,1) infinite; }
+    .passkey-ring.delayed { animation-delay: 1s; }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen font-sans antialiased">
+  <div class="login-bg relative min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden">
+    <div class="relative z-10 w-full max-w-md bg-card border border-border rounded-xl shadow-xl p-9 pb-8 flex flex-col gap-6">
+
+      <!-- Brand -->
+      <div class="flex flex-col items-center gap-3.5">
+        <img src="/static/logo-square.svg" alt="" class="w-12 h-12">
+        <div class="text-center">
+          <div class="text-2xl font-bold tracking-tight">Kanidm</div>
+          {% if let Some(domain) = domain_name %}
+            <div class="text-xs font-mono text-muted-foreground inline-flex items-center gap-1.5 mt-1.5">
+              <span class="w-1.5 h-1.5 rounded-pill bg-success"></span> {{ domain }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div class="text-lg font-semibold text-center">{% block login_title %}{% endblock %}</div>
+
+      <!-- Body -->
+      {% block login_body %}{% endblock %}
+
+    </div>
+
+    <div class="relative z-10 mt-4 flex gap-4 justify-center flex-wrap text-xs text-muted-foreground">
+      <a href="#" title="Ask an administrator to generate a reset link for you." class="text-muted-foreground hover:text-foreground">Need help signing in?</a>
+      <a href="https://kanidm.github.io/kanidm/stable/" target="_blank" rel="noopener" class="text-muted-foreground hover:text-foreground">About Kanidm ↗</a>
+    </div>
+  </div>
+</body>
+</html>

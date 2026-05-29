@@ -51,7 +51,6 @@ pub struct MembersTabFragment<'a> {
 #[template(path = "groups/_members_list.html")]
 pub struct MembersListFragment<'a> {
     pub data: &'a MembersData,
-    pub group: &'a GroupHeader,
 }
 
 // ── Form structs ──────────────────────────────────────────────────────────────
@@ -206,7 +205,7 @@ pub async fn add(
 
     if group.is_dynamic {
         let data = build_members_data(&state, &user, &id, &entry).await;
-        let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
+        let rows_html = askama::Template::render(&MembersListFragment { data: &data })
             .map_err(AppError::Template)?;
         let error_oob = render_members_error_oob(Some(
             "Dynamic group membership is computed automatically and cannot be edited.".to_string(),
@@ -229,14 +228,10 @@ pub async fn add(
 
     // Re-fetch entry and return updated members list fragment
     let entry = fetch_group(&state, &user, &id).await?;
-    let group = compute_header(&entry);
     let data = build_members_data(&state, &user, &id, &entry).await;
 
-    let rows_html = askama::Template::render(&MembersListFragment {
-        data: &data,
-        group: &group,
-    })
-    .map_err(AppError::Template)?;
+    let rows_html = askama::Template::render(&MembersListFragment { data: &data })
+        .map_err(AppError::Template)?;
 
     let error_oob = render_members_error_oob(add_error);
     Ok(Html(format!("{rows_html}{error_oob}")).into_response())
@@ -253,7 +248,7 @@ pub async fn remove(
 
     if group.is_dynamic {
         let data = build_members_data(&state, &user, &id, &entry).await;
-        let rows_html = askama::Template::render(&MembersListFragment { data: &data, group: &group })
+        let rows_html = askama::Template::render(&MembersListFragment { data: &data })
             .map_err(AppError::Template)?;
         let error_oob = render_members_error_oob(Some(
             "Dynamic group membership is computed automatically and cannot be edited.".to_string(),
@@ -276,14 +271,10 @@ pub async fn remove(
 
     // Re-fetch and return updated members list
     let entry = fetch_group(&state, &user, &id).await?;
-    let group = compute_header(&entry);
     let data = build_members_data(&state, &user, &id, &entry).await;
 
-    let rows_html = askama::Template::render(&MembersListFragment {
-        data: &data,
-        group: &group,
-    })
-    .map_err(AppError::Template)?;
+    let rows_html = askama::Template::render(&MembersListFragment { data: &data })
+        .map_err(AppError::Template)?;
 
     let error_oob = render_members_error_oob(remove_error);
     Ok(Html(format!("{rows_html}{error_oob}")).into_response())
@@ -330,13 +321,9 @@ pub async fn purge(
         Ok(()) => {
             // Re-fetch and return updated members list
             let entry = fetch_group(&state, &user, &id).await?;
-            let group = compute_header(&entry);
             let data = build_members_data(&state, &user, &id, &entry).await;
-            let html = askama::Template::render(&MembersListFragment {
-                data: &data,
-                group: &group,
-            })
-            .map_err(AppError::Template)?;
+            let html = askama::Template::render(&MembersListFragment { data: &data })
+                .map_err(AppError::Template)?;
             // Also close the modal overlay
             let mut headers = HeaderMap::new();
             headers.insert(

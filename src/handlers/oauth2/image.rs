@@ -330,8 +330,8 @@ pub async fn upload_from_url(
     };
 
     // ── Reject early if Content-Length advertises something too big ─────
-    if let Some(len) = resp.content_length() {
-        if len as usize > MAX_IMAGE_BYTES {
+    if let Some(len) = resp.content_length()
+        && len as usize > MAX_IMAGE_BYTES {
             return render_error(
                 &state, &user, &id,
                 &format!(
@@ -341,7 +341,6 @@ pub async fn upload_from_url(
             )
             .await;
         }
-    }
 
     // ── Stream the body with a size guard (don't trust Content-Length) ───
     let bytes = match resp.bytes().await {
@@ -369,7 +368,7 @@ pub async fn upload_from_url(
     // ── Derive a sensible filename from the URL path ─────────────────────
     let filename = parsed_url
         .path_segments()
-        .and_then(|segs| segs.last())
+        .and_then(|mut segs| segs.next_back())
         .filter(|s| !s.is_empty())
         .map(|s| s.to_string())
         .unwrap_or_else(|| "image".to_string());

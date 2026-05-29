@@ -20,10 +20,10 @@ pub struct Config {
     #[serde(default)]
     pub kanidm_accept_invalid_certs: bool,
 
-    /// Name of the cookie set by kanidm on a successful login. The UI looks here
-    /// for the user's bearer token. Default matches kanidm's current cookie name.
+    /// Name of the cookie we set on successful login. Distinct from kanidm's
+    /// own `bearer` cookie so the two never collide on a shared parent domain.
     #[serde(default = "default_session_cookie")]
-    pub kanidm_session_cookie: String,
+    pub session_cookie_name: String,
 
     /// Group SPN that grants access to the admin panel. Users not in this group
     /// see "Forbidden".
@@ -33,15 +33,18 @@ pub struct Config {
     /// Where to find static assets (CSS, JS bundles).
     #[serde(default = "default_static_dir")]
     pub static_dir: String,
+
+    /// Drop the `Secure` cookie flag so login works on plain http://localhost
+    /// in dev. NEVER true in production.
+    #[serde(default)]
+    pub dev_insecure_cookies: bool,
 }
 
 fn default_bind_addr() -> String {
     "127.0.0.1:3000".to_string()
 }
 fn default_session_cookie() -> String {
-    // kanidm sets its session as a cookie literally named "bearer"
-    // (see kanidm_proto::internal::COOKIE_BEARER_TOKEN).
-    "bearer".to_string()
+    "kanidm_admin_session".to_string()
 }
 fn default_admin_group() -> String {
     "idm_admins".to_string()

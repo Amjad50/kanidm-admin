@@ -1,0 +1,9 @@
+<div class="flex items-center gap-3 p-3 bg-background border border-border rounded-md">
+  <span class="w-10 h-10 rounded-pill bg-primary-soft text-primary border border-primary-soft flex items-center justify-center text-sm font-semibold shrink-0">{{ initials }}</span>
+  <div class="flex-1 min-w-0">
+    {% if let Some(name) = displayname %}
+      <div class="font-medium text-sm leading-tight truncate">{{ name }}</div>
+    {% endif %}
+    <div class="font-mono text-xs text-muted-foreground mt-0.5 truncate">{{ ident }}</div>
+  </div>
+</div>
