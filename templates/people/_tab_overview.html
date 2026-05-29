@@ -1,59 +1,59 @@
 <div class="flex flex-col gap-4">
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
-    <div class="text-tertiary text-xs uppercase tracking-wider font-semibold mb-4">Identity</div>
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
+    <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold mb-4">Identity</div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
 
-      <dt class="text-tertiary self-center">UUID</dt>
+      <dt class="text-muted-foreground self-center">UUID</dt>
       <dd class="flex items-center gap-2 min-w-0">
-        <span class="font-mono text-xs text-primary break-all">{{ d.uuid }}</span>
+        <span class="font-mono text-xs text-foreground break-all">{{ d.uuid }}</span>
         <button type="button"
-                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                class="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                 title="Copy UUID"
                 data-copy="{{ d.uuid }}">
           {% include "icons/_copy.html" %}
         </button>
       </dd>
 
-      <dt class="text-tertiary self-center">Username</dt>
-      <dd><span class="font-mono text-primary">{{ d.name }}</span></dd>
+      <dt class="text-muted-foreground self-center">Username</dt>
+      <dd><span class="font-mono text-foreground">{{ d.name }}</span></dd>
 
-      <dt class="text-tertiary self-center">SPN</dt>
+      <dt class="text-muted-foreground self-center">SPN</dt>
       <dd class="flex items-center gap-2 min-w-0">
-        <span class="font-mono text-xs text-primary break-all">{{ person.spn }}</span>
+        <span class="font-mono text-xs text-foreground break-all">{{ person.spn }}</span>
         <button type="button"
-                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                class="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                 title="Copy SPN"
                 data-copy="{{ person.spn }}">
           {% include "icons/_copy.html" %}
         </button>
       </dd>
 
-      <dt class="text-tertiary self-center">Display name</dt>
-      <dd class="text-primary">{{ d.displayname }}</dd>
+      <dt class="text-muted-foreground self-center">Display name</dt>
+      <dd class="text-foreground">{{ d.displayname }}</dd>
 
       {% match d.legalname %}
       {% when Some with (ln) %}
-      <dt class="text-tertiary self-center">Legal name</dt>
-      <dd class="text-primary">{{ ln }}</dd>
+      <dt class="text-muted-foreground self-center">Legal name</dt>
+      <dd class="text-foreground">{{ ln }}</dd>
       {% when None %}
       {% endmatch %}
 
-      <dt class="text-tertiary self-start pt-0.5">Emails</dt>
+      <dt class="text-muted-foreground self-start pt-0.5">Emails</dt>
       <dd>
         {% if d.mails.is_empty() %}
-        <span class="text-tertiary">—</span>
+        <span class="text-muted-foreground">—</span>
         {% else %}
         <div class="flex flex-col gap-1.5">
           {% for (i, mail) in d.mails.iter().enumerate() %}
           <div class="flex items-center gap-2">
             {% if i == 0 %}
-            <span class="text-accent shrink-0 w-3.5 h-3.5 inline-flex [&_svg]:fill-current" title="Primary">{{ crate::views::icons::icon("star") }}</span>
-            <span class="font-mono text-xs text-primary">{{ mail }}</span>
-            <span class="text-tertiary text-xs">primary</span>
+            <span class="text-primary shrink-0 w-3.5 h-3.5 inline-flex [&_svg]:fill-current" title="Primary">{{ crate::views::icons::icon("star") }}</span>
+            <span class="font-mono text-xs text-foreground">{{ mail }}</span>
+            <span class="text-muted-foreground text-xs">primary</span>
             {% else %}
             <span class="shrink-0 w-[13px]"></span>
-            <span class="font-mono text-xs text-secondary">{{ mail }}</span>
+            <span class="font-mono text-xs text-muted-foreground">{{ mail }}</span>
             {% endif %}
           </div>
           {% endfor %}
@@ -64,9 +64,9 @@
     </dl>
   </section>
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Group memberships</div>
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Group memberships</div>
       <a href="/people/{{ person.spn_or_uuid }}/groups"
          class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
         {% if d.direct_group_count > 5 %}See all {{ d.direct_group_count }}{% else %}Manage{% endif %}
@@ -75,16 +75,16 @@
     </div>
     <div class="flex flex-wrap gap-2">
       {% if d.groups.is_empty() %}
-      <span class="text-tertiary text-sm">No group memberships.</span>
+      <span class="text-muted-foreground text-sm">No group memberships.</span>
       {% else %}
       {% for group in d.groups %}
       <a href="/groups/{{ group.spn_or_id }}/overview"
-         class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded-pill px-3 h-7 text-xs font-medium text-secondary hover:bg-hover hover:border-default hover:text-primary transition-colors no-underline">
+         class="inline-flex items-center gap-1.5 bg-popover border border-border rounded-pill px-3 h-7 text-xs font-medium text-muted-foreground hover:bg-accent hover:border-border hover:text-foreground transition-colors no-underline">
         {{ group.name }}
       </a>
       {% endfor %}
       {% if d.direct_group_count > d.groups.len() %}
-      <span class="inline-flex items-center bg-surface border border-default rounded-pill px-3 h-7 text-xs text-tertiary">
+      <span class="inline-flex items-center bg-card border border-border rounded-pill px-3 h-7 text-xs text-muted-foreground">
         +{{ d.direct_group_count - d.groups.len() }} more
       </span>
       {% endif %}
@@ -92,9 +92,9 @@
     </div>
   </section>
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Validity</div>
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Validity</div>
       <a href="/people/{{ person.spn_or_uuid }}/validity"
          class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
         Edit on Validity tab
@@ -102,26 +102,26 @@
       </a>
     </div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
-      <dt class="text-tertiary self-center">Valid from</dt>
+      <dt class="text-muted-foreground self-center">Valid from</dt>
       <dd>
         {% match d.valid_from %}
-        {% when Some with (vf) %}<span class="text-primary">{{ vf }}</span>
-        {% when None %}<span class="text-secondary">any time</span>
+        {% when Some with (vf) %}<span class="text-foreground">{{ vf }}</span>
+        {% when None %}<span class="text-muted-foreground">any time</span>
         {% endmatch %}
       </dd>
-      <dt class="text-tertiary self-center">Expires</dt>
+      <dt class="text-muted-foreground self-center">Expires</dt>
       <dd>
         {% match d.expire_at %}
-        {% when Some with (exp) %}<span class="text-primary">{{ exp }}</span>
-        {% when None %}<span class="text-secondary">never</span>
+        {% when Some with (exp) %}<span class="text-foreground">{{ exp }}</span>
+        {% when None %}<span class="text-muted-foreground">never</span>
         {% endmatch %}
       </dd>
     </dl>
   </section>
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Credentials summary</div>
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Credentials summary</div>
       <a href="/people/{{ person.spn_or_uuid }}/credentials"
          class="text-xs text-link inline-flex items-center gap-1 no-underline hover:underline">
         Manage on Credentials tab
@@ -130,33 +130,33 @@
     </div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:140px 1fr">
 
-      <dt class="text-tertiary self-center">Primary</dt>
+      <dt class="text-muted-foreground self-center">Primary</dt>
       <dd>
         {% match d.credential_summary.primary.label() %}
-        {% when Some with (p) %}<span class="text-primary">{{ p }}</span>
-        {% when None %}<span class="text-tertiary">Not configured</span>
+        {% when Some with (p) %}<span class="text-foreground">{{ p }}</span>
+        {% when None %}<span class="text-muted-foreground">Not configured</span>
         {% endmatch %}
       </dd>
 
-      <dt class="text-tertiary self-center">Passkeys</dt>
+      <dt class="text-muted-foreground self-center">Passkeys</dt>
       <dd>
         {% if d.credential_summary.passkey_count == 0 %}
-        <span class="text-tertiary">None</span>
+        <span class="text-muted-foreground">None</span>
         {% else %}
-        <span class="text-primary">{{ d.credential_summary.passkey_count }} registered</span>
+        <span class="text-foreground">{{ d.credential_summary.passkey_count }} registered</span>
         {% endif %}
       </dd>
 
-      <dt class="text-tertiary self-center">SSH keys</dt>
+      <dt class="text-muted-foreground self-center">SSH keys</dt>
       <dd>
         {% if d.credential_summary.ssh_key_count == 0 %}
-        <span class="text-tertiary">None</span>
+        <span class="text-muted-foreground">None</span>
         {% else %}
-        <span class="text-primary">{{ d.credential_summary.ssh_key_count }} registered</span>
+        <span class="text-foreground">{{ d.credential_summary.ssh_key_count }} registered</span>
         {% endif %}
       </dd>
 
-      <dt class="text-tertiary self-center">RADIUS</dt>
+      <dt class="text-muted-foreground self-center">RADIUS</dt>
       <dd>
         {% if d.credential_summary.radius_configured %}
         <span class="inline-flex items-center gap-1.5 bg-success-soft text-success rounded-pill text-xs font-medium px-2 py-0.5">
@@ -164,7 +164,7 @@
           Configured
         </span>
         {% else %}
-        <span class="text-tertiary">Not configured</span>
+        <span class="text-muted-foreground">Not configured</span>
         {% endif %}
       </dd>
 

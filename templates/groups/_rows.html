@@ -1,8 +1,8 @@
 {% if groups.is_empty() %}
 <tr>
-  <td colspan="5" class="px-4 py-12 text-center text-tertiary text-sm">
+  <td colspan="5" class="px-4 py-12 text-center text-muted-foreground text-sm">
     {% if !q.is_empty() %}
-    No groups match <span class="font-mono text-secondary">{{ q }}</span>.
+    No groups match <span class="font-mono text-muted-foreground">{{ q }}</span>.
     {% else %}
     No groups found.
     {% endif %}
@@ -11,41 +11,41 @@
 {% else %}
 {% for g in groups %}
 <tr
-  class="border-b border-subtle hover:bg-hover transition-colors cursor-pointer last:border-b-0"
+  class="border-b border-border hover:bg-accent transition-colors cursor-pointer last:border-b-0"
   onclick="if(event.metaKey||event.ctrlKey||event.shiftKey||event.target.closest('button,a')){return}location='/groups/{{ g.spn_or_uuid }}/overview'"
 >
   <td class="px-3 py-3">
     <div class="flex items-center gap-2">
-      <span class="font-mono font-medium text-sm text-primary">{{ g.name }}</span>
+      <span class="font-mono font-medium text-sm text-foreground">{{ g.name }}</span>
       {% if g.is_builtin %}
-      <span class="inline-flex items-center bg-elevated border border-subtle rounded-pill text-xs font-medium px-2 h-5 text-secondary">Built-in</span>
+      <span class="inline-flex items-center bg-popover border border-border rounded-pill text-xs font-medium px-2 h-5 text-muted-foreground">Built-in</span>
       {% endif %}
       {% if g.is_dynamic %}
       <span class="inline-flex items-center bg-info-soft border border-info rounded-pill text-xs font-medium px-2 h-5 text-info">Dynamic</span>
       {% endif %}
     </div>
   </td>
-  <td class="px-3 py-3 text-secondary text-sm truncate max-w-xs">
+  <td class="px-3 py-3 text-muted-foreground text-sm truncate max-w-xs">
     {% match g.description %}
     {% when Some with (d) %}{{ d }}
-    {% when None %}<span class="text-tertiary">—</span>
+    {% when None %}<span class="text-muted-foreground">—</span>
     {% endmatch %}
   </td>
   <td class="px-3 py-3">
     <div class="flex items-center gap-1.5 text-sm">
-      <span class="w-3.5 h-3.5 inline-flex shrink-0 text-tertiary">{{ crate::views::icons::icon("users") }}</span>
+      <span class="w-3.5 h-3.5 inline-flex shrink-0 text-muted-foreground">{{ crate::views::icons::icon("users") }}</span>
       <span class="font-mono">{{ g.member_count }}</span>
     </div>
   </td>
   <td class="px-3 py-3">
     {% if g.has_policy %}
-    <div class="flex items-center gap-1.5 text-xs text-secondary">
-      <span class="w-2 h-2 rounded-pill bg-accent shadow-accent-ring shrink-0"></span>
+    <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span class="w-2 h-2 rounded-pill bg-primary shadow-primary-ring shrink-0"></span>
       Enabled
     </div>
     {% else %}
-    <div class="flex items-center gap-1.5 text-xs text-tertiary">
-      <span class="w-2 h-2 rounded-pill border border-strong shrink-0"></span>
+    <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span class="w-2 h-2 rounded-pill border border-input shrink-0"></span>
       Default
     </div>
     {% endif %}

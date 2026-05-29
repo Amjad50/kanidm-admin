@@ -3,31 +3,31 @@
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/oauth2" class="hover:text-secondary transition-colors no-underline">OAuth2 Apps</a>
+<a href="/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium">Create app</span>
+<span class="text-foreground font-medium">Create app</span>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-8 py-6">
 
   <div class="mb-7">
-    <div class="inline-flex items-center gap-1.5 bg-elevated rounded-pill px-3 py-1 text-xs font-mono text-tertiary mb-3">
+    <div class="inline-flex items-center gap-1.5 bg-popover rounded-pill px-3 py-1 text-xs font-mono text-muted-foreground mb-3">
       Step 2 of 2 · Create OAuth2 app
     </div>
     <div class="flex items-center gap-3 mt-1">
       <h1 class="text-2xl font-semibold tracking-tight">App details</h1>
-      <span class="inline-flex items-center h-6 px-2.5 bg-accent-soft text-accent text-xs font-medium rounded-pill">
+      <span class="inline-flex items-center h-6 px-2.5 bg-primary-soft text-primary text-xs font-medium rounded-pill">
         {{ kind.label() }}
       </span>
     </div>
-    <div class="text-secondary text-sm mt-1">
+    <div class="text-muted-foreground text-sm mt-1">
       Fill in the basics. You can add scopes, images, and other settings after creation.
     </div>
   </div>
 
   {% if let Some(msg) = form_error %}
-  <div class="bg-danger-soft border border-danger text-danger text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
+  <div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
     {{ msg }}
   </div>
   {% endif %}
@@ -35,7 +35,7 @@
   <form method="post" action="/oauth2" style="max-width:680px">
     <input type="hidden" name="type" value="{% if kind == OAuth2CreateKind::Basic %}basic{% else %}public{% endif %}" />
 
-    <div class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-5">
+    <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-5">
 
       {{ name_field|safe }}
 
@@ -43,14 +43,14 @@
 
       {{ landing_field|safe }}
 
-      <div class="flex items-center justify-between border-t border-subtle pt-4 mt-2">
+      <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
         <a href="/oauth2/new"
-           class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
+           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
           ← Back
         </a>
         <button
           type="submit"
-          class="bg-accent text-on-accent hover:bg-accent-hover h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
+          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
           <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("shield") }}</span>
           Create app
         </button>

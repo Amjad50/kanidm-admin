@@ -3,9 +3,9 @@
 {% block title %}Create person · People · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/people" class="hover:text-secondary transition-colors no-underline">People</a>
+<a href="/people" class="hover:text-muted-foreground transition-colors no-underline">People</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium">Create person</span>
+<span class="text-foreground font-medium">Create person</span>
 {% endblock %}
 
 {% block content %}
@@ -13,19 +13,19 @@
 
   <div class="mb-7">
     <h1 class="text-2xl font-semibold tracking-tight">Create a new person</h1>
-    <div class="text-secondary text-sm mt-1" style="max-width:560px">
+    <div class="text-muted-foreground text-sm mt-1" style="max-width:560px">
       Set the basics and optional contact details. You can add credentials and configure groups on the next page.
     </div>
   </div>
 
   {% if let Some(msg) = form_error %}
-  <div class="bg-danger-soft border border-danger text-danger text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
+  <div class="bg-destructive-soft border border-destructive text-destructive text-sm rounded px-4 py-3 mb-5" style="max-width:680px">
     {{ msg }}
   </div>
   {% endif %}
 
   <form method="post" action="/people" style="max-width:680px">
-    <div class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-5">
+    <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-5">
 
       {{ name_field|safe }}
 
@@ -34,35 +34,35 @@
       {{ legalname_field|safe }}
 
       <div>
-        <label class="block text-sm font-medium text-primary mb-1.5">Emails</label>
+        <label class="block text-sm font-medium text-foreground mb-1.5">Emails</label>
         <div id="email-rows" data-email-rows="email-rows" class="flex flex-col gap-2">
           {% for email in emails %}
           <div class="flex items-center gap-2">
-            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
+            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-muted-foreground hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
               <span class="w-3.5 h-3.5 inline-flex shrink-0 {% if email.is_primary %}[&_svg]:fill-current{% endif %}">{{ crate::views::icons::icon("star") }}</span>
             </button>
-            <input type="email" name="email" value="{{ email.value }}" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
-            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+            <input type="email" name="email" value="{{ email.value }}" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="user@example.com" />
+            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
               {% include "icons/_x.html" %}
             </button>
           </div>
           {% endfor %}
         </div>
-        <button type="button" data-add-email data-target="email-rows" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+        <button type="button" data-add-email data-target="email-rows" class="bg-transparent border-0 text-muted-foreground hover:text-foreground text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
           <span>Add email</span>
         </button>
-        <div class="text-tertiary text-xs mt-2">The starred email is primary. Other systems may use it first.</div>
+        <div class="text-muted-foreground text-xs mt-2">The starred email is primary. Other systems may use it first.</div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 border-t border-subtle pt-4 mt-2">
+      <div class="flex items-center justify-end gap-2 border-t border-border pt-4 mt-2">
         <a href="/people"
-           class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
+           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
           Cancel
         </a>
         <button
           type="submit"
-          class="bg-accent text-on-accent hover:bg-accent-hover h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
+          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
           <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("user-plus") }}</span>
           Create person
         </button>
@@ -75,11 +75,11 @@
 
 <template id="email-rows-tpl">
   <div class="flex items-center gap-2">
-    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
       <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("star") }}</span>
     </button>
-    <input type="email" name="email" value="" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="user@example.com" />
-    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+    <input type="email" name="email" value="" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="user@example.com" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
 <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
     </button>
   </div>

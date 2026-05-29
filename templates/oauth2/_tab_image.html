@@ -2,17 +2,17 @@
 
   {# ── Error banner ── #}
   {% if let Some(err) = data.error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   {# ── Current image card ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
-    <h3 class="text-sm font-semibold text-primary mb-4">Current image</h3>
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
+    <h3 class="text-sm font-semibold text-foreground mb-4">Current image</h3>
 
     {% if data.has_image %}
     {# Image preview + remove button #}
     <div class="flex items-start gap-5">
-      <div class="bg-canvas border border-subtle rounded-md p-3 shrink-0 inline-flex items-center justify-center">
+      <div class="bg-background border border-border rounded-md p-3 shrink-0 inline-flex items-center justify-center">
         {% match data.image_url %}
         {% when Some with (url) %}
         <img src="{{ url }}"
@@ -21,12 +21,12 @@
         {% when None %}{% endmatch %}
       </div>
       <div class="flex flex-col gap-3 justify-center">
-        <p class="text-xs text-secondary leading-relaxed">
+        <p class="text-xs text-muted-foreground leading-relaxed">
           This image is shown on the OAuth2 app listing and consent screens.
         </p>
         <div>
           <button type="button"
-                  class="bg-transparent border border-danger text-danger rounded h-8 px-3 text-sm font-medium hover:bg-danger-soft transition-colors cursor-pointer inline-flex items-center gap-2"
+                  class="bg-transparent border border-destructive text-destructive rounded h-8 px-3 text-sm font-medium hover:bg-destructive-soft transition-colors cursor-pointer inline-flex items-center gap-2"
                   hx-post="/oauth2/{{ data.oauth2_id }}/image/delete"
                   hx-target="#tab-content"
                   hx-swap="innerHTML"
@@ -41,20 +41,20 @@
     {% else %}
     {# No image placeholder #}
     <div class="flex items-center gap-4 py-4">
-      <div class="bg-canvas border border-subtle border-dashed rounded-md w-24 h-24 shrink-0 inline-flex items-center justify-center text-tertiary">
+      <div class="bg-background border border-border border-dashed rounded-md w-24 h-24 shrink-0 inline-flex items-center justify-center text-muted-foreground">
         <span class="w-7 h-7 inline-flex shrink-0">{{ crate::views::icons::icon("image") }}</span>
       </div>
-      <p class="text-sm text-secondary">No image set. Upload one below to display it on the app listing and consent screens.</p>
+      <p class="text-sm text-muted-foreground">No image set. Upload one below to display it on the app listing and consent screens.</p>
     </div>
     {% endif %}
   </section>
 
   {# ── Upload form ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
-    <h3 class="text-sm font-semibold text-primary mb-1">
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
+    <h3 class="text-sm font-semibold text-foreground mb-1">
       {% if data.has_image %}Replace image{% else %}Upload image{% endif %}
     </h3>
-    <p class="text-xs text-secondary mb-4 leading-relaxed">
+    <p class="text-xs text-muted-foreground mb-4 leading-relaxed">
       Choose an image file from your computer. The image will replace any existing one.
     </p>
 
@@ -69,21 +69,21 @@
                id="image-file-input"
                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
                required
-               class="block w-full text-sm text-secondary
+               class="block w-full text-sm text-muted-foreground
                       file:mr-3 file:py-1.5 file:px-3
-                      file:rounded file:border file:border-default
-                      file:bg-elevated file:text-primary file:text-sm
+                      file:rounded file:border file:border-border
+                      file:bg-popover file:text-foreground file:text-sm
                       file:cursor-pointer file:transition-colors
-                      hover:file:bg-hover hover:file:border-strong
+                      hover:file:bg-accent hover:file:border-input
                       focus:outline-none" />
-        <p class="text-xs text-tertiary mt-2 leading-relaxed">
+        <p class="text-xs text-muted-foreground mt-2 leading-relaxed">
           Allowed formats: PNG, JPG, GIF, WEBP, SVG &nbsp;&middot;&nbsp; Maximum size: 1 MB &nbsp;&middot;&nbsp; Recommended: at least 128&times;128 px (square)
         </p>
       </div>
 
       <div class="flex justify-start">
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("upload") }}</span>
           Upload
         </button>
@@ -92,9 +92,9 @@
   </section>
 
   {# ── From URL form ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
-    <h3 class="text-sm font-semibold text-primary mb-1">Fetch from URL</h3>
-    <p class="text-xs text-secondary mb-4 leading-relaxed">
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
+    <h3 class="text-sm font-semibold text-foreground mb-1">Fetch from URL</h3>
+    <p class="text-xs text-muted-foreground mb-4 leading-relaxed">
       Paste a public image URL. The server will download it and push it to kanidm.
     </p>
 
@@ -110,15 +110,15 @@
                autocomplete="off"
                spellcheck="false"
                required
-               class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
-        <p class="text-xs text-tertiary mt-2 leading-relaxed">
+               class="w-full bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
+        <p class="text-xs text-muted-foreground mt-2 leading-relaxed">
           Only http:// and https:// URLs &nbsp;&middot;&nbsp; The URL must return an image &nbsp;&middot;&nbsp; 10 s timeout &nbsp;&middot;&nbsp; Max 1 MB
         </p>
       </div>
 
       <div class="flex justify-start">
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("link") }}</span>
           Fetch and upload
         </button>

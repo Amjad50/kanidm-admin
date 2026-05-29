@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ section_label }} · Kanidm Admin{% endblock %}
-{% block crumb %}<span class="text-primary font-medium">{{ section_label }}</span>{% endblock %}
+{% block crumb %}<span class="text-foreground font-medium">{{ section_label }}</span>{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto px-8 py-16 text-center">
-  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent-soft text-accent mb-6">
+  <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-soft text-primary mb-6">
     <span class="w-7 h-7 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
   </div>
   <h1 class="text-2xl font-semibold tracking-tight">{{ section_label }}</h1>
-  <p class="text-secondary mt-2">{{ message }}</p>
-  <p class="text-tertiary text-sm mt-4 font-mono">Coming in {{ phase_label }}</p>
+  <p class="text-muted-foreground mt-2">{{ message }}</p>
+  <p class="text-muted-foreground text-sm mt-4 font-mono">Coming in {{ phase_label }}</p>
 </div>
 {% endblock %}

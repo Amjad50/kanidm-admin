@@ -1,13 +1,13 @@
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = g.form_error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   {# ── Identity fields ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle">
-      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Identity</div>
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border">
+      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Identity</div>
     </div>
     <div class="px-5 py-4 flex flex-col gap-5">
 
@@ -16,7 +16,7 @@
         <div class="bg-warning-soft border border-warning rounded p-3 text-sm text-warning mb-3">
           <span class="font-semibold">Warning:</span> Renaming an OAuth2 client breaks existing tokens and may require re-registering with the client application.
         </div>
-        <label class="block text-xs font-medium text-secondary mb-1" for="field-name">System name</label>
+        <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-name">System name</label>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
@@ -28,18 +28,18 @@
                  value="{{ g.name }}"
                  autocomplete="off"
                  spellcheck="false"
-                 class="flex-1 bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+                 class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
           <button type="submit"
-                  class="bg-surface border border-default rounded h-9 px-3 text-sm text-primary hover:bg-hover hover:border-strong transition-colors cursor-pointer shrink-0">
+                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
             Save
           </button>
         </form>
-        <div class="text-xs text-tertiary mt-1">Used in URLs and tokens. Changing this will invalidate existing OAuth2 sessions.</div>
+        <div class="text-xs text-muted-foreground mt-1">Used in URLs and tokens. Changing this will invalidate existing OAuth2 sessions.</div>
       </div>
 
       {# Display name #}
       <div>
-        <label class="block text-xs font-medium text-secondary mb-1" for="field-displayname">Display name</label>
+        <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-displayname">Display name</label>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
@@ -50,18 +50,18 @@
                  name="value"
                  value="{{ g.displayname }}"
                  autocomplete="off"
-                 class="flex-1 bg-canvas border border-default rounded h-9 px-3 text-sm text-primary focus:outline-none focus:border-accent transition-colors" />
+                 class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-primary transition-colors" />
           <button type="submit"
-                  class="bg-surface border border-default rounded h-9 px-3 text-sm text-primary hover:bg-hover hover:border-strong transition-colors cursor-pointer shrink-0">
+                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
             Save
           </button>
         </form>
-        <div class="text-xs text-tertiary mt-1">Shown on OAuth2 consent screens and the app listing.</div>
+        <div class="text-xs text-muted-foreground mt-1">Shown on OAuth2 consent screens and the app listing.</div>
       </div>
 
       {# Landing URL #}
       <div>
-        <label class="block text-xs font-medium text-secondary mb-1" for="field-landing">Landing URL</label>
+        <label class="block text-xs font-medium text-muted-foreground mb-1" for="field-landing">Landing URL</label>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
               hx-swap="innerHTML"
@@ -72,48 +72,48 @@
                  name="value"
                  value="{{ g.landing_url }}"
                  autocomplete="off"
-                 class="flex-1 bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+                 class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
           <button type="submit"
-                  class="bg-surface border border-default rounded h-9 px-3 text-sm text-primary hover:bg-hover hover:border-strong transition-colors cursor-pointer shrink-0">
+                  class="bg-card border border-border rounded h-9 px-3 text-sm text-foreground hover:bg-accent hover:border-input transition-colors cursor-pointer shrink-0">
             Save
           </button>
         </form>
-        <div class="text-xs text-tertiary mt-1">The application's primary URL — users are redirected here after authentication.</div>
+        <div class="text-xs text-muted-foreground mt-1">The application's primary URL — users are redirected here after authentication.</div>
       </div>
 
     </div>
   </section>
 
   {# ── Redirect URLs ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle flex items-center justify-between">
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border flex items-center justify-between">
       <div>
-        <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Supplementary redirect URLs</div>
-        <div class="text-xs text-tertiary mt-0.5">Additional origins accepted for OAuth2 redirects.</div>
+        <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Supplementary redirect URLs</div>
+        <div class="text-xs text-muted-foreground mt-0.5">Additional origins accepted for OAuth2 redirects.</div>
       </div>
-      <span class="text-xs text-tertiary">{{ g.redirect_urls.len() }} configured</span>
+      <span class="text-xs text-muted-foreground">{{ g.redirect_urls.len() }} configured</span>
     </div>
 
     {% if let Some(rerr) = g.redirect_error %}
     <div class="px-5 pt-3">
-      <div class="bg-danger-soft border border-danger rounded px-4 py-2 text-sm text-danger">{{ rerr }}</div>
+      <div class="bg-destructive-soft border border-destructive rounded px-4 py-2 text-sm text-destructive">{{ rerr }}</div>
     </div>
     {% endif %}
 
     {% if g.redirect_urls.is_empty() %}
-    <div class="px-5 py-8 text-center text-tertiary text-sm">No supplementary redirect URLs configured.</div>
+    <div class="px-5 py-8 text-center text-muted-foreground text-sm">No supplementary redirect URLs configured.</div>
     {% else %}
     <ul class="divide-y divide-subtle">
       {% for row in g.redirect_urls %}
-      <li class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-hover transition-colors">
-        <span class="font-mono text-xs text-primary break-all">{{ row.url }}</span>
+      <li class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-accent transition-colors">
+        <span class="font-mono text-xs text-foreground break-all">{{ row.url }}</span>
         <form hx-post="/oauth2/{{ g.id }}/redirect/{{ row.idx }}/remove"
               hx-target="#tab-content"
               hx-swap="innerHTML"
               hx-confirm="Remove redirect URL &quot;{{ row.url }}&quot;?"
               class="shrink-0">
           <button type="submit"
-                  class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                  class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
                   aria-label="Remove {{ row.url }}">
             {% include "icons/_x.html" %}
           </button>
@@ -123,7 +123,7 @@
     </ul>
     {% endif %}
 
-    <div class="px-5 py-4 border-t border-subtle">
+    <div class="px-5 py-4 border-t border-border">
       <form hx-post="/oauth2/{{ g.id }}/redirect/add"
             hx-target="#tab-content"
             hx-swap="innerHTML"
@@ -132,9 +132,9 @@
                name="url"
                placeholder="https://app.example.com"
                autocomplete="off"
-               class="flex-1 bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+               class="flex-1 bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer shrink-0">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer shrink-0">
           Add URL
         </button>
       </form>
@@ -142,17 +142,17 @@
   </section>
 
   {# ── Boolean toggles ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle">
-      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Behaviour flags</div>
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border">
+      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Behaviour flags</div>
     </div>
     <div class="divide-y divide-subtle">
 
       {# PKCE toggle (inverted attribute) #}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Require PKCE</div>
-          <div class="text-xs text-tertiary mt-0.5">
+          <div class="text-sm font-medium text-foreground">Require PKCE</div>
+          <div class="text-xs text-muted-foreground mt-0.5">
             {% if g.pkce_disabled_for_public %}
             Public clients always enforce PKCE — this cannot be disabled.
             {% else %}
@@ -173,8 +173,8 @@
                    {% if g.pkce_required %}checked{% endif %}
                    {% if g.pkce_disabled_for_public %}disabled{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>
@@ -182,8 +182,8 @@
       {# Strict redirect URI #}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Strict redirect URI</div>
-          <div class="text-xs text-tertiary mt-0.5">Reject redirect URIs that are not exactly registered. Recommended for security.</div>
+          <div class="text-sm font-medium text-foreground">Strict redirect URI</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Reject redirect URIs that are not exactly registered. Recommended for security.</div>
         </div>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
@@ -197,8 +197,8 @@
                    value="on"
                    {% if g.strict_redirect %}checked{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>
@@ -207,8 +207,8 @@
       {% if g.is_public %}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Allow localhost redirects</div>
-          <div class="text-xs text-tertiary mt-0.5">Permit redirect URIs targeting localhost / 127.0.0.1. Useful for native and desktop apps.</div>
+          <div class="text-sm font-medium text-foreground">Allow localhost redirects</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Permit redirect URIs targeting localhost / 127.0.0.1. Useful for native and desktop apps.</div>
         </div>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
@@ -222,21 +222,21 @@
                    value="on"
                    {% if g.localhost_redirect %}checked{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>
       {% else %}
       <div class="px-5 py-4 flex items-center justify-between gap-4 opacity-50">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Allow localhost redirects</div>
-          <div class="text-xs text-tertiary mt-0.5">Localhost redirects only apply to Public (PKCE-only) clients.</div>
+          <div class="text-sm font-medium text-foreground">Allow localhost redirects</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Localhost redirects only apply to Public (PKCE-only) clients.</div>
         </div>
         <label class="relative inline-flex items-center cursor-not-allowed">
           <input type="checkbox" disabled class="sr-only peer" />
-          <div class="w-9 h-5 bg-elevated border border-default rounded-pill transition-colors"></div>
-          <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow"></div>
+          <div class="w-9 h-5 bg-popover border border-border rounded-pill transition-colors"></div>
+          <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow"></div>
         </label>
       </div>
       {% endif %}
@@ -244,8 +244,8 @@
       {# Consent prompt #}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Consent prompt</div>
-          <div class="text-xs text-tertiary mt-0.5">Always show the OAuth2 consent screen, even when the user has already granted access.</div>
+          <div class="text-sm font-medium text-foreground">Consent prompt</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Always show the OAuth2 consent screen, even when the user has already granted access.</div>
         </div>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
@@ -259,8 +259,8 @@
                    value="on"
                    {% if g.consent_prompt %}checked{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>
@@ -268,8 +268,8 @@
       {# Prefer short username #}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Prefer short username</div>
-          <div class="text-xs text-tertiary mt-0.5">Include only the short username in tokens instead of the full SPN (e.g. <span class="font-mono">alice</span> vs <span class="font-mono">alice@example.com</span>).</div>
+          <div class="text-sm font-medium text-foreground">Prefer short username</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Include only the short username in tokens instead of the full SPN (e.g. <span class="font-mono">alice</span> vs <span class="font-mono">alice@example.com</span>).</div>
         </div>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
@@ -283,8 +283,8 @@
                    value="on"
                    {% if g.short_username %}checked{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>
@@ -292,8 +292,8 @@
       {# Legacy crypto #}
       <div class="px-5 py-4 flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium text-primary">Legacy crypto</div>
-          <div class="text-xs text-tertiary mt-0.5">Enable legacy JWT signing algorithms (RS256). Only for clients that do not support modern ES256. Not recommended.</div>
+          <div class="text-sm font-medium text-foreground">Legacy crypto</div>
+          <div class="text-xs text-muted-foreground mt-0.5">Enable legacy JWT signing algorithms (RS256). Only for clients that do not support modern ES256. Not recommended.</div>
         </div>
         <form hx-post="/oauth2/{{ g.id }}/general"
               hx-target="#tab-content"
@@ -307,8 +307,8 @@
                    value="on"
                    {% if g.legacy_crypto %}checked{% endif %}
                    class="sr-only peer" />
-            <div class="w-9 h-5 bg-elevated border border-default rounded-pill peer-checked:bg-accent peer-checked:border-accent transition-colors"></div>
-            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-surface rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
+            <div class="w-9 h-5 bg-popover border border-border rounded-pill peer-checked:bg-primary peer-checked:border-primary transition-colors"></div>
+            <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-card rounded-pill shadow transition-transform peer-checked:translate-x-4"></div>
           </label>
         </form>
       </div>

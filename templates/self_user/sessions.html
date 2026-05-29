@@ -3,9 +3,9 @@
 {% block title %}Your sessions · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/me" class="hover:text-secondary transition-colors no-underline">Your profile</a>
+<a href="/me" class="hover:text-muted-foreground transition-colors no-underline">Your profile</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium">Sessions</span>
+<span class="text-foreground font-medium">Sessions</span>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@
   <div class="flex items-start justify-between gap-6 mb-7">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Your sessions</h1>
-      <div class="text-sm text-secondary mt-1">Devices and browsers currently signed in as {{ displayname }}.</div>
+      <div class="text-sm text-muted-foreground mt-1">Devices and browsers currently signed in as {{ displayname }}.</div>
     </div>
   </div>
 

@@ -3,24 +3,24 @@
 {% block title %}{{ header.displayname }} · OAuth2 · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/oauth2" class="hover:text-secondary transition-colors no-underline">OAuth2</a>
+<a href="/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium font-mono truncate">{{ header.name }}</span>
+<span class="text-foreground font-medium font-mono truncate">{{ header.name }}</span>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-8 py-6">
 
   {# ── Header card ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6 flex items-start gap-5 mb-5">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6 flex items-start gap-5 mb-5">
 
     {# Avatar: image or initials fallback #}
     {% match header.image_url %}
     {% when Some with (url) %}
     <img src="{{ url }}" alt="{{ header.displayname }}"
-         class="w-16 h-16 rounded-md object-cover shrink-0 border border-subtle" />
+         class="w-16 h-16 rounded-md object-cover shrink-0 border border-border" />
     {% when None %}
-    <span class="w-16 h-16 rounded-md bg-accent-soft text-accent border border-accent-soft inline-flex items-center justify-center text-xl font-bold shrink-0 font-sans select-none">
+    <span class="w-16 h-16 rounded-md bg-primary-soft text-primary border border-primary-soft inline-flex items-center justify-center text-xl font-bold shrink-0 font-sans select-none">
       {{ header.initials }}
     </span>
     {% endmatch %}
@@ -32,26 +32,26 @@
           {{ header.kind_label }}
         </span>
       </div>
-      <div class="font-mono text-xs text-tertiary mt-1">{{ header.name }}</div>
+      <div class="font-mono text-xs text-muted-foreground mt-1">{{ header.name }}</div>
 
       <div class="flex items-center gap-3 mt-3 flex-wrap">
         {# UUID chip #}
-        <div class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded px-2 h-6 text-xs text-tertiary font-mono">
-          <span class="text-tertiary opacity-60">uuid</span>
-          <span class="text-secondary truncate max-w-24" title="{{ header.uuid }}">{{ header.uuid }}</span>
+        <div class="inline-flex items-center gap-1.5 bg-popover border border-border rounded px-2 h-6 text-xs font-mono">
+          <span class="text-muted-foreground">uuid</span>
+          <span class="text-mono-chip truncate max-w-24" title="{{ header.uuid }}">{{ header.uuid }}</span>
           <button type="button"
-                  class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                  class="text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0 bg-transparent p-0"
                   title="Copy UUID"
                   data-copy="{{ header.uuid }}">
             {% include "icons/_copy.html" %}
           </button>
         </div>
         {# SPN chip #}
-        <div class="inline-flex items-center gap-1.5 bg-elevated border border-subtle rounded px-2 h-6 text-xs text-tertiary font-mono">
-          <span class="text-tertiary opacity-60">spn</span>
-          <span class="text-secondary">{{ header.spn }}</span>
+        <div class="inline-flex items-center gap-1.5 bg-popover border border-border rounded px-2 h-6 text-xs font-mono">
+          <span class="text-muted-foreground">spn</span>
+          <span class="text-mono-chip">{{ header.spn }}</span>
           <button type="button"
-                  class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0"
+                  class="text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0 bg-transparent p-0"
                   title="Copy SPN"
                   data-copy="{{ header.spn }}">
             {% include "icons/_copy.html" %}
@@ -64,7 +64,7 @@
       {% match header.kind %}
       {% when crate::handlers::oauth2::common::OAuth2Kind::Basic %}
       <button type="button"
-              class="bg-surface border border-default text-secondary h-8 px-3 rounded text-sm hover:bg-hover hover:border-strong inline-flex items-center gap-2 transition-colors cursor-pointer"
+              class="bg-card border border-border text-muted-foreground h-8 px-3 rounded text-sm hover:bg-accent hover:border-input inline-flex items-center gap-2 transition-colors cursor-pointer"
               hx-get="/oauth2/{{ header.name }}/secret"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
@@ -74,7 +74,7 @@
       {% when crate::handlers::oauth2::common::OAuth2Kind::Public %}
       {% endmatch %}
       <button type="button"
-              class="bg-transparent border border-default text-secondary h-8 px-3 rounded text-sm hover:border-danger hover:text-danger inline-flex items-center gap-2 transition-colors cursor-pointer"
+              class="bg-transparent border border-border text-muted-foreground h-8 px-3 rounded text-sm hover:border-destructive hover:text-destructive inline-flex items-center gap-2 transition-colors cursor-pointer"
               hx-get="/oauth2/{{ header.name }}/delete"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">

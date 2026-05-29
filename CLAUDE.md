@@ -1,17 +1,46 @@
-## Hard styling rule (Tailwind v4 + design tokens)
+## Hard styling rule (Tailwind v4 + shadcn/tweakcn tokens)
 
-All visual properties come from named design tokens defined in `styles/tokens.css`,
-exposed as Tailwind utilities. Use only:
+All visual properties come from shadcn-shaped design tokens defined in
+`styles/app.css` (so the theme can be tweaked verbatim with tweakcn online).
+Light theme is `:root`; dark theme is activated by the `.dark` class on `<html>`.
+Use only:
 
-- `bg-canvas`, `bg-surface`, `bg-elevated`, `bg-hover`, `bg-active`
-- `text-primary`, `text-secondary`, `text-tertiary`, `text-disabled`
-- `border-subtle`, `border-default`, `border-strong`
-- `bg-accent`, `text-accent`, `border-accent`, `bg-accent-soft`, `text-on-accent`
-- `text-link`, `bg-link-soft` (anchors and link-like affordances)
-- `bg-success`, `bg-warning`, `bg-danger`, `bg-info` (+ `-soft` variants + `text-*` + `border-*`)
-- `rounded-sm`, `rounded`, `rounded-md`, `rounded-lg`, `rounded-pill`
-- `shadow-card`, `shadow-elevated`, `shadow-modal`
-- `font-sans`, `font-mono`
+Baseline shadcn:
+
+- `bg-background`, `text-foreground` (page chrome / body)
+- `bg-card`, `bg-card-foreground` (surfaces / cards)
+- `bg-popover`, `bg-popover-foreground` (elevated surfaces, menus, modals)
+- `bg-accent`, `text-accent-foreground` (subtle hover/active surface — NOT the orange action color)
+- `bg-primary`, `text-primary`, `text-primary-foreground` (the orange action color and its variants `bg-primary/90`, `bg-primary/80`)
+- `bg-secondary`, `text-secondary-foreground` (secondary surface)
+- `bg-muted`, `text-muted-foreground` (muted surface / muted text — use `text-muted-foreground/60` for disabled)
+- `bg-destructive`, `text-destructive`, `border-destructive`, `text-destructive-foreground`
+- `border-border`, `border-input` (single + slightly stronger border)
+- `ring-ring`, `outline-ring/50` (focus rings)
+
+Extensions (kept on top of shadcn baseline):
+
+- `bg-primary-soft` (low-alpha primary background)
+- `text-link`, `bg-link-soft`
+- `bg-success`, `text-success`, `border-success`, `bg-success-soft`, `text-success-foreground`
+- `bg-warning`, `text-warning`, `border-warning`, `bg-warning-soft`, `text-warning-foreground`
+- `bg-destructive-soft`
+- `bg-info`, `text-info`, `border-info`, `bg-info-soft`, `text-info-foreground`
+- `bg-code-bg`, `bg-token-bg`, `text-mono-chip`
+- `accent-primary` (CSS `accent-color` utility, for native form controls)
+- `shadow-primary-ring` (subtle ring around primary-color dots)
+
+Radius (driven by `--radius`):
+
+- `rounded-sm` (`--radius` − 4px)
+- `rounded-md` (`--radius` − 2px)
+- `rounded-lg` (`--radius`)
+- `rounded-xl` (`--radius` + 4px)
+- `rounded-pill` (999px — extension)
+
+Shadows: `shadow-sm`, `shadow`, `shadow-md`, `shadow-lg`, `shadow-xl`, `shadow-2xl`.
+
+Fonts: `font-sans`, `font-mono`.
 
 NEVER use:
 
@@ -19,8 +48,13 @@ NEVER use:
 - Raw hex values in `style="..."` attributes
 - `bg-(--var)` arbitrary-value escape hatches
 - Inline color declarations
+- The OLD vocabulary (`bg-canvas`, `bg-surface`, `bg-elevated`, `bg-hover`,
+  `bg-active`, `text-tertiary`, `text-disabled`, `border-subtle`,
+  `border-default`, `border-strong`, `bg-danger`, `shadow-card`, etc.) —
+  all migrated, do not reintroduce.
 
-If a template needs a color or radius not in tokens.css, ADD IT to tokens.css —
+If a template needs a color or radius not in app.css, ADD IT to app.css
+as a new var on both `:root` and `.dark` and mirror it in `@theme inline` —
 do not work around it.
 
 Default to using Bun instead of Node.js.

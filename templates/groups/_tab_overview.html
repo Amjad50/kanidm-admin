@@ -1,28 +1,28 @@
 <div class="flex flex-col gap-4">
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
-    <div class="text-tertiary text-xs uppercase tracking-wider font-semibold mb-4">Identity</div>
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
+    <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold mb-4">Identity</div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:160px 1fr">
 
-      <dt class="text-tertiary self-center">UUID</dt>
+      <dt class="text-muted-foreground self-center">UUID</dt>
       <dd class="flex items-center gap-2 min-w-0">
-        <span class="font-mono text-xs text-primary break-all">{{ d.uuid }}</span>
+        <span class="font-mono text-xs text-foreground break-all">{{ d.uuid }}</span>
         <button type="button"
-                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                class="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                 title="Copy UUID"
                 data-copy="{{ d.uuid }}">
           {% include "icons/_copy.html" %}
         </button>
       </dd>
 
-      <dt class="text-tertiary self-center">Name</dt>
-      <dd><span class="font-mono text-primary">{{ d.name }}</span></dd>
+      <dt class="text-muted-foreground self-center">Name</dt>
+      <dd><span class="font-mono text-foreground">{{ d.name }}</span></dd>
 
-      <dt class="text-tertiary self-center">SPN</dt>
+      <dt class="text-muted-foreground self-center">SPN</dt>
       <dd class="flex items-center gap-2 min-w-0">
-        <span class="font-mono text-xs text-primary break-all">{{ d.spn }}</span>
+        <span class="font-mono text-xs text-foreground break-all">{{ d.spn }}</span>
         <button type="button"
-                class="shrink-0 text-tertiary hover:text-primary transition-colors"
+                class="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                 title="Copy SPN"
                 data-copy="{{ d.spn }}">
           {% include "icons/_copy.html" %}
@@ -31,33 +31,33 @@
 
       {% match d.description %}
       {% when Some with (desc) %}
-      <dt class="text-tertiary self-start pt-0.5">Description</dt>
-      <dd class="text-primary">{{ desc }}</dd>
+      <dt class="text-muted-foreground self-start pt-0.5">Description</dt>
+      <dd class="text-foreground">{{ desc }}</dd>
       {% when None %}
       {% endmatch %}
 
       {% match d.entry_managed_by %}
       {% when Some with (mgr) %}
-      <dt class="text-tertiary self-center">Managed by</dt>
-      <dd><span class="font-mono text-xs text-secondary">{{ mgr }}</span></dd>
+      <dt class="text-muted-foreground self-center">Managed by</dt>
+      <dd><span class="font-mono text-xs text-muted-foreground">{{ mgr }}</span></dd>
       {% when None %}
       {% endmatch %}
 
-      <dt class="text-tertiary self-start pt-0.5">Mail addresses</dt>
+      <dt class="text-muted-foreground self-start pt-0.5">Mail addresses</dt>
       <dd>
         {% if d.mails.is_empty() %}
-        <span class="text-tertiary">—</span>
+        <span class="text-muted-foreground">—</span>
         {% else %}
         <div class="flex flex-col gap-1.5">
           {% for (i, mail) in d.mails.iter().enumerate() %}
           <div class="flex items-center gap-2">
             {% if i == 0 %}
-            <span class="text-accent shrink-0 w-3.5 h-3.5 inline-flex [&_svg]:fill-current" title="Primary">{{ crate::views::icons::icon("star") }}</span>
-            <span class="font-mono text-xs text-primary">{{ mail }}</span>
-            <span class="text-tertiary text-xs">primary</span>
+            <span class="text-primary shrink-0 w-3.5 h-3.5 inline-flex [&_svg]:fill-current" title="Primary">{{ crate::views::icons::icon("star") }}</span>
+            <span class="font-mono text-xs text-foreground">{{ mail }}</span>
+            <span class="text-muted-foreground text-xs">primary</span>
             {% else %}
             <span class="shrink-0 w-[13px]"></span>
-            <span class="font-mono text-xs text-secondary">{{ mail }}</span>
+            <span class="font-mono text-xs text-muted-foreground">{{ mail }}</span>
             {% endif %}
           </div>
           {% endfor %}
@@ -68,9 +68,9 @@
     </dl>
   </section>
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Members</div>
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Members</div>
       <a href="/groups/{{ group.spn_or_uuid }}/members"
          hx-get="/groups/{{ group.spn_or_uuid }}/members"
          hx-target="#tab-content"
@@ -82,17 +82,17 @@
       </a>
     </div>
     {% if d.members_preview.is_empty() %}
-    <p class="text-tertiary text-sm">No members.</p>
+    <p class="text-muted-foreground text-sm">No members.</p>
     {% else %}
     <div class="flex flex-wrap gap-2">
       {% for chip in d.members_preview %}
-      <div class="inline-flex items-center gap-2 bg-elevated border border-subtle rounded-pill px-3 h-7 text-xs font-medium text-secondary">
-        <span class="w-5 h-5 rounded-pill bg-accent-soft text-accent text-[10px] font-semibold inline-flex items-center justify-center shrink-0">{{ chip.initials }}</span>
+      <div class="inline-flex items-center gap-2 bg-popover border border-border rounded-pill px-3 h-7 text-xs font-medium text-muted-foreground">
+        <span class="w-5 h-5 rounded-pill bg-primary-soft text-primary text-[10px] font-semibold inline-flex items-center justify-center shrink-0">{{ chip.initials }}</span>
         <span class="font-mono">{{ chip.name }}</span>
       </div>
       {% endfor %}
       {% if d.members_overflow > 0 %}
-      <div class="inline-flex items-center bg-elevated border border-subtle rounded-pill px-3 h-7 text-xs font-medium text-tertiary">
+      <div class="inline-flex items-center bg-popover border border-border rounded-pill px-3 h-7 text-xs font-medium text-muted-foreground">
         +{{ d.members_overflow }} more
       </div>
       {% endif %}
@@ -101,9 +101,9 @@
   </section>
 
   {% if !d.policy_summary.is_empty() %}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">Account policy</div>
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Account policy</div>
       <a href="/groups/{{ group.spn_or_uuid }}/policy"
          hx-get="/groups/{{ group.spn_or_uuid }}/policy"
          hx-target="#tab-content"
@@ -116,8 +116,8 @@
     </div>
     <dl class="grid gap-y-3 text-sm" style="grid-template-columns:220px 1fr">
       {% for (label, value) in d.policy_summary %}
-      <dt class="text-tertiary self-center">{{ label }}</dt>
-      <dd class="text-primary font-mono text-xs">{{ value }}</dd>
+      <dt class="text-muted-foreground self-center">{{ label }}</dt>
+      <dd class="text-foreground font-mono text-xs">{{ value }}</dd>
       {% endfor %}
     </dl>
   </section>

@@ -1,12 +1,12 @@
 <div class="flex flex-col gap-4">
 
   {% if let Some(err) = p.error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-sm text-secondary">
+      <p class="text-sm text-muted-foreground">
         {% if p.customized_count == 0 %}
         All fields are using Kanidm defaults. Set individual fields below to override.
         {% else %}
@@ -17,27 +17,27 @@
   </div>
 
   {% for field in p.fields %}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
     <div class="flex items-start justify-between gap-4">
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm font-medium text-primary">{{ field.label }}</span>
-          <span class="text-xs text-tertiary font-mono bg-elevated border border-subtle rounded px-1.5 py-0.5">{{ field.kind_label }}</span>
+          <span class="text-sm font-medium text-foreground">{{ field.label }}</span>
+          <span class="text-xs text-muted-foreground font-mono bg-popover border border-border rounded px-1.5 py-0.5">{{ field.kind_label }}</span>
           {% if field.is_set %}
-          <span class="inline-flex items-center gap-1 bg-accent-soft border border-accent rounded-pill text-xs font-medium px-2 h-5 text-accent">
-            <span class="w-1.5 h-1.5 rounded-pill bg-accent"></span>
+          <span class="inline-flex items-center gap-1 bg-primary-soft border border-primary rounded-pill text-xs font-medium px-2 h-5 text-primary">
+            <span class="w-1.5 h-1.5 rounded-pill bg-primary"></span>
             Customized
           </span>
           {% endif %}
         </div>
-        <p class="text-xs text-tertiary mt-1">{{ field.helper }}</p>
-        <p class="text-sm text-secondary mt-2">
-          Current: <span class="font-mono text-primary">{{ field.display_value }}</span>
+        <p class="text-xs text-muted-foreground mt-1">{{ field.helper }}</p>
+        <p class="text-sm text-muted-foreground mt-2">
+          Current: <span class="font-mono text-foreground">{{ field.display_value }}</span>
         </p>
       </div>
     </div>
 
-    <div class="mt-4 pt-4 border-t border-subtle">
+    <div class="mt-4 pt-4 border-t border-border">
       <form hx-post="/groups/{{ group.spn_or_uuid }}/policy/{{ field.key }}"
             hx-target="#tab-content"
             hx-swap="innerHTML"
@@ -46,14 +46,14 @@
         {% match field.kind %}
         {% when crate::handlers::groups::policy::PolicyFieldKind::Bool %}
         <select name="value"
-                class="bg-canvas border border-default rounded h-9 px-3 text-sm text-primary focus:outline-none focus:border-strong">
+                class="bg-background border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-input">
           <option value="true" {% if field.current_value.as_deref() == Some("true") %}selected{% endif %}>Enabled</option>
           <option value="false" {% if field.current_value.as_deref() == Some("false") %}selected{% endif %}>Disabled</option>
         </select>
 
         {% when crate::handlers::groups::policy::PolicyFieldKind::Enum %}
         <select name="value"
-                class="bg-canvas border border-default rounded h-9 px-3 text-sm text-primary focus:outline-none focus:border-strong">
+                class="bg-background border border-border rounded h-9 px-3 text-sm text-foreground focus:outline-none focus:border-input">
           {% for opt in field.enum_options %}
           <option value="{{ opt.value }}" {% if opt.selected %}selected{% endif %}>{{ opt.value }}</option>
           {% endfor %}
@@ -65,7 +65,7 @@
                min="0"
                value="{{ field.current_value_str }}"
                placeholder="{{ field.default }}"
-               class="bg-canvas border border-default rounded h-9 px-3 w-36 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
+               class="bg-background border border-border rounded h-9 px-3 w-36 text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-input"
         />
 
         {% when crate::handlers::groups::policy::PolicyFieldKind::Seconds %}
@@ -75,27 +75,27 @@
                  min="0"
                  value="{{ field.current_value_str }}"
                  placeholder="{{ field.default }}"
-                 class="bg-canvas border border-default rounded h-9 px-3 w-36 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
+                 class="bg-background border border-border rounded h-9 px-3 w-36 text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-input"
           />
-          <span class="text-xs text-tertiary">seconds</span>
+          <span class="text-xs text-muted-foreground">seconds</span>
         </div>
 
         {% when crate::handlers::groups::policy::PolicyFieldKind::JsonBlob %}
         <textarea name="value"
                   rows="4"
                   placeholder="{{ field.default }}"
-                  class="bg-canvas border border-default rounded px-3 py-2 w-full text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong resize-y">{{ field.current_value_str }}</textarea>
+                  class="bg-background border border-border rounded px-3 py-2 w-full text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-input resize-y">{{ field.current_value_str }}</textarea>
 
         {% endmatch %}
 
         <div class="flex items-center gap-2">
           <button type="submit"
-                  class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:bg-accent-hover transition-colors shrink-0">
+                  class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors shrink-0">
             Set
           </button>
           {% if field.is_set %}
           <button type="button"
-                  class="bg-surface border border-default text-secondary rounded h-9 px-4 text-sm hover:bg-hover hover:text-primary transition-colors shrink-0"
+                  class="bg-card border border-border text-muted-foreground rounded h-9 px-4 text-sm hover:bg-accent hover:text-foreground transition-colors shrink-0"
                   hx-post="/groups/{{ group.spn_or_uuid }}/policy/{{ field.key }}/reset"
                   hx-target="#tab-content"
                   hx-swap="innerHTML">

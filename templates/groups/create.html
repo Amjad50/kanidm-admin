@@ -3,9 +3,9 @@
 {% block title %}Create group · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/groups" class="hover:text-secondary transition-colors no-underline">Groups</a>
+<a href="/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium">Create group</span>
+<span class="text-foreground font-medium">Create group</span>
 {% endblock %}
 
 {% block content %}
@@ -14,14 +14,14 @@
   <div class="flex items-start justify-between gap-6 mb-7">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Create a new group</h1>
-      <div class="text-secondary text-sm mt-1">Set the basics and optional mail addresses. Add members and account policy on the next page.</div>
+      <div class="text-muted-foreground text-sm mt-1">Set the basics and optional mail addresses. Add members and account policy on the next page.</div>
     </div>
   </div>
 
-  <form class="bg-surface border border-subtle rounded-md shadow-card p-6 max-w-2xl" method="post" action="/groups">
+  <form class="bg-card border border-border rounded-md shadow-sm p-6 max-w-2xl" method="post" action="/groups">
 
     {% if let Some(err) = form_error %}
-    <div class="mb-4 px-4 py-3 bg-danger-soft border border-danger rounded text-danger text-sm">
+    <div class="mb-4 px-4 py-3 bg-destructive-soft border border-destructive rounded text-destructive text-sm">
       {{ err }}
     </div>
     {% endif %}
@@ -33,34 +33,34 @@
       {{ description_field.render().unwrap()|safe }}
 
       <div>
-        <label class="block text-sm font-medium text-primary mb-1.5">Mail addresses</label>
+        <label class="block text-sm font-medium text-foreground mb-1.5">Mail addresses</label>
         <div id="group-mail-rows" data-email-rows="group-mail-rows" class="flex flex-col gap-2">
           {% for email in emails %}
           <div class="flex items-center gap-2">
-            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-tertiary hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
+            <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors {% if email.is_primary %}text-warning{% else %}text-muted-foreground hover:text-warning{% endif %}" data-make-primary aria-label="{% if email.is_primary %}Primary{% else %}Set as primary{% endif %}">
               <span class="w-3.5 h-3.5 inline-flex shrink-0 {% if email.is_primary %}[&_svg]:fill-current{% endif %}">{{ crate::views::icons::icon("star") }}</span>
             </button>
-            <input type="email" name="mail" value="{{ email.value }}" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="group@example.com" />
-            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+            <input type="email" name="mail" value="{{ email.value }}" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="group@example.com" />
+            <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
               {% include "icons/_x.html" %}
             </button>
           </div>
           {% endfor %}
         </div>
-        <button type="button" data-add-email data-target="group-mail-rows" class="bg-transparent border-0 text-secondary hover:text-primary text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
+        <button type="button" data-add-email data-target="group-mail-rows" class="bg-transparent border-0 text-muted-foreground hover:text-foreground text-sm mt-2 inline-flex items-center gap-1.5 cursor-pointer transition-colors">
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("plus") }}</span>
           <span>Add mail address</span>
         </button>
-        <div class="text-tertiary text-xs mt-2">The starred address is primary. Leave empty to set no mail.</div>
+        <div class="text-muted-foreground text-xs mt-2">The starred address is primary. Leave empty to set no mail.</div>
       </div>
 
-      <div class="flex justify-end gap-2 border-t border-subtle pt-4 mt-2">
+      <div class="flex justify-end gap-2 border-t border-border pt-4 mt-2">
         <a href="/groups"
-           class="bg-transparent border border-default text-secondary h-9 px-4 rounded text-sm hover:bg-hover hover:text-primary inline-flex items-center gap-2 no-underline transition-colors">
+           class="bg-transparent border border-border text-muted-foreground h-9 px-4 rounded text-sm hover:bg-accent hover:text-foreground inline-flex items-center gap-2 no-underline transition-colors">
           Cancel
         </a>
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:bg-accent-hover transition-colors">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors">
           Create group
         </button>
       </div>
@@ -72,11 +72,11 @@
 
 <template id="group-mail-rows-tpl">
   <div class="flex items-center gap-2">
-    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
+    <button type="button" class="star-btn w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-warning border-0 bg-transparent cursor-pointer transition-colors" data-make-primary aria-label="Set as primary">
       <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("star") }}</span>
     </button>
-    <input type="email" name="mail" value="" class="bg-surface border border-default rounded h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors" placeholder="group@example.com" />
-    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-tertiary hover:text-danger border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
+    <input type="email" name="mail" value="" class="bg-card border border-border rounded h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors" placeholder="group@example.com" />
+    <button type="button" class="w-7 h-7 rounded inline-flex items-center justify-center text-muted-foreground hover:text-destructive border-0 bg-transparent cursor-pointer transition-colors" data-remove aria-label="Remove">
   <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("x") }}</span>
     </button>
   </div>

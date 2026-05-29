@@ -4,46 +4,46 @@
   <div class="flex gap-3 px-4 py-3 bg-info-soft border border-info rounded text-sm items-start">
     <span class="text-info inline-flex shrink-0 mt-0.5 w-4 h-4">{{ crate::views::icons::icon("info") }}</span>
     <div>
-      <div class="font-semibold text-primary">How signing keys work</div>
-      <div class="text-secondary mt-0.5 leading-relaxed">Signing keys are used to sign tokens issued for this app. Older keys remain valid for existing tokens until they expire or are revoked. Rotation creates a new key; new tokens use the newest key.</div>
+      <div class="font-semibold text-foreground">How signing keys work</div>
+      <div class="text-muted-foreground mt-0.5 leading-relaxed">Signing keys are used to sign tokens issued for this app. Older keys remain valid for existing tokens until they expire or are revoked. Rotation creates a new key; new tokens use the newest key.</div>
     </div>
   </div>
 
   {# ── Error banner ── #}
   {% if let Some(err) = data.error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   {# ── Keys table ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle">
-      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Signing &amp; Encryption Keys</div>
-      <div class="text-xs text-tertiary mt-0.5">Signing and encryption keys used by this client.</div>
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border">
+      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Signing &amp; Encryption Keys</div>
+      <div class="text-xs text-muted-foreground mt-0.5">Signing and encryption keys used by this client.</div>
     </div>
 
     {% if data.keys.is_empty() %}
-    <div class="px-5 py-10 text-center text-tertiary text-sm">
+    <div class="px-5 py-10 text-center text-muted-foreground text-sm">
       No keys configured — this is unusual. Refreshing may help.
     </div>
     {% else %}
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-subtle bg-canvas">
-          <th class="text-left px-5 py-2.5 text-xs font-semibold text-tertiary uppercase tracking-wide">Key ID</th>
-          <th class="text-left px-5 py-2.5 text-xs font-semibold text-tertiary uppercase tracking-wide">Algorithm</th>
-          <th class="text-left px-5 py-2.5 text-xs font-semibold text-tertiary uppercase tracking-wide">Counter</th>
-          <th class="text-left px-5 py-2.5 text-xs font-semibold text-tertiary uppercase tracking-wide">Status</th>
-          <th class="px-5 py-2.5 text-xs font-semibold text-tertiary uppercase tracking-wide w-20"></th>
+        <tr class="border-b border-border bg-background">
+          <th class="text-left px-5 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Key ID</th>
+          <th class="text-left px-5 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Algorithm</th>
+          <th class="text-left px-5 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Counter</th>
+          <th class="text-left px-5 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
+          <th class="px-5 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-subtle">
         {% for key in data.keys %}
-        <tr class="hover:bg-hover transition-colors">
+        <tr class="hover:bg-accent transition-colors">
           <td class="px-5 py-3">
             <div class="flex items-center gap-2">
-              <span class="font-mono text-xs text-primary">{{ key.id }}</span>
+              <span class="font-mono text-xs text-foreground">{{ key.id }}</span>
               <button type="button"
-                      class="text-tertiary hover:text-primary transition-colors cursor-pointer border-0 bg-transparent p-0 inline-flex items-center"
+                      class="text-muted-foreground hover:text-foreground transition-colors cursor-pointer border-0 bg-transparent p-0 inline-flex items-center"
                       title="Copy key ID"
                       data-copy="{{ key.id }}">
                 {% include "icons/_copy.html" %}
@@ -51,10 +51,10 @@
             </div>
           </td>
           <td class="px-5 py-3">
-            <span class="font-mono text-xs text-secondary">{{ key.algorithm }}</span>
+            <span class="font-mono text-xs text-muted-foreground">{{ key.algorithm }}</span>
           </td>
           <td class="px-5 py-3">
-            <span class="font-mono text-xs text-tertiary">{{ key.counter }}</span>
+            <span class="font-mono text-xs text-muted-foreground">{{ key.counter }}</span>
           </td>
           <td class="px-5 py-3">
             <span class="inline-flex items-center gap-1.5 h-5 px-2 rounded-pill text-xs font-medium {{ key.status_badge_classes }}">
@@ -65,14 +65,14 @@
           <td class="px-5 py-3 text-right">
             {% if key.status_label != "Revoked" %}
             <button type="button"
-                    class="text-tertiary hover:text-danger transition-colors cursor-pointer text-xs font-medium border-0 bg-transparent px-2 py-1 rounded hover:bg-danger-soft"
+                    class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer text-xs font-medium border-0 bg-transparent px-2 py-1 rounded hover:bg-destructive-soft"
                     hx-get="/oauth2/{{ data.oauth2_id }}/crypto/revoke-modal?key_id={{ key.id }}"
                     hx-target="#overlay-slot"
                     hx-swap="innerHTML">
               Revoke
             </button>
             {% else %}
-            <span class="text-tertiary text-xs">—</span>
+            <span class="text-muted-foreground text-xs">—</span>
             {% endif %}
           </td>
         </tr>
@@ -83,9 +83,9 @@
   </section>
 
   {# ── Rotate form ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
-    <h3 class="text-sm font-semibold text-primary mb-1">Rotate keys</h3>
-    <p class="text-xs text-secondary mb-4 leading-relaxed">Schedule a key rotation. The new key becomes active at the specified time; the current key remains valid for existing tokens.</p>
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
+    <h3 class="text-sm font-semibold text-foreground mb-1">Rotate keys</h3>
+    <p class="text-xs text-muted-foreground mb-4 leading-relaxed">Schedule a key rotation. The new key becomes active at the specified time; the current key remains valid for existing tokens.</p>
 
     <form hx-post="/oauth2/{{ data.oauth2_id }}/crypto/rotate"
           hx-target="#tab-content"
@@ -94,33 +94,33 @@
 
       <div class="flex flex-col gap-2">
         {# Radio: Now #}
-        <label class="flex items-start gap-3 px-4 py-3 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+        <label class="flex items-start gap-3 px-4 py-3 bg-background border border-border rounded cursor-pointer hover:border-input transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
           <input type="radio"
                  name="at_mode"
                  value="now"
                  checked
-                 class="mt-0.5 accent-accent shrink-0"
+                 class="mt-0.5 accent-primary shrink-0"
                  onchange="document.getElementById('rotate-at').disabled = (this.value === 'now'); document.getElementById('rotate-hidden-at').value = 'now';" />
           <div>
-            <div class="text-sm font-medium text-primary">Now</div>
-            <div class="text-xs text-tertiary mt-0.5">Rotate immediately. New tokens are signed by the new key.</div>
+            <div class="text-sm font-medium text-foreground">Now</div>
+            <div class="text-xs text-muted-foreground mt-0.5">Rotate immediately. New tokens are signed by the new key.</div>
           </div>
         </label>
 
         {# Radio: Specific time #}
-        <label class="flex items-start gap-3 px-4 py-3 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+        <label class="flex items-start gap-3 px-4 py-3 bg-background border border-border rounded cursor-pointer hover:border-input transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
           <input type="radio"
                  name="at_mode"
                  value="schedule"
-                 class="mt-0.5 accent-accent shrink-0"
+                 class="mt-0.5 accent-primary shrink-0"
                  onchange="document.getElementById('rotate-at').disabled = false; document.getElementById('rotate-at').focus();" />
           <div class="flex-1">
-            <div class="text-sm font-medium text-primary">Specific date / time</div>
-            <div class="text-xs text-tertiary mt-0.5 mb-2">Rotation is scheduled for a future UTC time.</div>
+            <div class="text-sm font-medium text-foreground">Specific date / time</div>
+            <div class="text-xs text-muted-foreground mt-0.5 mb-2">Rotation is scheduled for a future UTC time.</div>
             <input type="datetime-local"
                    id="rotate-at"
                    disabled
-                   class="bg-canvas border border-default rounded h-8 px-3 text-xs text-primary font-mono focus:outline-none focus:border-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                   class="bg-background border border-border rounded h-8 px-3 text-xs text-foreground font-mono focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                    oninput="document.getElementById('rotate-hidden-at').value = this.value;" />
           </div>
         </label>
@@ -131,7 +131,7 @@
 
       <div class="flex justify-end">
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-2">
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("refresh-cw") }}</span>
           Schedule rotation
         </button>

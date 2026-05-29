@@ -1,6 +1,6 @@
 <div>
-  <label for="{{ id }}" class="block text-sm font-medium text-primary mb-1.5">
-    {{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}
+  <label for="{{ id }}" class="block text-sm font-medium text-foreground mb-1.5">
+    {{ label }}{% if required %} <span class="text-destructive">*</span>{% endif %}
   </label>
   {% if multiline %}
   <textarea
@@ -10,7 +10,7 @@
     {% if required %}required{% endif %}
     {% if autofocus %}autofocus{% endif %}
     placeholder="{{ placeholder }}"
-    class="bg-surface border {% if error.is_some() %}border-danger{% else %}border-default{% endif %} rounded px-3 py-2 w-full text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors resize-y"
+    class="bg-card border {% if error.is_some() %}border-destructive{% else %}border-border{% endif %} rounded px-3 py-2 w-full text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors resize-y"
   >{{ value }}</textarea>
   {% else if let Some(sfx) = suffix %}
   <div class="flex items-stretch gap-0">
@@ -22,9 +22,9 @@
       {% if autofocus %}autofocus{% endif %}
       value="{{ value }}"
       placeholder="{{ placeholder }}"
-      class="bg-surface border {% if error.is_some() %}border-danger{% else %}border-default{% endif %} rounded-l h-9 px-3 flex-1 text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
+      class="bg-card border {% if error.is_some() %}border-destructive{% else %}border-border{% endif %} rounded-l h-9 px-3 flex-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors"
     />
-    <span class="bg-elevated border border-l-0 {% if error.is_some() %}border-danger{% else %}border-default{% endif %} rounded-r h-9 px-3 inline-flex items-center text-sm text-tertiary font-mono">
+    <span class="bg-popover border border-l-0 {% if error.is_some() %}border-destructive{% else %}border-border{% endif %} rounded-r h-9 px-3 inline-flex items-center text-sm text-muted-foreground font-mono">
       {{ sfx }}
     </span>
   </div>
@@ -37,13 +37,13 @@
     {% if autofocus %}autofocus{% endif %}
     value="{{ value }}"
     placeholder="{{ placeholder }}"
-    class="bg-surface border {% if error.is_some() %}border-danger{% else %}border-default{% endif %} rounded h-9 px-3 w-full text-sm text-primary placeholder:text-tertiary focus:outline-none focus:border-strong transition-colors"
+    class="bg-card border {% if error.is_some() %}border-destructive{% else %}border-border{% endif %} rounded h-9 px-3 w-full text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-input transition-colors"
   />
   {% endif %}
   {% if let Some(helper) = helper %}
-  <div class="text-tertiary text-xs mt-1">{{ helper }}</div>
+  <div class="text-muted-foreground text-xs mt-1">{{ helper }}</div>
   {% endif %}
   {% if let Some(err) = error %}
-  <div class="text-danger text-xs mt-1">{{ err }}</div>
+  <div class="text-destructive text-xs mt-1">{{ err }}</div>
   {% endif %}
 </div>

@@ -1,11 +1,11 @@
 <button type="button"
-        class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors cursor-pointer"
+        class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors cursor-pointer"
         hx-get="/empty" hx-target="#overlay-slot" hx-swap="innerHTML">
   Cancel
 </button>
 <button id="confirm-submit-{{ input_id }}"
         type="button"
-        class="bg-danger-soft text-danger border border-danger hover:bg-danger hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors cursor-pointer"
+        class="bg-destructive-soft text-destructive border border-destructive hover:bg-destructive hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors cursor-pointer"
         disabled
         hx-post="{{ action_url }}"
         hx-target="#overlay-slot"

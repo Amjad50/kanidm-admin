@@ -4,32 +4,32 @@
   <div class="flex items-start gap-3 px-4 py-3 bg-info-soft border border-info rounded text-sm">
     <span class="shrink-0 mt-0.5 text-info w-4 h-4 inline-flex">{{ crate::views::icons::icon("info") }}</span>
     <div>
-      <div class="font-medium text-primary">Custom claims in the ID token</div>
-      <div class="text-secondary mt-0.5">Mapped from group membership. Each claim has a join strategy controlling how multiple values combine.</div>
+      <div class="font-medium text-foreground">Custom claims in the ID token</div>
+      <div class="text-muted-foreground mt-0.5">Mapped from group membership. Each claim has a join strategy controlling how multiple values combine.</div>
     </div>
   </div>
 
   {# ── Error banner ── #}
   {% if let Some(err) = data.error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   {# ── Per-claim cards ── #}
   {% if data.claims.is_empty() %}
-  <div class="bg-surface border border-subtle rounded-md shadow-card px-5 py-10 text-center text-tertiary text-sm">
+  <div class="bg-card border border-border rounded-md shadow-sm px-5 py-10 text-center text-muted-foreground text-sm">
     No claim maps configured.
   </div>
   {% else %}
   {% for group in data.claims %}
-  <section class="bg-surface border border-subtle rounded-md shadow-card overflow-hidden">
+  <section class="bg-card border border-border rounded-md shadow-sm overflow-hidden">
 
     {# Card header: claim name + join badge (clickable) #}
-    <div class="px-5 py-4 border-b border-subtle flex items-center justify-between gap-4">
+    <div class="px-5 py-4 border-b border-border flex items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
-          <h3 class="font-mono text-sm font-semibold text-primary">{{ group.claim_name }}</h3>
+          <h3 class="font-mono text-sm font-semibold text-foreground">{{ group.claim_name }}</h3>
           <button type="button"
-                  class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-pill text-xs text-accent font-medium hover:bg-accent hover:text-on-accent transition-colors cursor-pointer"
+                  class="inline-flex items-center h-5 px-2 bg-primary-soft border border-primary rounded-pill text-xs text-primary font-medium hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                   hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/join-modal"
                   hx-target="#overlay-slot"
                   hx-swap="innerHTML"
@@ -37,30 +37,30 @@
             Join: {{ group.current_join_label }}
           </button>
         </div>
-        <div class="text-xs text-tertiary mt-1">{{ group.current_join_desc }}</div>
+        <div class="text-xs text-muted-foreground mt-1">{{ group.current_join_desc }}</div>
       </div>
     </div>
 
     {# Rows table #}
     <table class="w-full text-sm border-collapse">
       <thead>
-        <tr class="bg-canvas">
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default w-48">Group</th>
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default">Values</th>
-          <th class="border-b border-default" style="width:96px"></th>
+        <tr class="bg-background">
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border w-48">Group</th>
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border">Values</th>
+          <th class="border-b border-border" style="width:96px"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-subtle">
         {% for row in group.rows %}
-        <tr class="hover:bg-hover transition-colors">
+        <tr class="hover:bg-accent transition-colors">
           <td class="px-5 py-3 align-middle">
-            <span class="font-mono text-xs text-primary truncate max-w-44 block" title="{{ row.group_spn }}">{{ row.group_name }}</span>
-            <span class="font-mono text-xs text-tertiary truncate block" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
+            <span class="font-mono text-xs text-foreground truncate max-w-44 block" title="{{ row.group_spn }}">{{ row.group_name }}</span>
+            <span class="font-mono text-xs text-muted-foreground truncate block" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
           </td>
           <td class="px-5 py-3 align-middle">
             <div class="flex flex-wrap gap-1.5">
               {% for val in row.values %}
-              <span class="inline-flex items-center h-5 px-2 bg-elevated border border-subtle rounded-sm font-mono text-xs text-secondary">{{ val }}</span>
+              <span class="inline-flex items-center h-5 px-2 bg-popover border border-border rounded-sm font-mono text-xs text-muted-foreground">{{ val }}</span>
               {% endfor %}
             </div>
           </td>
@@ -68,7 +68,7 @@
             <div class="flex items-center justify-end gap-1">
               {# Edit button #}
               <button type="button"
-                      class="text-secondary hover:text-accent transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-accent-soft border border-transparent hover:border-accent"
+                      class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
                       hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
@@ -82,7 +82,7 @@
                     hx-swap="innerHTML"
                     hx-confirm="Remove claim map for &quot;{{ row.group_spn }}&quot; under claim &quot;{{ group.claim_name }}&quot;?">
                 <button type="submit"
-                        class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                        class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
                         aria-label="Delete claim map for {{ row.group_spn }}">
                   {% include "icons/_x.html" %}
                 </button>
@@ -95,9 +95,9 @@
     </table>
 
     {# Card footer: add group + delete claim #}
-    <div class="px-5 py-3 border-t border-subtle bg-canvas flex items-center justify-between gap-3 flex-wrap">
+    <div class="px-5 py-3 border-t border-border bg-background flex items-center justify-between gap-3 flex-wrap">
       <button type="button"
-              class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-8 px-3 transition-colors cursor-pointer"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
               hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/{{ group.claim_name }}/add-group"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
@@ -110,7 +110,7 @@
             hx-swap="innerHTML"
             hx-confirm="Delete all group entries for claim &quot;{{ group.claim_name }}&quot;? This removes the entire claim.">
         <button type="submit"
-                class="inline-flex items-center gap-1.5 text-xs text-danger hover:text-danger border border-danger/30 hover:border-danger bg-danger-soft rounded h-7 px-2.5 transition-colors cursor-pointer">
+                class="inline-flex items-center gap-1.5 text-xs text-destructive hover:text-destructive border border-destructive/30 hover:border-destructive bg-destructive-soft rounded h-7 px-2.5 transition-colors cursor-pointer">
           <span class="w-3 h-3 inline-flex shrink-0">{{ crate::views::icons::icon("trash-2") }}</span>
           Delete claim
         </button>
@@ -124,7 +124,7 @@
   {# ── Add new claim button ── #}
   <div class="flex">
     <button type="button"
-            class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-9 px-4 transition-colors cursor-pointer"
+            class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-9 px-4 transition-colors cursor-pointer"
             hx-get="/oauth2/{{ data.oauth2_id }}/claim-map/new"
             hx-target="#overlay-slot"
             hx-swap="innerHTML">

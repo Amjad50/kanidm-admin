@@ -3,30 +3,30 @@
 {% block title %}Create OAuth2 app · OAuth2 Apps · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/oauth2" class="hover:text-secondary transition-colors no-underline">OAuth2 Apps</a>
+<a href="/oauth2" class="hover:text-muted-foreground transition-colors no-underline">OAuth2 Apps</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium">Create app</span>
+<span class="text-foreground font-medium">Create app</span>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-8 py-6">
 
   <div class="mb-7">
-    <div class="inline-flex items-center gap-1.5 bg-elevated rounded-pill px-3 py-1 text-xs font-mono text-tertiary mb-3">
+    <div class="inline-flex items-center gap-1.5 bg-popover rounded-pill px-3 py-1 text-xs font-mono text-muted-foreground mb-3">
       Step 1 of 2
     </div>
     <h1 class="text-2xl font-semibold tracking-tight">Choose client type</h1>
-    <div class="text-secondary text-sm mt-1">
+    <div class="text-muted-foreground text-sm mt-1">
       Pick the type that matches your application. You can't change this after creation.
     </div>
   </div>
 
   <form action="/oauth2/new/details" method="get" style="max-width:620px">
-    <div class="bg-surface border border-subtle rounded-md shadow-card p-6 flex flex-col gap-4">
+    <div class="bg-card border border-border rounded-md shadow-sm p-6 flex flex-col gap-4">
 
       <div class="flex flex-col gap-3">
 
-        <label class="group/option flex items-start gap-3 p-4 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+        <label class="group/option flex items-start gap-3 p-4 bg-background border border-border rounded cursor-pointer hover:border-input transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
           <input
             type="radio"
             name="type"
@@ -34,19 +34,19 @@
             class="sr-only"
             {% if let Some(sel) = selected %}{% if *sel == OAuth2CreateKind::Basic %}checked{% endif %}{% else %}checked{% endif %}
           />
-          <span class="mt-0.5 w-4 h-4 rounded-full border border-strong bg-surface flex-shrink-0 relative">
-            <span class="hidden group-has-[:checked]/option:block absolute inset-1 rounded-full bg-accent"></span>
+          <span class="mt-0.5 w-4 h-4 rounded-full border border-input bg-card flex-shrink-0 relative">
+            <span class="hidden group-has-[:checked]/option:block absolute inset-1 rounded-full bg-primary"></span>
           </span>
           <div>
-            <div class="text-sm font-medium text-primary">Basic (confidential)</div>
-            <div class="text-xs text-tertiary mt-0.5 leading-snug">
+            <div class="text-sm font-medium text-foreground">Basic (confidential)</div>
+            <div class="text-xs text-muted-foreground mt-0.5 leading-snug">
               Has a client secret. For server-side apps that can safely keep credentials
               secret — Grafana, Nextcloud, Gitea, etc.
             </div>
           </div>
         </label>
 
-        <label class="group/option flex items-start gap-3 p-4 bg-canvas border border-default rounded cursor-pointer hover:border-strong transition-colors has-[:checked]:border-accent has-[:checked]:bg-accent-soft">
+        <label class="group/option flex items-start gap-3 p-4 bg-background border border-border rounded cursor-pointer hover:border-input transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
           <input
             type="radio"
             name="type"
@@ -54,12 +54,12 @@
             class="sr-only"
             {% if let Some(sel) = selected %}{% if *sel == OAuth2CreateKind::Public %}checked{% endif %}{% endif %}
           />
-          <span class="mt-0.5 w-4 h-4 rounded-full border border-strong bg-surface flex-shrink-0 relative">
-            <span class="hidden group-has-[:checked]/option:block absolute inset-1 rounded-full bg-accent"></span>
+          <span class="mt-0.5 w-4 h-4 rounded-full border border-input bg-card flex-shrink-0 relative">
+            <span class="hidden group-has-[:checked]/option:block absolute inset-1 rounded-full bg-primary"></span>
           </span>
           <div>
-            <div class="text-sm font-medium text-primary">Public (PKCE-only)</div>
-            <div class="text-xs text-tertiary mt-0.5 leading-snug">
+            <div class="text-sm font-medium text-foreground">Public (PKCE-only)</div>
+            <div class="text-xs text-muted-foreground mt-0.5 leading-snug">
               No secret; PKCE required. For SPAs and native/mobile apps that cannot
               safely store secrets.
             </div>
@@ -68,14 +68,14 @@
 
       </div>
 
-      <div class="flex items-center justify-between border-t border-subtle pt-4 mt-2">
+      <div class="flex items-center justify-between border-t border-border pt-4 mt-2">
         <a href="/oauth2"
-           class="bg-transparent border-0 text-secondary hover:text-primary h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
+           class="bg-transparent border-0 text-muted-foreground hover:text-foreground h-9 px-4 rounded text-sm inline-flex items-center transition-colors no-underline">
           Cancel
         </a>
         <button
           type="submit"
-          class="bg-accent text-on-accent hover:bg-accent-hover h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
+          class="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 rounded text-sm font-medium inline-flex items-center gap-2 transition-colors border-0 cursor-pointer">
           Next
           <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("chevron-right") }}</span>
         </button>

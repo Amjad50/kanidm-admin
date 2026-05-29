@@ -3,34 +3,34 @@
 {% block title %}{{ group.name }} · Groups · Kanidm Admin{% endblock %}
 
 {% block crumb %}
-<a href="/groups" class="hover:text-secondary transition-colors no-underline">Groups</a>
+<a href="/groups" class="hover:text-muted-foreground transition-colors no-underline">Groups</a>
 <span class="w-3.5 h-3.5 inline-flex shrink-0 opacity-40">{{ crate::views::icons::icon("chevron-right") }}</span>
-<span class="text-primary font-medium font-mono truncate">{{ group.spn }}</span>
+<span class="text-foreground font-medium font-mono truncate">{{ group.spn }}</span>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-8 py-6">
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-6 flex items-start gap-5 mb-5">
+  <section class="bg-card border border-border rounded-md shadow-sm p-6 flex items-start gap-5 mb-5">
 
-    <span class="w-16 h-16 rounded-pill bg-elevated border border-subtle inline-flex items-center justify-center shrink-0">
-      <span class="w-7 h-7 inline-flex shrink-0 text-secondary">{{ crate::views::icons::icon("users") }}</span>
+    <span class="w-16 h-16 rounded-pill bg-popover border border-border inline-flex items-center justify-center shrink-0">
+      <span class="w-7 h-7 inline-flex shrink-0 text-muted-foreground">{{ crate::views::icons::icon("users") }}</span>
     </span>
 
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-3 flex-wrap">
         <h1 class="text-2xl font-semibold tracking-tight font-mono">{{ group.name }}</h1>
         {% if group.is_builtin %}
-        <span class="inline-flex items-center bg-elevated border border-subtle rounded-pill text-xs font-medium px-2 h-5 text-secondary">Built-in</span>
+        <span class="inline-flex items-center bg-popover border border-border rounded-pill text-xs font-medium px-2 h-5 text-muted-foreground">Built-in</span>
         {% endif %}
         {% if group.is_dynamic %}
         <span class="inline-flex items-center bg-info-soft border border-info rounded-pill text-xs font-medium px-2 h-5 text-info">Dynamic</span>
         {% endif %}
       </div>
-      <div class="font-mono text-xs text-tertiary mt-1">{{ group.spn }}</div>
+      <div class="font-mono text-xs text-muted-foreground mt-1">{{ group.spn }}</div>
       {% match group.description %}
       {% when Some with (d) %}
-      <div class="text-sm text-secondary mt-1.5">{{ d }}</div>
+      <div class="text-sm text-muted-foreground mt-1.5">{{ d }}</div>
       {% when None %}
       {% endmatch %}
     </div>
@@ -38,12 +38,12 @@
     <div class="flex items-center gap-2 shrink-0">
       {% if !group.is_builtin %}
       <a href="/groups/{{ group.spn_or_uuid }}/edit"
-         class="bg-surface border border-default rounded h-8 px-3 text-sm text-primary hover:bg-hover hover:border-strong inline-flex items-center gap-2 no-underline transition-colors">
+         class="bg-card border border-border rounded h-8 px-3 text-sm text-foreground hover:bg-accent hover:border-input inline-flex items-center gap-2 no-underline transition-colors">
         <span class="w-3.5 h-3.5 inline-flex shrink-0">{{ crate::views::icons::icon("pencil") }}</span>
         <span>Edit</span>
       </a>
       <button type="button"
-              class="bg-transparent border border-default text-secondary h-8 px-3 rounded text-sm hover:border-danger hover:text-danger inline-flex items-center gap-2 transition-colors cursor-pointer"
+              class="bg-transparent border border-border text-muted-foreground h-8 px-3 rounded text-sm hover:border-destructive hover:text-destructive inline-flex items-center gap-2 transition-colors cursor-pointer"
               hx-get="/groups/{{ group.spn_or_uuid }}/delete"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">

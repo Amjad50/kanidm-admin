@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8">
   <title>Access denied · Kanidm Admin</title>
@@ -9,12 +9,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body class="bg-canvas text-primary min-h-screen font-sans antialiased flex items-center justify-center p-6">
-  <div class="bg-surface border border-subtle rounded-lg shadow-elevated p-8 max-w-md w-full text-center">
+<body class="bg-background text-foreground min-h-screen font-sans antialiased flex items-center justify-center p-6">
+  <div class="bg-card border border-border rounded-lg shadow-md p-8 max-w-md w-full text-center">
     <img src="/static/logo-square.svg" alt="" class="w-12 h-12 mx-auto mb-4">
     <h1 class="text-xl font-semibold tracking-tight">Access denied</h1>
-    <p class="text-secondary text-sm mt-2">You are not in the <code class="font-mono bg-elevated px-1.5 py-0.5 rounded-sm text-primary">{{ admin_group }}</code> group. Contact an administrator to request access.</p>
-    <button type="button" onclick="history.back()" class="inline-flex items-center justify-center mt-6 h-10 px-5 rounded border border-default bg-transparent text-secondary font-medium font-sans hover:bg-hover hover:text-primary transition-colors cursor-pointer">Go back</button>
+    <p class="text-muted-foreground text-sm mt-2">You are not in the <code class="font-mono bg-popover px-1.5 py-0.5 rounded-sm text-foreground">{{ admin_group }}</code> group. Contact an administrator to request access.</p>
+    <button type="button" onclick="history.back()" class="inline-flex items-center justify-center mt-6 h-10 px-5 rounded border border-border bg-transparent text-muted-foreground font-medium font-sans hover:bg-accent hover:text-foreground transition-colors cursor-pointer">Go back</button>
   </div>
 </body>
 </html>

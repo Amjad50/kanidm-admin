@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8">
   <title>Page not found · Kanidm Admin</title>
@@ -9,15 +9,15 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body class="bg-canvas text-primary min-h-screen font-sans antialiased flex items-center justify-center p-6">
-  <div class="bg-surface border border-subtle rounded-lg shadow-elevated p-8 max-w-md w-full text-center">
+<body class="bg-background text-foreground min-h-screen font-sans antialiased flex items-center justify-center p-6">
+  <div class="bg-card border border-border rounded-lg shadow-md p-8 max-w-md w-full text-center">
     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-warning-soft text-warning mb-4 mx-auto">
       <span class="w-6 h-6 inline-flex shrink-0">{{ crate::views::icons::icon("alert-circle") }}</span>
     </div>
-    <p class="text-tertiary text-xs font-mono font-medium tracking-widest uppercase mb-2">404</p>
+    <p class="text-muted-foreground text-xs font-mono font-medium tracking-widest uppercase mb-2">404</p>
     <h1 class="text-xl font-semibold tracking-tight">Page not found</h1>
-    <p class="text-secondary text-sm mt-2">The page you're looking for doesn't exist or has been moved.</p>
-    <a href="/" class="inline-flex items-center justify-center mt-6 h-10 px-5 rounded bg-accent text-on-accent font-medium hover:bg-accent-hover transition-colors">Back to dashboard</a>
+    <p class="text-muted-foreground text-sm mt-2">The page you're looking for doesn't exist or has been moved.</p>
+    <a href="/" class="inline-flex items-center justify-center mt-6 h-10 px-5 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">Back to dashboard</a>
   </div>
 </body>
 </html>

@@ -2,7 +2,7 @@
   type="button"
   aria-label="{{ aria_label }}"
   data-dropdown='{{ items_json|safe }}'
-  class="w-8 h-8 rounded inline-flex items-center justify-center text-tertiary hover:bg-hover hover:text-primary border-0 bg-transparent cursor-pointer transition-colors"
+  class="w-8 h-8 rounded inline-flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground border-0 bg-transparent cursor-pointer transition-colors"
 >
   <span class="w-4 h-4 inline-flex shrink-0">{{ crate::views::icons::icon("more-vertical") }}</span>
 </button>

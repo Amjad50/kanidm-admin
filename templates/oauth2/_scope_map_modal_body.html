@@ -4,17 +4,17 @@
       hx-swap="innerHTML">
 
 {% if let Some(err) = error %}
-<div class="bg-danger-soft border border-danger rounded px-3 py-2.5 text-sm text-danger">{{ err }}</div>
+<div class="bg-destructive-soft border border-destructive rounded px-3 py-2.5 text-sm text-destructive">{{ err }}</div>
 {% endif %}
 
 {# Group SPN field #}
 <div>
-  <label class="block text-xs font-medium text-secondary mb-1" for="sm-group-{{ section }}">
-    Group SPN{% if !is_edit %} <span class="text-danger">*</span>{% endif %}
+  <label class="block text-xs font-medium text-muted-foreground mb-1" for="sm-group-{{ section }}">
+    Group SPN{% if !is_edit %} <span class="text-destructive">*</span>{% endif %}
   </label>
   {% if is_edit %}
   {# Read-only in edit mode #}
-  <div class="w-full bg-elevated border border-subtle rounded h-9 px-3 text-sm text-secondary font-mono flex items-center">{{ group_spn }}</div>
+  <div class="w-full bg-popover border border-border rounded h-9 px-3 text-sm text-muted-foreground font-mono flex items-center">{{ group_spn }}</div>
   <input type="hidden" name="group" value="{{ group_spn }}" />
   {% else %}
   <input type="text"
@@ -26,7 +26,7 @@
          autocomplete="off"
          spellcheck="false"
          required
-         class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
+         class="w-full bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
   {# Overwrite-warning banner (shown via JS when group matches existing) #}
   <div id="sm-overwrite-warn-{{ section }}"
        class="mt-2 hidden bg-warning-soft border border-warning rounded px-3 py-2 text-xs text-warning">
@@ -57,17 +57,17 @@
 
 {# Scopes checkboxes #}
 <div>
-  <div class="text-xs font-medium text-secondary mb-2">Scopes <span class="text-tertiary">(select at least one)</span></div>
-  <div class="flex flex-wrap gap-x-4 gap-y-2 bg-canvas border border-subtle rounded p-3">
+  <div class="text-xs font-medium text-muted-foreground mb-2">Scopes <span class="text-muted-foreground">(select at least one)</span></div>
+  <div class="flex flex-wrap gap-x-4 gap-y-2 bg-background border border-border rounded p-3">
     {% for scope in standard_scopes %}
     {% let checked = active_scopes.contains(&scope.to_string()) %}
-    <label class="inline-flex items-center gap-2 text-sm text-primary cursor-pointer select-none">
+    <label class="inline-flex items-center gap-2 text-sm text-foreground cursor-pointer select-none">
       <input type="checkbox"
              name="scopes"
              value="{{ scope }}"
              {% if checked %}checked{% endif %}
-             class="w-4 h-4 rounded border border-default bg-canvas checked:bg-accent checked:border-accent cursor-pointer appearance-none relative
-                    after:content-[''] after:absolute after:hidden checked:after:block after:top-px after:left-1 after:w-1 after:h-2.5 after:border-r-2 after:border-b-2 after:border-on-accent after:rotate-45" />
+             class="w-4 h-4 rounded border border-border bg-background checked:bg-primary checked:border-primary cursor-pointer appearance-none relative
+                    after:content-[''] after:absolute after:hidden checked:after:block after:top-px after:left-1 after:w-1 after:h-2.5 after:border-r-2 after:border-b-2 after:border-primary-foreground after:rotate-45" />
       <span class="font-mono text-xs">{{ scope }}</span>
     </label>
     {% endfor %}
@@ -76,15 +76,15 @@
 
 {# Custom scopes #}
 <div>
-  <label class="block text-xs font-medium text-secondary mb-1" for="sm-custom-{{ section }}">Custom scopes</label>
+  <label class="block text-xs font-medium text-muted-foreground mb-1" for="sm-custom-{{ section }}">Custom scopes</label>
   <input type="text"
          id="sm-custom-{{ section }}"
          name="custom_scopes"
          value="{{ custom_scopes_prefill }}"
          placeholder="grafana_admin, viewer"
          autocomplete="off"
-         class="w-full bg-canvas border border-default rounded h-9 px-3 text-sm text-primary font-mono focus:outline-none focus:border-accent transition-colors" />
-  <div class="text-xs text-tertiary mt-1">Comma-separated. Custom scopes are passed through as-is to the token.</div>
+         class="w-full bg-background border border-border rounded h-9 px-3 text-sm text-foreground font-mono focus:outline-none focus:border-primary transition-colors" />
+  <div class="text-xs text-muted-foreground mt-1">Comma-separated. Custom scopes are passed through as-is to the token.</div>
 </div>
 
 </form>

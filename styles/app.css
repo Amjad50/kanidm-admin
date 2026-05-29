@@ -1,7 +1,231 @@
-@import "./tokens.css";
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Light theme (default :root, per shadcn/tweakcn convention)
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* shadcn baseline */
+  --background: oklch(0.977 0.004 286.326);
+  --foreground: oklch(0.220 0.010 285.577);
+  --card: oklch(1.000 0.000 0.000);
+  --card-foreground: oklch(0.220 0.010 285.577);
+  --popover: oklch(1.000 0.000 0.000);
+  --popover-foreground: oklch(0.220 0.010 285.577);
+  --primary: oklch(0.723 0.172 53.795);
+  --primary-foreground: oklch(1.000 0.000 0.000);
+  --secondary: oklch(0.956 0.005 286.299);
+  --secondary-foreground: oklch(0.220 0.010 285.577);
+  --muted: oklch(0.956 0.005 286.299);
+  --muted-foreground: oklch(0.444 0.023 285.435);
+  --accent: oklch(0.956 0.005 286.299);
+  --accent-foreground: oklch(0.220 0.010 285.577);
+  --destructive: oklch(0.660 0.180 24.167);
+  --destructive-foreground: oklch(1.000 0.000 0.000);
+  --border: oklch(0.923 0.007 286.267);
+  --input: oklch(0.761 0.016 286.024);
+  --ring: oklch(0.723 0.172 53.795);
+
+  /* radius — shadcn-style scale derived from a single --radius */
+  --radius: 0.5rem;
+
+  /* fonts */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  /* shadows — shadcn ships --shadow-sm through --shadow-2xl */
+  --shadow-sm:
+    0 1px 2px rgb(0 0 0 / 0.08);
+  --shadow:
+    0 1px 3px rgb(0 0 0 / 0.10),
+    0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-md:
+    0 4px 12px rgb(0 0 0 / 0.10),
+    0 2px 4px rgb(0 0 0 / 0.06);
+  --shadow-lg:
+    0 10px 24px rgb(0 0 0 / 0.12),
+    0 4px 8px rgb(0 0 0 / 0.06);
+  --shadow-xl:
+    0 16px 32px rgb(0 0 0 / 0.16),
+    0 6px 12px rgb(0 0 0 / 0.08);
+  --shadow-2xl:
+    0 24px 48px rgb(0 0 0 / 0.20),
+    0 12px 24px rgb(0 0 0 / 0.10);
+
+  /* ── extensions (not in baseline shadcn) ─────────────────────────────── */
+  --primary-soft: oklch(0.723 0.172 53.795 / 0.100);
+  --link: oklch(0.522 0.161 258.152);
+  --link-soft: oklch(0.522 0.161 258.152 / 0.100);
+  --success: oklch(0.62 0.15 157.71);
+  --success-foreground: oklch(1.000 0.000 0.000);
+  --success-soft: oklch(0.531 0.098 159.006 / 0.100);
+  --warning: oklch(0.621 0.123 76.610);
+  --warning-foreground: oklch(1.000 0.000 0.000);
+  --warning-soft: oklch(0.621 0.123 76.610 / 0.120);
+  --destructive-soft: oklch(0.660 0.180 24.167 / 0.120);
+  --info: oklch(0.522 0.161 258.152);
+  --info-foreground: oklch(1.000 0.000 0.000);
+  --info-soft: oklch(0.522 0.161 258.152 / 0.100);
+  --code-bg: oklch(0.956 0.005 286.299);
+  --token-bg: oklch(0.977 0.004 286.326);
+  --mono-chip: oklch(0.352 0.014 285.670);
+  --radius-pill: 999px;
+
+  /* layout helpers */
+  --spacing-sidebar: 240px;
+  --spacing-topbar: 56px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark theme (activated by `.dark` class on <html>)
+   ───────────────────────────────────────────────────────────────────────────── */
+.dark {
+  --background: oklch(0.170 0.006 285.722);
+  --foreground: oklch(0.968 0.004 286.325);
+  --card: oklch(0.220 0.010 285.577);
+  --card-foreground: oklch(0.968 0.004 286.325);
+  --popover: oklch(0.258 0.009 285.731);
+  --popover-foreground: oklch(0.968 0.004 286.325);
+  --primary: oklch(0.723 0.172 53.795);
+  --primary-foreground: oklch(1.000 0.000 0.000);
+  --secondary: oklch(0.258 0.009 285.731);
+  --secondary-foreground: oklch(0.968 0.004 286.325);
+  --muted: oklch(0.220 0.010 285.577);
+  --muted-foreground: oklch(0.786 0.015 286.039);
+  --accent: oklch(0.287 0.011 285.697);
+  --accent-foreground: oklch(0.968 0.004 286.325);
+  --destructive: oklch(0.660 0.180 24.167);
+  --destructive-foreground: oklch(1.000 0.000 0.000);
+  --border: oklch(0.300 0.011 285.733);
+  --input: oklch(0.424 0.016 285.678);
+  --ring: oklch(0.723 0.172 53.795);
+
+  /* deeper shadows for dark theme */
+  --shadow-sm:
+    0 1px 2px rgb(0 0 0 / 0.30);
+  --shadow:
+    0 1px 3px rgb(0 0 0 / 0.30),
+    0 1px 2px rgb(0 0 0 / 0.18);
+  --shadow-md:
+    0 4px 12px rgb(0 0 0 / 0.40),
+    0 2px 4px rgb(0 0 0 / 0.20);
+  --shadow-lg:
+    0 10px 24px rgb(0 0 0 / 0.45),
+    0 4px 8px rgb(0 0 0 / 0.25);
+  --shadow-xl:
+    0 16px 32px rgb(0 0 0 / 0.50),
+    0 6px 12px rgb(0 0 0 / 0.30);
+  --shadow-2xl:
+    0 24px 48px rgb(0 0 0 / 0.55),
+    0 12px 24px rgb(0 0 0 / 0.35);
+
+  /* extensions */
+  --primary-soft: oklch(0.723 0.172 53.795 / 0.120);
+  --link: oklch(0.725 0.146 253.507);
+  --link-soft: oklch(0.725 0.146 253.507 / 0.120);
+  --success: oklch(0.643 0.120 158.952);
+  --success-foreground: oklch(1.000 0.000 0.000);
+  --success-soft: oklch(0.643 0.120 158.952 / 0.120);
+  --warning: oklch(0.816 0.147 80.202);
+  --warning-foreground: oklch(0.170 0.006 285.722);
+  --warning-soft: oklch(0.816 0.147 80.202 / 0.140);
+  --destructive-soft: oklch(0.660 0.180 24.167 / 0.140);
+  --info: oklch(0.725 0.146 253.507);
+  --info-foreground: oklch(0.170 0.006 285.722);
+  --info-soft: oklch(0.725 0.146 253.507 / 0.140);
+  --code-bg: oklch(0.258 0.009 285.731);
+  --token-bg: oklch(0.198 0.010 285.456);
+  --mono-chip: oklch(0.872 0.011 286.171);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tailwind v4 @theme inline mapping — every var exposed as a utility.
+   ───────────────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* extensions */
+  --color-primary-soft: var(--primary-soft);
+  --color-link: var(--link);
+  --color-link-soft: var(--link-soft);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+  --color-code-bg: var(--code-bg);
+  --color-token-bg: var(--token-bg);
+  --color-mono-chip: var(--mono-chip);
+
+  /* radii — shadcn-style scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-pill: var(--radius-pill);
+
+  /* shadows */
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  /* fonts */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* layout */
+  --spacing-sidebar: var(--spacing-sidebar);
+  --spacing-topbar: var(--spacing-topbar);
+}
+
+@source "../templates/**/*.html";
+@source "../islands/**/*.{ts,tsx}";
 
 @layer base {
-  html, body {
-    @apply bg-canvas text-primary font-sans antialiased;
+  * {
+    @apply border-border outline-ring/50;
   }
+  html, body {
+    @apply font-sans antialiased min-h-screen;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Native form-control accent (radios, checkboxes, range thumbs). */
+@utility accent-primary {
+  accent-color: var(--primary);
+}
+
+/* Subtle focus ring tied to --primary, retained from the previous styling. */
+@utility shadow-primary-ring {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
 }

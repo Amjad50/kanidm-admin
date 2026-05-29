@@ -30,6 +30,38 @@ document.body.addEventListener('kanidm-reauth', () => {
   window.htmx.ajax('GET', '/reauth', { target: '#overlay-slot', swap: 'innerHTML' });
 });
 
+// Theme toggle — persists to localStorage and reflects the current value on
+// the [data-theme-set] tab buttons. The `.dark` class on <html> is applied
+// by an inline script in base.html so the page paints in the right theme
+// without a flash. Default is dark (matching shadcn convention where :root
+// is light but this app's previous UX defaulted to dark).
+const THEME_KEY = 'kanidm-admin-ui:theme';
+
+function syncThemeTabs() {
+  const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  document.querySelectorAll<HTMLElement>('[data-theme-set]').forEach((btn) => {
+    const active = btn.dataset.themeSet === current;
+    btn.classList.toggle('bg-card', active);
+    btn.classList.toggle('text-foreground', active);
+    btn.classList.toggle('text-muted-foreground', !active);
+  });
+}
+
+syncThemeTabs();
+
+document.addEventListener('click', (event) => {
+  const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-theme-set]');
+  if (!target) return;
+  const theme = target.dataset.themeSet;
+  if (theme !== 'light' && theme !== 'dark') return;
+  event.preventDefault();
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
+  syncThemeTabs();
+});
+
 // Open the command palette when a [data-open-palette] trigger is clicked.
 document.addEventListener('click', (event) => {
   const target = (event.target as HTMLElement | null)?.closest<HTMLElement>('[data-open-palette]');
@@ -99,7 +131,7 @@ document.addEventListener('click', (event) => {
       const star = newRow.querySelector<HTMLElement>('[data-make-primary]');
       if (star) {
         star.classList.remove('text-warning');
-        star.classList.add('text-tertiary', 'hover:text-warning');
+        star.classList.add('text-muted-foreground', 'hover:text-warning');
         star.querySelector('svg')?.setAttribute('fill', 'none');
       }
       const input = newRow.querySelector<HTMLInputElement>('input[type=email]');
@@ -128,12 +160,12 @@ document.addEventListener('click', (event) => {
 
     rows.querySelectorAll<HTMLElement>('[data-make-primary]').forEach(b => {
       b.classList.remove('text-warning');
-      b.classList.add('text-tertiary', 'hover:text-warning');
+      b.classList.add('text-muted-foreground', 'hover:text-warning');
       b.querySelector('svg')?.setAttribute('fill', 'none');
     });
 
     starBtn.classList.add('text-warning');
-    starBtn.classList.remove('text-tertiary', 'hover:text-warning');
+    starBtn.classList.remove('text-muted-foreground', 'hover:text-warning');
     starBtn.querySelector('svg')?.setAttribute('fill', 'currentColor');
 
     if (rows.firstElementChild !== row) {

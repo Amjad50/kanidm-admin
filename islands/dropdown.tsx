@@ -169,8 +169,8 @@ function Menu({
 
   const itemBase =
     "flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left transition-colors cursor-pointer border-0 bg-transparent no-underline";
-  const itemNormal = "text-secondary hover:bg-hover hover:text-primary";
-  const itemDanger = "text-danger hover:bg-danger-soft";
+  const itemNormal = "text-muted-foreground hover:bg-accent hover:text-foreground";
+  const itemDanger = "text-destructive hover:bg-destructive-soft";
 
   const handleHtmxClick = (item: HtmxItem) => {
     onClose();
@@ -193,7 +193,7 @@ function Menu({
     <div
       ref={menuRef}
       role="menu"
-      class="fixed z-50 min-w-44 bg-surface border border-default rounded shadow-elevated py-1"
+      class="fixed z-50 min-w-44 bg-card border border-border rounded shadow-md py-1"
       style={{
         top: pos?.top ?? -9999,
         left: pos?.left ?? -9999,
@@ -203,7 +203,7 @@ function Menu({
       {state.config.items.map((item, idx) => {
         if (item.kind === "divider") {
           return (
-            <div key={idx} class="h-px bg-subtle my-1" role="separator" />
+            <div key={idx} class="h-px bg-border my-1" role="separator" />
           );
         }
         const cls = `${itemBase} ${item.danger ? itemDanger : itemNormal}`;

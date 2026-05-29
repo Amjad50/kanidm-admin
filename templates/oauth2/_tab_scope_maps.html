@@ -2,41 +2,41 @@
 
   {# ── Error banner ── #}
   {% if let Some(err) = data.error %}
-  <div class="bg-danger-soft border border-danger rounded px-4 py-3 text-sm text-danger">{{ err }}</div>
+  <div class="bg-destructive-soft border border-destructive rounded px-4 py-3 text-sm text-destructive">{{ err }}</div>
   {% endif %}
 
   {# ── Standard scope maps ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle">
-      <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Standard scope maps</div>
-      <div class="text-xs text-tertiary mt-0.5">Groups in the standard map grant the listed scopes to their members.</div>
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border">
+      <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Standard scope maps</div>
+      <div class="text-xs text-muted-foreground mt-0.5">Groups in the standard map grant the listed scopes to their members.</div>
     </div>
 
     {% if data.standard.is_empty() %}
-    <div class="px-5 py-8 text-center text-tertiary text-sm">No standard scope maps configured.</div>
+    <div class="px-5 py-8 text-center text-muted-foreground text-sm">No standard scope maps configured.</div>
     {% else %}
     <table class="w-full text-sm border-collapse">
       <thead>
-        <tr class="bg-canvas">
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default w-48">Group</th>
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default">Scopes</th>
-          <th class="border-b border-default" style="width:96px"></th>
+        <tr class="bg-background">
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border w-48">Group</th>
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border">Scopes</th>
+          <th class="border-b border-border" style="width:96px"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-subtle">
         {% for row in data.standard %}
-        <tr class="hover:bg-hover transition-colors">
+        <tr class="hover:bg-accent transition-colors">
           <td class="px-5 py-3 align-middle">
-            <span class="font-mono text-xs text-primary block truncate max-w-44" title="{{ row.group_spn }}">{{ row.group_name }}</span>
-            <span class="font-mono text-xs text-tertiary block truncate" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
+            <span class="font-mono text-xs text-foreground block truncate max-w-44" title="{{ row.group_spn }}">{{ row.group_name }}</span>
+            <span class="font-mono text-xs text-muted-foreground block truncate" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
           </td>
           <td class="px-5 py-3 align-middle">
             <div class="flex flex-wrap gap-1.5">
               {% for scope in row.scopes %}
-              <span class="inline-flex items-center h-5 px-2 bg-elevated border border-subtle rounded-sm font-mono text-xs text-secondary">{{ scope }}</span>
+              <span class="inline-flex items-center h-5 px-2 bg-popover border border-border rounded-sm font-mono text-xs text-muted-foreground">{{ scope }}</span>
               {% endfor %}
               {% for scope in row.custom_scopes %}
-              <span class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-sm font-mono text-xs text-accent">{{ scope }}</span>
+              <span class="inline-flex items-center h-5 px-2 bg-primary-soft border border-primary rounded-sm font-mono text-xs text-primary">{{ scope }}</span>
               {% endfor %}
             </div>
           </td>
@@ -44,7 +44,7 @@
             <div class="flex items-center justify-end gap-1">
               {# Edit button #}
               <button type="button"
-                      class="text-secondary hover:text-accent transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-accent-soft border border-transparent hover:border-accent"
+                      class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
                       hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/standard/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
@@ -58,7 +58,7 @@
                     hx-swap="innerHTML"
                     hx-confirm="Remove scope map for &quot;{{ row.group_spn }}&quot;?">
                 <button type="submit"
-                        class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                        class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
                         aria-label="Delete scope map for {{ row.group_spn }}">
                   {% include "icons/_x.html" %}
                 </button>
@@ -71,9 +71,9 @@
     </table>
     {% endif %}
 
-    <div class="px-5 py-3 border-t border-subtle">
+    <div class="px-5 py-3 border-t border-border">
       <button type="button"
-              class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-8 px-3 transition-colors cursor-pointer"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
               hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/standard/new"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
@@ -84,42 +84,42 @@
   </section>
 
   {# ── Supplementary scope maps ── #}
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="px-5 py-4 border-b border-subtle flex items-center gap-2">
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="px-5 py-4 border-b border-border flex items-center gap-2">
       <div class="flex-1">
         <div class="flex items-center gap-2">
-          <div class="text-xs uppercase tracking-wider font-semibold text-tertiary">Supplementary scope maps</div>
-          <span class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-pill text-xs text-accent font-medium">supplementary</span>
+          <div class="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Supplementary scope maps</div>
+          <span class="inline-flex items-center h-5 px-2 bg-primary-soft border border-primary rounded-pill text-xs text-primary font-medium">supplementary</span>
         </div>
-        <div class="text-xs text-tertiary mt-0.5">Custom scopes layered on top of the standard ones, often for app-specific permissions.</div>
+        <div class="text-xs text-muted-foreground mt-0.5">Custom scopes layered on top of the standard ones, often for app-specific permissions.</div>
       </div>
     </div>
 
     {% if data.supplementary.is_empty() %}
-    <div class="px-5 py-8 text-center text-tertiary text-sm">No supplementary scope maps configured.</div>
+    <div class="px-5 py-8 text-center text-muted-foreground text-sm">No supplementary scope maps configured.</div>
     {% else %}
     <table class="w-full text-sm border-collapse">
       <thead>
-        <tr class="bg-canvas">
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default w-48">Group</th>
-          <th class="text-left text-xs uppercase tracking-wider font-semibold text-tertiary px-5 py-3 border-b border-default">Scopes</th>
-          <th class="border-b border-default" style="width:96px"></th>
+        <tr class="bg-background">
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border w-48">Group</th>
+          <th class="text-left text-xs uppercase tracking-wider font-semibold text-muted-foreground px-5 py-3 border-b border-border">Scopes</th>
+          <th class="border-b border-border" style="width:96px"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-subtle">
         {% for row in data.supplementary %}
-        <tr class="hover:bg-hover transition-colors">
+        <tr class="hover:bg-accent transition-colors">
           <td class="px-5 py-3 align-middle">
-            <span class="font-mono text-xs text-primary block truncate max-w-44" title="{{ row.group_spn }}">{{ row.group_name }}</span>
-            <span class="font-mono text-xs text-tertiary block truncate" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
+            <span class="font-mono text-xs text-foreground block truncate max-w-44" title="{{ row.group_spn }}">{{ row.group_name }}</span>
+            <span class="font-mono text-xs text-muted-foreground block truncate" title="{{ row.group_spn }}">{{ row.group_spn }}</span>
           </td>
           <td class="px-5 py-3 align-middle">
             <div class="flex flex-wrap gap-1.5">
               {% for scope in row.scopes %}
-              <span class="inline-flex items-center h-5 px-2 bg-elevated border border-subtle rounded-sm font-mono text-xs text-secondary">{{ scope }}</span>
+              <span class="inline-flex items-center h-5 px-2 bg-popover border border-border rounded-sm font-mono text-xs text-muted-foreground">{{ scope }}</span>
               {% endfor %}
               {% for scope in row.custom_scopes %}
-              <span class="inline-flex items-center h-5 px-2 bg-accent-soft border border-accent rounded-sm font-mono text-xs text-accent">{{ scope }}</span>
+              <span class="inline-flex items-center h-5 px-2 bg-primary-soft border border-primary rounded-sm font-mono text-xs text-primary">{{ scope }}</span>
               {% endfor %}
             </div>
           </td>
@@ -127,7 +127,7 @@
             <div class="flex items-center justify-end gap-1">
               {# Edit button #}
               <button type="button"
-                      class="text-secondary hover:text-accent transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-accent-soft border border-transparent hover:border-accent"
+                      class="text-muted-foreground hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1 text-xs h-7 px-2 rounded hover:bg-primary-soft border border-transparent hover:border-primary"
                       hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/{{ row.encoded_group }}/edit"
                       hx-target="#overlay-slot"
                       hx-swap="innerHTML"
@@ -141,7 +141,7 @@
                     hx-swap="innerHTML"
                     hx-confirm="Remove supplementary scope map for &quot;{{ row.group_spn }}&quot;?">
                 <button type="submit"
-                        class="text-tertiary hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-danger-soft"
+                        class="text-muted-foreground hover:text-destructive transition-colors cursor-pointer inline-flex items-center justify-center w-7 h-7 rounded hover:bg-destructive-soft"
                         aria-label="Delete supplementary scope map for {{ row.group_spn }}">
                   {% include "icons/_x.html" %}
                 </button>
@@ -154,9 +154,9 @@
     </table>
     {% endif %}
 
-    <div class="px-5 py-3 border-t border-subtle">
+    <div class="px-5 py-3 border-t border-border">
       <button type="button"
-              class="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent border border-accent/30 hover:border-accent bg-accent-soft hover:bg-accent/10 rounded h-8 px-3 transition-colors cursor-pointer"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary border border-primary/30 hover:border-primary bg-primary-soft hover:bg-primary/10 rounded h-8 px-3 transition-colors cursor-pointer"
               hx-get="/oauth2/{{ data.oauth2_id }}/scope-map/supplementary/new"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">

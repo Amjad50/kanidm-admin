@@ -8,8 +8,8 @@
   {% endif %}
 
   {% if !data.is_dynamic %}
-  <section class="bg-surface border border-subtle rounded-md shadow-card p-5">
-    <div class="text-tertiary text-xs uppercase tracking-wider font-semibold mb-3">Add members</div>
+  <section class="bg-card border border-border rounded-md shadow-sm p-5">
+    <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold mb-3">Add members</div>
     <form hx-post="/groups/{{ group.spn_or_uuid }}/members/add"
           hx-target="#members-table-body"
           hx-swap="innerHTML"
@@ -20,7 +20,7 @@
           name="member"
           list="people-spns"
           placeholder="user@example.com or SPN"
-          class="bg-canvas border border-default rounded h-9 px-3 flex-1 text-sm text-primary font-mono placeholder:text-tertiary focus:outline-none focus:border-strong"
+          class="bg-background border border-border rounded h-9 px-3 flex-1 text-sm text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-input"
           autocomplete="off"
         />
         <datalist id="people-spns">
@@ -29,7 +29,7 @@
           {% endfor %}
         </datalist>
         <button type="submit"
-                class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:bg-accent-hover transition-colors shrink-0">
+                class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:bg-primary/90 transition-colors shrink-0">
           Add
         </button>
       </div>
@@ -39,15 +39,15 @@
 
   <div id="members-error"></div>
 
-  <section class="bg-surface border border-subtle rounded-md shadow-card">
-    <div class="flex items-center justify-between px-5 py-3 border-b border-subtle">
-      <div class="text-tertiary text-xs uppercase tracking-wider font-semibold">
+  <section class="bg-card border border-border rounded-md shadow-sm">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+      <div class="text-muted-foreground text-xs uppercase tracking-wider font-semibold">
         Members
-        <span class="ml-1.5 text-secondary font-mono">{{ data.members.len() }}</span>
+        <span class="ml-1.5 text-muted-foreground font-mono">{{ data.members.len() }}</span>
       </div>
       {% if !data.is_dynamic && !data.members.is_empty() %}
       <button type="button"
-              class="text-xs text-tertiary hover:text-danger transition-colors inline-flex items-center gap-1"
+              class="text-xs text-muted-foreground hover:text-destructive transition-colors inline-flex items-center gap-1"
               hx-get="/groups/{{ group.spn_or_uuid }}/members/purge-modal"
               hx-target="#overlay-slot"
               hx-swap="innerHTML">
@@ -58,8 +58,8 @@
     </div>
 
     <table class="w-full text-sm">
-      <thead class="text-tertiary text-xs uppercase tracking-wide">
-        <tr class="border-b border-subtle">
+      <thead class="text-muted-foreground text-xs uppercase tracking-wide">
+        <tr class="border-b border-border">
           <th class="text-left font-medium px-3 py-3">Person</th>
           <th class="text-left font-medium px-3 py-3">Email</th>
           <th class="text-left font-medium px-3 py-3">Status</th>

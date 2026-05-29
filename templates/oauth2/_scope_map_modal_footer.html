@@ -1,5 +1,5 @@
 <button type="button"
-        class="bg-surface border border-default text-secondary h-9 px-4 rounded text-sm hover:bg-hover hover:border-strong transition-colors cursor-pointer"
+        class="bg-card border border-border text-muted-foreground h-9 px-4 rounded text-sm hover:bg-accent hover:border-input transition-colors cursor-pointer"
         hx-get="/empty"
         hx-target="#overlay-slot"
         hx-swap="innerHTML">
@@ -7,6 +7,6 @@
 </button>
 <button type="submit"
         form="scope-map-form-{{ section }}"
-        class="bg-accent text-on-accent rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
+        class="bg-primary text-primary-foreground rounded h-9 px-4 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer">
   Save scope map
 </button>

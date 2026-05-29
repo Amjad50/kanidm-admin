@@ -251,12 +251,12 @@ export function CommandPalette() {
 
   return (
     <div
-      class="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-canvas/70 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-background/70 backdrop-blur-sm"
       onClick={() => setOpen(false)}
       role="presentation"
     >
       <div
-        class="w-full max-w-xl rounded-lg border border-subtle bg-surface shadow-modal"
+        class="w-full max-w-xl rounded-lg border border-border bg-card shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Command palette"
@@ -268,7 +268,7 @@ export function CommandPalette() {
           onInput={(e) => setQuery((e.currentTarget as HTMLInputElement).value)}
           onKeyDown={onKeyDown}
           placeholder="Search or run a command…"
-          class="w-full border-b border-subtle bg-transparent px-4 py-3 text-primary placeholder:text-tertiary focus:outline-none"
+          class="w-full border-b border-border bg-transparent px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none"
           aria-label="Search"
           autocomplete="off"
           spellcheck={false}
@@ -276,14 +276,14 @@ export function CommandPalette() {
 
         <div class="max-h-[60vh] overflow-y-auto p-2">
           {sections.length === 0 && (
-            <p class="px-3 py-6 text-center text-sm text-tertiary">
+            <p class="px-3 py-6 text-center text-sm text-muted-foreground">
               {loading ? "Searching…" : "No matches."}
             </p>
           )}
 
           {sections.map((section) => (
             <div key={section.title} class="mb-2 last:mb-0">
-              <div class="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-tertiary">
+              <div class="px-3 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {section.title}
               </div>
               <ul role="listbox">
@@ -297,7 +297,7 @@ export function CommandPalette() {
                       aria-selected={isActive}
                       class={
                         "flex cursor-pointer items-center justify-between gap-3 rounded px-3 py-2 " +
-                        (isActive ? "bg-accent-soft text-accent" : "text-primary hover:bg-hover")
+                        (isActive ? "bg-primary-soft text-primary" : "text-foreground hover:bg-accent")
                       }
                       onMouseEnter={() => setHighlight(idx)}
                       onClick={() => choose(it)}
@@ -308,7 +308,7 @@ export function CommandPalette() {
                           <div
                             class={
                               "truncate text-xs " +
-                              (isActive ? "text-accent" : "text-tertiary")
+                              (isActive ? "text-primary" : "text-muted-foreground")
                             }
                           >
                             {it.subtitle}
@@ -319,8 +319,8 @@ export function CommandPalette() {
                         class={
                           "shrink-0 rounded-pill px-2 py-0.5 text-[10px] uppercase tracking-wide " +
                           (isActive
-                            ? "bg-accent text-on-accent"
-                            : "bg-elevated text-tertiary")
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-popover text-muted-foreground")
                         }
                       >
                         {SECTION_TITLE[it.kind]}
@@ -333,7 +333,7 @@ export function CommandPalette() {
           ))}
         </div>
 
-        <div class="flex gap-3 border-t border-subtle px-4 py-2 text-xs text-tertiary">
+        <div class="flex gap-3 border-t border-border px-4 py-2 text-xs text-muted-foreground">
           <span>↑↓ navigate</span>
           <span>↵ select</span>
           <span>esc close</span>

@@ -132,21 +132,21 @@ function Pagination({
   const btnBase =
     "w-8 h-8 rounded border text-sm inline-flex items-center justify-center transition-colors";
   const btnInactive =
-    "border-default bg-surface text-secondary hover:bg-hover hover:text-primary";
-  const btnActive = "border-accent bg-accent text-on-accent";
+    "border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground";
+  const btnActive = "border-primary bg-primary text-primary-foreground";
   const btnDisabled =
-    "border-default bg-surface text-secondary disabled:opacity-50 disabled:cursor-not-allowed";
+    "border-border bg-card text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
-    <div class="flex items-center justify-between mt-4 text-sm text-secondary">
+    <div class="flex items-center justify-between mt-4 text-sm text-muted-foreground">
       <div>
         Showing
-        <span class="text-primary font-medium">
+        <span class="text-foreground font-medium">
           {" "}
           {pageStart}–{pageEnd}{" "}
         </span>
         of
-        <span class="text-primary font-medium"> {filteredCount}</span>
+        <span class="text-foreground font-medium"> {filteredCount}</span>
       </div>
       <div class="flex items-center gap-1">
         <button
@@ -163,7 +163,7 @@ function Pagination({
           item.kind === "ellipsis" ? (
             <span
               key={`e${idx}`}
-              class="w-8 h-8 text-sm inline-flex items-center justify-center text-tertiary"
+              class="w-8 h-8 text-sm inline-flex items-center justify-center text-muted-foreground"
               aria-hidden="true"
             >
               …
