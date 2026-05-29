@@ -4,7 +4,7 @@ use axum::extract::State;
 
 use crate::auth::AdminUser;
 use crate::error::AppResult;
-use crate::views::BaseFields;
+use crate::views::{format_relative_future, format_relative_past, format_relative_remaining, BaseFields};
 use crate::AppState;
 
 #[derive(Template, WebTemplate)]
@@ -16,6 +16,12 @@ pub struct DashboardView {
     pub oauth2_count: Option<usize>,
     pub domain_name: Option<String>,
     pub domain_display_name: Option<String>,
+    pub domain_level: Option<String>,
+    pub ldap_basedn: Option<String>,
+    pub domain_uuid: Option<String>,
+    pub signed_in_relative: Option<String>,
+    pub session_expires_relative: Option<String>,
+    pub privileged_remaining: Option<String>,
 }
 
 pub async fn dashboard(
@@ -43,12 +49,23 @@ pub async fn dashboard(
     let group_count = groups.ok().map(|v| v.len());
     let oauth2_count = oauth2s.ok().map(|v| v.len());
 
-    let (domain_name, domain_display_name) = match domain {
+    let (domain_name, domain_display_name, domain_level, ldap_basedn, domain_uuid) = match domain {
         Ok(entry) => (
             attr_first(&entry, "name"),
             attr_first(&entry, "domain_display_name").or_else(|| attr_first(&entry, "displayname")),
+            attr_first(&entry, "domain_level"),
+            attr_first(&entry, "ldap_basedn"),
+            attr_first(&entry, "domain_uuid").or_else(|| attr_first(&entry, "uuid")),
         ),
-        Err(_) => (None, None),
+        Err(_) => (None, None, None, None, None),
+    };
+
+    let signed_in_relative = user.signed_in_at.map(format_relative_past);
+    let session_expires_relative = user.session_expires_at.map(format_relative_future);
+    let privileged_remaining = if user.privileged {
+        user.privileged_until.map(format_relative_remaining)
+    } else {
+        None
     };
 
     Ok(DashboardView {
@@ -58,6 +75,12 @@ pub async fn dashboard(
         oauth2_count,
         domain_name,
         domain_display_name,
+        domain_level,
+        ldap_basedn,
+        domain_uuid,
+        signed_in_relative,
+        session_expires_relative,
+        privileged_remaining,
     })
 }
 

@@ -4,8 +4,12 @@ use anyhow::{anyhow, Result};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum_extra::extract::CookieJar;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine;
 use kanidm_client::{KanidmClient, KanidmClientBuilder};
+use kanidm_proto::internal::{UatPurpose, UserAuthToken};
 use kanidm_proto::v1::Entry;
+use time::OffsetDateTime;
 
 use crate::config::Config;
 use crate::error::AppError;
@@ -66,6 +70,12 @@ pub struct AdminUser {
     pub spn: String,
     pub displayname: String,
     pub uuid: String,
+    pub signed_in_at: Option<OffsetDateTime>,
+    pub session_expires_at: Option<OffsetDateTime>,
+    /// True when the session has active ReadWrite privileges (not expired).
+    pub privileged: bool,
+    /// When the ReadWrite privilege window expires (None if read-only or unknown).
+    pub privileged_until: Option<OffsetDateTime>,
 }
 
 impl FromRequestParts<AppState> for AdminUser {
@@ -115,11 +125,33 @@ impl FromRequestParts<AppState> for AdminUser {
         let displayname = attr_first(&entry, "displayname").unwrap_or_else(|| spn.clone());
         let uuid = attr_first(&entry, "uuid").unwrap_or_default();
 
+        let (signed_in_at, session_expires_at, privileged, privileged_until) =
+            match parse_uat_payload(&token) {
+                Some(uat) => {
+                    let now = OffsetDateTime::now_utc();
+                    let (privileged, privileged_until) = match &uat.purpose {
+                        UatPurpose::ReadWrite { expiry: Some(exp) } if now < *exp => {
+                            (true, Some(*exp))
+                        }
+                        _ => (false, None),
+                    };
+                    (Some(uat.issued_at), uat.expiry, privileged, privileged_until)
+                }
+                None => {
+                    tracing::warn!(spn = ?spn, "could not decode UAT payload from session cookie");
+                    (None, None, false, None)
+                }
+            };
+
         Ok(AdminUser {
             token,
             spn,
             displayname,
             uuid,
+            signed_in_at,
+            session_expires_at,
+            privileged,
+            privileged_until,
         })
     }
 }
@@ -142,4 +174,22 @@ fn entry_in_group(entry: &Entry, group: &str) -> bool {
 
 fn attr_first(entry: &Entry, name: &str) -> Option<String> {
     entry.attrs.get(name).and_then(|v| v.first().cloned())
+}
+
+/// Decode the payload segment of a JWS compact-serialised token without
+/// verifying the signature. The token has already been validated by
+/// `auth_valid()`, so signature re-verification here would be redundant.
+///
+/// JWS compact serialisation format: `header.payload.signature` where each
+/// segment is base64url-no-pad encoded.
+fn parse_uat_payload(jws: &str) -> Option<UserAuthToken> {
+    let mut parts = jws.split('.');
+    let _header = parts.next()?;
+    let payload = parts.next()?;
+    let _signature = parts.next()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    let bytes = URL_SAFE_NO_PAD.decode(payload).ok()?;
+    serde_json::from_slice(&bytes).ok()
 }

@@ -2845,6 +2845,7 @@ dependencies = [
  "askama_web",
  "axum",
  "axum-extra",
+ "base64 0.22.1",
  "figment",
  "kanidm_client",
  "kanidm_proto",
